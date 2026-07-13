@@ -27,6 +27,41 @@ function normName(s: string): string {
     .trim()
 }
 
+// ─── remove conectores comuns (da, de, do, dos, das, e) que costumam ser esquecidos/adicionados por engano ───
+const CONNECTORS = new Set(['da', 'de', 'do', 'das', 'dos', 'e'])
+function coreName(s: string): string {
+  return normName(s).split(' ').filter((w) => !CONNECTORS.has(w)).join(' ')
+}
+
+// ─── distância de Levenshtein simples, para tolerar pequenos erros de digitação ───
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length
+  if (m === 0) return n
+  if (n === 0) return m
+  const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)])
+  for (let j = 0; j <= n; j++) dp[0][j] = j
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1])
+    }
+  }
+  return dp[m][n]
+}
+
+// ─── compara dois nomes tolerando conectores (da/de/do) e pequenos erros de digitação ───
+function namesMatch(a: string, b: string): boolean {
+  const ca = coreName(a), cb = coreName(b)
+  if (ca === cb) return true
+  const maxLen = Math.max(ca.length, cb.length)
+  if (maxLen === 0) return false
+  const dist = levenshtein(ca, cb)
+  // tolera ~1 erro a cada 12 caracteres (mínimo 1, no máximo 3)
+  const tolerance = Math.min(3, Math.max(1, Math.round(maxLen / 12)))
+  return dist <= tolerance
+}
+
 function getCol(row: Record<string, unknown>, ...candidates: string[]): string {
   for (const c of candidates) {
     for (const k of Object.keys(row)) {
@@ -42,7 +77,15 @@ function fmtDateVal(val: string): string {
   return val.split(' ')[0]
 }
 
-// ─── remove o código da concessionária do número da O.S. (ex: "1234567-001" → "1234567") ───
+// ─── formata celular como (DD) XXXXX-XXXX ───
+function fmtPhone(celular: string | null): string {
+  if (!celular) return ''
+  let num = celular.replace(/\D/g, '')
+  if (num.length > 11 && num.startsWith('55')) num = num.slice(2) // remove código do país se vier junto
+  if (num.length === 11) return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7)}`
+  if (num.length === 10) return `(${num.slice(0, 2)}) ${num.slice(2, 6)}-${num.slice(6)}`
+  return celular
+}
 function cleanOs(os: string): string {
   if (!os) return os
   const parts = os.split(/[-/]/).map((p) => p.trim()).filter(Boolean)
@@ -82,7 +125,8 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
   const [pageSize, setPageSize] = useState(20)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fieisNames = useMemo(() => new Set(fieis.map((f) => normName(f.nome))), [fieis])
+  const fieisNamesList = useMemo(() => fieis.map((f) => f.nome), [fieis])
+  const isFielName = useCallback((cliente: string) => fieisNamesList.some((f) => namesMatch(f, cliente)), [fieisNamesList])
 
   const handleImport = useCallback(() => fileInputRef.current?.click(), [])
 
@@ -140,7 +184,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
           dataEnvioSms: fmtDateVal(dataEnvioSms) || null,
           dataReenvio: fmtDateVal(dataReenvio) || null,
           loja: loja || null,
-          isFiel: cliente ? fieisNames.has(normName(cliente)) : false,
+          isFiel: cliente ? isFielName(cliente) : false,
         }
       }).filter(Boolean) as ImportRow[]
 
@@ -155,7 +199,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
     } finally {
       setLoading(false)
     }
-  }, [fieisNames, onImport])
+  }, [isFielName, onImport])
 
   const filtered = useMemo(() => rows.filter((r) => {
     if (onlyFieis && !r.isFiel) return false
@@ -183,7 +227,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
         'Ordens de Serviço: OS': cleanOs(r.os),
         'Cliente': r.cliente,
         'E-mail do Cliente': r.email || '',
-        'Celular do Cliente': r.celular || '',
+        'Celular do Cliente': fmtPhone(r.celular) || '',
         'Veículo': r.veiculo || '',
         'Cliente Fiel': r.isFiel ? 'Sim' : 'Não',
       }))
@@ -242,8 +286,8 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="relative flex-1 min-w-[220px]">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar cliente, OS, e-mail…" className="pl-9 w-full" style={INP} />
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar cliente, OS, e-mail…" className="w-full" style={{ ...INP, paddingLeft: 36 }} />
             </div>
             <label className="flex items-center gap-2 px-3.5 py-2 rounded-[9px] cursor-pointer select-none text-[13px] font-semibold"
               style={{ border: '1px solid var(--border-line)', color: onlyFieis ? '#2fd675' : 'var(--text-dim)', background: onlyFieis ? '#2fd67514' : 'transparent' }}>
@@ -310,7 +354,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                             )}
                           </td>
                           <td className="px-3.5 py-2.5 max-w-[190px] truncate" style={{ color: 'var(--text-dim)' }}>{r.email || '—'}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>{r.celular || '—'}</td>
+                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>{fmtPhone(r.celular) || '—'}</td>
                           <td className="px-3.5 py-2.5 max-w-[160px] truncate" style={{ color: 'var(--text-muted)' }}>{r.veiculo || '—'}</td>
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioEmail || '—'}</td>
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioSms || '—'}</td>

@@ -15,6 +15,19 @@ const COLORS: Record<string, string> = { green: '#2fd675', yellow: '#ffc400', re
 interface LojaAgg { t2bSum: number; t2bCount: number; osCount: number }
 interface CellAgg { osCount: number; t2bSum: number; t2bCount: number }
 
+const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+
+// ─── extrai mês/ano de uma data no formato DD/MM/YYYY ───
+function parseMonthKey(dataStr: string | null): { key: string; label: string } | null {
+  if (!dataStr) return null
+  const parts = dataStr.trim().split('/')
+  if (parts.length !== 3) return null
+  const [, mm, yyyy] = parts
+  const mIdx = parseInt(mm, 10) - 1
+  if (isNaN(mIdx) || mIdx < 0 || mIdx > 11 || !yyyy) return null
+  return { key: `${yyyy}-${mm.padStart(2, '0')}`, label: `${MONTH_NAMES[mIdx]} ${yyyy}` }
+}
+
 export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
   const m = useMemo(() => {
     let sumT2B = 0, cntT2B = 0, sumTsi = 0, cntTsi = 0
@@ -22,6 +35,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
     const matriz: Record<string, Record<string, CellAgg>> = {}
     const feedbacks: TsiRow[] = []
     const alertas: TsiRow[] = []
+    const monthlyAgg: Record<string, { label: string; sum: number; count: number }> = {}
 
     tsiData.forEach((r) => {
       const loja = r.loja || 'Desconhecido'
@@ -47,6 +61,13 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
       }
 
       if (r.comentario && r.comentario !== 'NaN') feedbacks.push(r)
+
+      const mk = parseMonthKey(r.data)
+      if (mk) {
+        if (!monthlyAgg[mk.key]) monthlyAgg[mk.key] = { label: mk.label, sum: 0, count: 0 }
+        monthlyAgg[mk.key].sum += t2b
+        monthlyAgg[mk.key].count++
+      }
     })
 
     const avgT2B = cntT2B > 0 ? sumT2B / cntT2B : 0
@@ -58,7 +79,12 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
     })
     alertas.sort((a, b) => (Number(a.t2b) || 0) - (Number(b.t2b) || 0))
 
-    return { total: tsiData.length, avgT2B, avgTsi, lojas, matriz, feedbacks, alertas, sortedLojas }
+    const monthlyEvolution = Object.keys(monthlyAgg)
+      .sort()
+      .slice(-12)
+      .map((key) => ({ label: monthlyAgg[key].label, avg: monthlyAgg[key].count > 0 ? monthlyAgg[key].sum / monthlyAgg[key].count : 0 }))
+
+    return { total: tsiData.length, avgT2B, avgTsi, lojas, matriz, feedbacks, alertas, sortedLojas, monthlyEvolution }
   }, [tsiData])
 
   return (
@@ -113,6 +139,13 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
               <Gauge score={m.avgTsi} label="TSI" />
             </Section>
           </div>
+
+          {/* Evolução mensal */}
+          {m.monthlyEvolution.length > 0 && (
+            <Section title="Evolução mensal Top2Box" sub="| média por mês de resposta">
+              <MonthlyEvolutionChart data={m.monthlyEvolution} />
+            </Section>
+          )}
 
           {/* Ranking + Matriz */}
           <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1.1fr' }}>
@@ -258,6 +291,59 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+function MonthlyEvolutionChart({ data }: { data: { label: string; avg: number }[] }) {
+  const W = 900, H = 300
+  const padL = 44, padR = 16, padT = 30, padB = 56
+  const chartW = W - padL - padR, chartH = H - padT - padB
+  const n = data.length
+  const barGap = 14
+  const barW = n > 0 ? Math.min(64, (chartW - barGap * (n - 1)) / n) : 0
+  const totalBarsW = n * barW + (n - 1) * barGap
+  const startX = padL + (chartW - totalBarsW) / 2
+  const maxVal = 100
+  const gridVals = [0, 20, 40, 60, 80, 100]
+
+  return (
+    <div className="overflow-x-auto">
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ minWidth: 480, maxWidth: 900 }}>
+        {/* grid lines */}
+        {gridVals.map((v) => {
+          const y = padT + chartH - (v / maxVal) * chartH
+          return (
+            <g key={v}>
+              <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="var(--border-line-soft)" strokeWidth={1} />
+              <text x={padL - 8} y={y + 4} textAnchor="end" fontSize={11} fill="var(--text-muted)">{v}</text>
+            </g>
+          )
+        })}
+        {/* bars */}
+        {data.map((d, i) => {
+          const x = startX + i * (barW + barGap)
+          const v = Math.max(0, Math.min(100, d.avg))
+          const barH = (v / maxVal) * chartH
+          const y = padT + chartH - barH
+          const col = COLORS[tsiColor(v)]
+          return (
+            <g key={d.label + i}>
+              <rect x={x} y={y} width={barW} height={barH} rx={4} fill={col} opacity={0.9} />
+              <text x={x + barW / 2} y={y - 8} textAnchor="middle" fontSize={13} fontWeight={800} fill="var(--text-primary)" fontFamily="Rajdhani, sans-serif">
+                {v.toFixed(2)}
+              </text>
+              <text
+                x={x + barW / 2} y={padT + chartH + 18}
+                textAnchor="end" fontSize={11} fill="var(--text-muted)"
+                transform={`rotate(-35 ${x + barW / 2} ${padT + chartH + 18})`}
+              >
+                {d.label}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
     </div>
   )
 }

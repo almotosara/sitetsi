@@ -58,8 +58,8 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
       {/* Filters */}
       <div className="flex flex-wrap gap-2.5">
         <div className="relative flex-1 min-w-[220px]">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar OS, comentário…" className="pl-9 w-full" style={INP} />
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar OS, comentário…" className="w-full" style={{ ...INP, paddingLeft: 36 }} />
         </div>
         <select value={lojaFilter} onChange={(e) => setLojaFilter(e.target.value)} style={{ ...INP, minWidth: 155 }}>
           <option value="">Todas as lojas</option>
