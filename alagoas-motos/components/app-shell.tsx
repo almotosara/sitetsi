@@ -11,6 +11,7 @@ import { ReportView } from './views/report-view'
 import { TsiView } from './views/tsi-view'
 import { TsiListView } from './views/tsi-list-view'
 import { FieisView } from './views/fieis-view'
+import { TsiReenvioView } from './views/tsi-reenvio-view'
 import { useToast } from './toast'
 import {
   createLead, updateLead, deleteLead,
@@ -19,7 +20,7 @@ import {
   bulkCreateLeads,
 } from '@/app/actions'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis' | 'reenvio'
 
 const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   dash:    { title: 'Painel de Leads', sub: 'Visão geral do mês' },
@@ -28,6 +29,7 @@ const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   tsi:     { title: 'TSI — Top2Box', sub: 'Metas e indicadores' },
   tsilist: { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
   fieis:   { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
+  reenvio: { title: 'Reenvio de Pesquisas', sub: 'Anexe a lista e filtre clientes fiéis' },
 }
 
 // ID fixo do usuário (single-user)
@@ -530,6 +532,7 @@ export function AppShell({
           {view === 'fieis' && (
             <FieisView fieis={fieis} onAdd={handleAddFiel} onEdit={handleEditFiel} onDelete={handleDeleteFiel} />
           )}
+          {view === 'reenvio' && <TsiReenvioView fieis={fieis} />}
         </div>
       </div>
 

@@ -41,6 +41,20 @@ export interface ClienteFiel {
   criado_em: string
 }
 
+export interface ReenvioRow {
+  id: string
+  os: string
+  cliente: string
+  email: string | null
+  celular: string | null
+  veiculo: string | null
+  dataEnvioEmail: string | null
+  dataEnvioSms: string | null
+  dataReenvio: string | null
+  loja: string | null
+  isFiel: boolean
+}
+
 export interface UserSettings {
   user_id: string
   goal: number
