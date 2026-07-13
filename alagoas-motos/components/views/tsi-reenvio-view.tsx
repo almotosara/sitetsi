@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useCallback } from 'react'
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import type { ReenvioRow, ClienteFiel } from '@/lib/types'
 
 type ImportRow = Omit<ReenvioRow, 'id' | 'user_id' | 'importado_em' | 'contatado' | 'contatado_em' | 'contatado_canal'>
@@ -45,7 +45,9 @@ function fmtDateVal(val: string): string {
 // ─── remove o código da concessionária do número da O.S. (ex: "1234567-001" → "1234567") ───
 function cleanOs(os: string): string {
   if (!os) return os
-  return os.split(/[-/]/)[0].trim()
+  const parts = os.split(/[-/]/).map((p) => p.trim()).filter(Boolean)
+  if (parts.length <= 1) return os.trim()
+  return parts[parts.length - 1]
 }
 
 // ─── primeiro nome do cliente, para personalizar a mensagem ───
@@ -53,12 +55,20 @@ function firstName(cliente: string): string {
   return cliente.trim().split(' ')[0] || cliente
 }
 
+// ─── saudação de acordo com o horário atual ───
+function greeting(): string {
+  const h = new Date().getHours()
+  if (h >= 5 && h < 12) return 'Bom dia'
+  if (h >= 12 && h < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
 function waTemplateLink(celular: string | null, cliente: string) {
   if (!celular) return null
   const num = celular.replace(/\D/g, '')
   if (!num) return null
   const withCountry = num.startsWith('55') ? num : `55${num}`
-  const msg = `Bom dia ou boa tarde! ${firstName(cliente)}, enviei uma pesquisa de satisfação em seu SMS sobre seu serviço aqui na Honda Alagoas Motos, você finaliza em menos de 5 minutos! Se puder preenchê-la com nota 10, ajuda muito nossa equipe continuar melhorando cada vez mais!`
+  const msg = `${greeting()}! ${firstName(cliente)}, enviei uma pesquisa de satisfação em seu SMS sobre seu serviço aqui na Honda Alagoas Motos, você finaliza em menos de 5 minutos! Se puder preenchê-la com nota 10, ajuda muito nossa equipe continuar melhorando cada vez mais!`
   return `https://wa.me/${withCountry}?text=${encodeURIComponent(msg)}`
 }
 
@@ -66,9 +76,10 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
   const [fileName, setFileName] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [onlyFieis, setOnlyFieis] = useState(false)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fieisNames = useMemo(() => new Set(fieis.map((f) => normName(f.nome))), [fieis])
@@ -154,40 +165,27 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
   }).sort((a, b) => (b.isFiel ? 1 : 0) - (a.isFiel ? 1 : 0)), [rows, q, onlyFieis])
 
   const fieisCount = useMemo(() => rows.filter((r) => r.isFiel).length, [rows])
+  const contatadosCount = useMemo(() => rows.filter((r) => r.contatado).length, [rows])
 
-  function toggleSelect(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      return next
-    })
-  }
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const paged = useMemo(() => {
+    const start = (safePage - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, safePage, pageSize])
 
-  function toggleSelectAllVisible() {
-    setSelected((prev) => {
-      const allSelected = filtered.every((r) => prev.has(r.id))
-      const next = new Set(prev)
-      if (allSelected) {
-        filtered.forEach((r) => next.delete(r.id))
-      } else {
-        filtered.forEach((r) => next.add(r.id))
-      }
-      return next
-    })
-  }
+  useEffect(() => { setPage(1) }, [q, onlyFieis, rows])
 
-  function exportSelected() {
-    const toExport = filtered.filter((r) => selected.size === 0 ? true : selected.has(r.id))
-    if (!toExport.length) return
+  function exportFiltered() {
+    if (!filtered.length) return
     import('xlsx').then((XLSX) => {
-      const data = toExport.map((r) => ({
-        'Ordens de Serviço: OS': r.os,
+      const data = filtered.map((r) => ({
+        'Ordens de Serviço: OS': cleanOs(r.os),
         'Cliente': r.cliente,
         'E-mail do Cliente': r.email || '',
         'Celular do Cliente': r.celular || '',
         'Veículo': r.veiculo || '',
         'Cliente Fiel': r.isFiel ? 'Sim' : 'Não',
-        'Nome da conta': r.loja || '',
       }))
       const ws = XLSX.utils.json_to_sheet(data)
       const wb = XLSX.utils.book_new()
@@ -238,7 +236,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
           <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <KpiCard label="Total na planilha" value={String(rows.length)} />
             <KpiCard label="Clientes Fiéis" value={String(fieisCount)} color="#2fd675" />
-            <KpiCard label="Selecionados" value={String(selected.size)} />
+            <KpiCard label="Contatados" value={String(contatadosCount)} color="#f5a623" />
           </div>
 
           {/* Filters */}
@@ -253,11 +251,11 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
               Somente clientes fiéis
             </label>
-            <button onClick={exportSelected} disabled={filtered.length === 0}
+            <button onClick={exportFiltered} disabled={filtered.length === 0}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border font-semibold text-[13px] cursor-pointer hover:brightness-110 transition-all disabled:opacity-50"
               style={{ background: 'var(--bg-panel-2)', borderColor: 'var(--border-line)', color: 'var(--text-dim)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15V3M6 9l6 6 6-6"/><path d="M21 21H3"/></svg>
-              Exportar {selected.size > 0 ? `selecionados (${selected.size})` : 'lista filtrada'}
+              Exportar lista filtrada
             </button>
           </div>
 
@@ -272,9 +270,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr>
-                      <th className="px-3.5 py-2.5" style={{ background: 'var(--bg-panel-2)', borderBottom: '1px solid var(--border-line-soft)', width: 36 }}>
-                        <input type="checkbox" checked={filtered.length > 0 && filtered.every((r) => selected.has(r.id))} onChange={toggleSelectAllVisible} />
-                      </th>
+                      <th className="px-3.5 py-2.5" style={{ background: 'var(--bg-panel-2)', borderBottom: '1px solid var(--border-line-soft)', width: 44 }} />
                       {['Cliente', 'O.S.', 'Fiel?', 'E-mail', 'Celular', 'Veículo', 'Envio e-mail', 'Envio SMS', 'Ação'].map((h) => (
                         <th key={h} className="text-left px-3.5 py-2.5 text-[10.5px] uppercase tracking-widest font-bold whitespace-nowrap"
                           style={{ background: 'var(--bg-panel-2)', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-line-soft)' }}>{h}</th>
@@ -282,13 +278,25 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((r) => {
+                    {paged.map((r) => {
                       const wa = waTemplateLink(r.celular, r.cliente)
                       return (
                         <tr key={r.id} className="transition-colors last:border-0" style={{ borderBottom: '1px solid var(--border-line-soft)', background: r.isFiel ? '#2fd67510' : 'transparent' }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-panel-2)' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = r.isFiel ? '#2fd67510' : 'transparent' }}>
-                          <td className="px-3.5 py-2.5"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)} /></td>
+                          <td className="px-3.5 py-2.5">
+                            {wa ? (
+                              <a href={wa} target="_blank" rel="noopener noreferrer" title="Enviar mensagem de reenvio via WhatsApp"
+                                onClick={() => onContatado(r.id, 'whatsapp')}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg" style={{ background: '#2fd67526', color: '#2fd675' }}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/></svg>
+                              </a>
+                            ) : (
+                              <span className="w-8 h-8 flex items-center justify-center rounded-lg opacity-30" style={{ color: 'var(--text-muted)' }}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/></svg>
+                              </span>
+                            )}
+                          </td>
                           <td className="px-3.5 py-2.5 font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{r.cliente}</td>
                           <td className="px-3.5 py-2.5 font-mono text-xs" style={{ color: 'var(--text-dim)' }}>{cleanOs(r.os)}</td>
                           <td className="px-3.5 py-2.5">
@@ -308,13 +316,6 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioSms || '—'}</td>
                           <td className="px-3.5 py-2.5">
                             <div className="flex gap-1.5 items-center">
-                              {wa && (
-                                <a href={wa} target="_blank" rel="noopener noreferrer" title="Enviar mensagem de reenvio via WhatsApp"
-                                  onClick={() => onContatado(r.id, 'whatsapp')}
-                                  className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#2fd67526', color: '#2fd675' }}>
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/></svg>
-                                </a>
-                              )}
                               {r.email && (
                                 <a href={`mailto:${r.email}`} title="Reenviar via e-mail"
                                   onClick={() => onContatado(r.id, 'email')}
@@ -340,10 +341,54 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                 </table>
               </div>
             )}
+            {/* Footer: count + pagination */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-3.5 py-2.5 text-[12px]"
+              style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border-line-soft)' }}>
+              <span>
+                {filtered.length > 0
+                  ? <>Mostrando {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)} de {filtered.length} registro(s){filtered.length !== rows.length ? ` (${rows.length} no total)` : ''}.</>
+                  : <>{filtered.length} registro(s) encontrados de {rows.length} no total.</>}
+              </span>
+              {filtered.length > 0 && (
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1) }}
+                    style={{ ...INP, padding: '5px 8px', fontSize: 12 }}>
+                    {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / página</option>)}
+                  </select>
+                  <div className="flex items-center gap-1">
+                    <PageBtn onClick={() => setPage(1)} disabled={safePage === 1} title="Primeira página">«</PageBtn>
+                    <PageBtn onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} title="Página anterior">‹</PageBtn>
+                    <span className="px-2 font-semibold" style={{ color: 'var(--text-primary)' }}>{safePage} / {totalPages}</span>
+                    <PageBtn onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} title="Próxima página">›</PageBtn>
+                    <PageBtn onClick={() => setPage(totalPages)} disabled={safePage === totalPages} title="Última página">»</PageBtn>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
     </div>
+  )
+}
+
+function PageBtn({ children, onClick, disabled, title }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; title?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className="w-7 h-7 flex items-center justify-center rounded-md text-[13px] font-bold transition-colors"
+      style={{
+        border: '1px solid var(--border-line)',
+        background: 'var(--bg-elevated)',
+        color: disabled ? 'var(--text-muted)' : 'var(--text-dim)',
+        opacity: disabled ? 0.45 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+      }}
+    >
+      {children}
+    </button>
   )
 }
 
