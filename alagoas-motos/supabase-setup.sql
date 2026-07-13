@@ -90,22 +90,27 @@ ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reenvio_data ENABLE ROW LEVEL SECURITY;
 
 -- 6. Políticas RLS — permite acesso completo ao usuário fixo
+DROP POLICY IF EXISTS "user_full_access_leads" ON leads;
 CREATE POLICY "user_full_access_leads" ON leads
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
+DROP POLICY IF EXISTS "user_full_access_tsi_data" ON tsi_data;
 CREATE POLICY "user_full_access_tsi_data" ON tsi_data
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
+DROP POLICY IF EXISTS "user_full_access_clientes_fieis" ON clientes_fieis;
 CREATE POLICY "user_full_access_clientes_fieis" ON clientes_fieis
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
+DROP POLICY IF EXISTS "user_full_access_user_settings" ON user_settings;
 CREATE POLICY "user_full_access_user_settings" ON user_settings
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
+DROP POLICY IF EXISTS "user_full_access_reenvio_data" ON reenvio_data;
 CREATE POLICY "user_full_access_reenvio_data" ON reenvio_data
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');

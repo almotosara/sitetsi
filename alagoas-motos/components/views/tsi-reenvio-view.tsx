@@ -42,12 +42,24 @@ function fmtDateVal(val: string): string {
   return val.split(' ')[0]
 }
 
-function waLink(celular: string | null) {
+// ─── remove o código da concessionária do número da O.S. (ex: "1234567-001" → "1234567") ───
+function cleanOs(os: string): string {
+  if (!os) return os
+  return os.split(/[-/]/)[0].trim()
+}
+
+// ─── primeiro nome do cliente, para personalizar a mensagem ───
+function firstName(cliente: string): string {
+  return cliente.trim().split(' ')[0] || cliente
+}
+
+function waTemplateLink(celular: string | null, cliente: string) {
   if (!celular) return null
   const num = celular.replace(/\D/g, '')
   if (!num) return null
   const withCountry = num.startsWith('55') ? num : `55${num}`
-  return `https://wa.me/${withCountry}`
+  const msg = `Bom dia ou boa tarde! ${firstName(cliente)}, enviei uma pesquisa de satisfação em seu SMS sobre seu serviço aqui na Honda Alagoas Motos, você finaliza em menos de 5 minutos! Se puder preenchê-la com nota 10, ajuda muito nossa equipe continuar melhorando cada vez mais!`
+  return `https://wa.me/${withCountry}?text=${encodeURIComponent(msg)}`
 }
 
 export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }: TsiReenvioViewProps) {
@@ -139,7 +151,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
     const text = q.toLowerCase()
     if (text && !r.cliente.toLowerCase().includes(text) && !r.os.toLowerCase().includes(text) && !(r.email || '').toLowerCase().includes(text)) return false
     return true
-  }), [rows, q, onlyFieis])
+  }).sort((a, b) => (b.isFiel ? 1 : 0) - (a.isFiel ? 1 : 0)), [rows, q, onlyFieis])
 
   const fieisCount = useMemo(() => rows.filter((r) => r.isFiel).length, [rows])
 
@@ -188,7 +200,10 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
     <div className="view-enter flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Reenvio de Pesquisas</h2>
+          <h2 className="flex items-center gap-2" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4b2b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+            Reenvio de Pesquisas
+          </h2>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {rows.length === 0 ? 'Anexe a planilha de clientes para reenviar a pesquisa TSI.' : `${filtered.length} de ${rows.length} registros ${fileName ? `· ${fileName}` : ''}`}
           </p>
@@ -235,6 +250,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
             <label className="flex items-center gap-2 px-3.5 py-2 rounded-[9px] cursor-pointer select-none text-[13px] font-semibold"
               style={{ border: '1px solid var(--border-line)', color: onlyFieis ? '#2fd675' : 'var(--text-dim)', background: onlyFieis ? '#2fd67514' : 'transparent' }}>
               <input type="checkbox" checked={onlyFieis} onChange={(e) => setOnlyFieis(e.target.checked)} className="accent-[#2fd675]" />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
               Somente clientes fiéis
             </label>
             <button onClick={exportSelected} disabled={filtered.length === 0}
@@ -267,14 +283,14 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                   </thead>
                   <tbody>
                     {filtered.map((r) => {
-                      const wa = waLink(r.celular)
+                      const wa = waTemplateLink(r.celular, r.cliente)
                       return (
                         <tr key={r.id} className="transition-colors last:border-0" style={{ borderBottom: '1px solid var(--border-line-soft)', background: r.isFiel ? '#2fd67510' : 'transparent' }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-panel-2)' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = r.isFiel ? '#2fd67510' : 'transparent' }}>
                           <td className="px-3.5 py-2.5"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)} /></td>
                           <td className="px-3.5 py-2.5 font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{r.cliente}</td>
-                          <td className="px-3.5 py-2.5 font-mono text-xs" style={{ color: 'var(--text-dim)' }}>{r.os}</td>
+                          <td className="px-3.5 py-2.5 font-mono text-xs" style={{ color: 'var(--text-dim)' }}>{cleanOs(r.os)}</td>
                           <td className="px-3.5 py-2.5">
                             {r.isFiel ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: '#2fd67526', color: '#2fd675' }}>
@@ -293,7 +309,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                           <td className="px-3.5 py-2.5">
                             <div className="flex gap-1.5 items-center">
                               {wa && (
-                                <a href={wa} target="_blank" rel="noopener noreferrer" title="Reenviar via WhatsApp"
+                                <a href={wa} target="_blank" rel="noopener noreferrer" title="Enviar mensagem de reenvio via WhatsApp"
                                   onClick={() => onContatado(r.id, 'whatsapp')}
                                   className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#2fd67526', color: '#2fd675' }}>
                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/></svg>
