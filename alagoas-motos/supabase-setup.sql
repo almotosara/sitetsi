@@ -38,6 +38,16 @@ CREATE TABLE IF NOT EXISTS tsi_data (
   importado_em  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 2.1 Tabela de histórico mensal do gráfico Top2Box (para meses anteriores à importação de pesquisas)
+CREATE TABLE IF NOT EXISTS tsi_historico_mensal (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id     UUID NOT NULL,
+  mes         TEXT NOT NULL, -- formato 'YYYY-MM'
+  label       TEXT NOT NULL, -- ex: 'Janeiro 2026'
+  avg_t2b     NUMERIC NOT NULL,
+  UNIQUE (user_id, mes)
+);
+
 -- 3. Tabela de clientes fiéis
 CREATE TABLE IF NOT EXISTS clientes_fieis (
   id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -85,6 +95,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
 -- 5. Row Level Security (RLS)
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tsi_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tsi_historico_mensal ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clientes_fieis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reenvio_data ENABLE ROW LEVEL SECURITY;
@@ -97,6 +108,11 @@ CREATE POLICY "user_full_access_leads" ON leads
 
 DROP POLICY IF EXISTS "user_full_access_tsi_data" ON tsi_data;
 CREATE POLICY "user_full_access_tsi_data" ON tsi_data
+  FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
+  WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
+
+DROP POLICY IF EXISTS "user_full_access_tsi_historico_mensal" ON tsi_historico_mensal;
+CREATE POLICY "user_full_access_tsi_historico_mensal" ON tsi_historico_mensal
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
@@ -120,6 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_reenvio_user ON reenvio_data(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_criado ON leads(criado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_tsi_user ON tsi_data(user_id);
+CREATE INDEX IF NOT EXISTS idx_tsi_historico_user ON tsi_historico_mensal(user_id);
 CREATE INDEX IF NOT EXISTS idx_fieis_user ON clientes_fieis(user_id);
 
 -- 8. Inserir settings padrão

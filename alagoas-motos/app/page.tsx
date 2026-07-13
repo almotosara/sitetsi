@@ -7,13 +7,14 @@ import { ThemeProvider } from '@/components/theme-provider'
 // Tenta carregar dados do Supabase se disponível
 async function loadData() {
   try {
-    const { getLeads, getTsiData, getClientesFieis, getSettings, getReenvioData } = await import('@/app/actions')
-    const [leads, tsiData, fieis, settings, reenvio] = await Promise.all([
+    const { getLeads, getTsiData, getClientesFieis, getSettings, getReenvioData, getTsiHistoricoMensal } = await import('@/app/actions')
+    const [leads, tsiData, fieis, settings, reenvio, tsiHistorico] = await Promise.all([
       getLeads().catch((e) => { console.warn('[Supabase] getLeads falhou:', e.message); return [] }),
       getTsiData().catch((e) => { console.warn('[Supabase] getTsiData falhou:', e.message); return [] }),
       getClientesFieis().catch((e) => { console.warn('[Supabase] getClientesFieis falhou:', e.message); return [] }),
       getSettings().catch((e) => { console.warn('[Supabase] getSettings falhou:', e.message); return null }),
       getReenvioData().catch((e) => { console.warn('[Supabase] getReenvioData falhou:', e.message); return [] }),
+      getTsiHistoricoMensal().catch((e) => { console.warn('[Supabase] getTsiHistoricoMensal falhou:', e.message); return [] }),
     ])
     return {
       leads: leads || [],
@@ -24,9 +25,10 @@ async function loadData() {
       displayName: settings?.display_name ?? null,
       avatarUrl: settings?.avatar_url ?? null,
       reenvio: reenvio || [],
+      tsiHistorico: tsiHistorico || [],
     }
   } catch {
-    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null, reenvio: [] }
+    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null, reenvio: [], tsiHistorico: [] }
   }
 }
 
@@ -34,7 +36,7 @@ export default async function Page() {
   const session = await getSession()
   if (!session) redirect('/auth/login')
 
-  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl, reenvio } = await loadData()
+  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl, reenvio, tsiHistorico } = await loadData()
 
   return (
     <ThemeProvider>
@@ -50,6 +52,7 @@ export default async function Page() {
           initialDisplayName={displayName}
           initialAvatarUrl={avatarUrl}
           initialReenvio={reenvio}
+          initialTsiHistorico={tsiHistorico}
         />
       </ToastProvider>
     </ThemeProvider>

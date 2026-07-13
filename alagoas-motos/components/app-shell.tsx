@@ -93,11 +93,12 @@ interface AppShellProps {
   initialDisplayName?: string | null
   initialAvatarUrl?: string | null
   initialReenvio?: ReenvioRow[]
+  initialTsiHistorico?: { mes: string; label: string; avg_t2b: number }[]
 }
 
 export function AppShell({
   userName, userEmail, initialLeads, initialTsi, initialFieis, initialGoal, initialTsiUpdatedAt,
-  initialDisplayName, initialAvatarUrl, initialReenvio,
+  initialDisplayName, initialAvatarUrl, initialReenvio, initialTsiHistorico,
 }: AppShellProps) {
   const [view, setView] = useState<View>('dash')
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
@@ -108,6 +109,7 @@ export function AppShell({
   const [displayName, setDisplayName] = useState(initialDisplayName || '')
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl || '')
   const [reenvio, setReenvio] = useState<ReenvioRow[]>(initialReenvio || [])
+  const [tsiHistorico] = useState(initialTsiHistorico || [])
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Lead | null>(null)
   const [, startTrans] = useTransition()
@@ -559,7 +561,7 @@ export function AppShell({
               onNew={() => { setEditing(null); setModalOpen(true) }} />
           )}
           {view === 'report' && <ReportView leads={leads} />}
-          {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}
+          {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} tsiHistorico={tsiHistorico} />}
           {view === 'tsilist' && <TsiListView tsiData={tsiData} onImport={handleTsiImport} />}
           {view === 'fieis' && (
             <FieisView fieis={fieis} onAdd={handleAddFiel} onEdit={handleEditFiel} onDelete={handleDeleteFiel} />

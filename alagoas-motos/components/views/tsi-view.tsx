@@ -8,6 +8,7 @@ interface TsiViewProps {
   tsiData: TsiRow[]
   tsiUpdatedAt: string | null
   onImport: () => void
+  tsiHistorico?: { mes: string; label: string; avg_t2b: number }[]
 }
 
 const COLORS: Record<string, string> = { green: '#2fd675', yellow: '#ffc400', red: '#ff5a5f' }
@@ -28,7 +29,7 @@ function parseMonthKey(dataStr: string | null): { key: string; label: string } |
   return { key: `${yyyy}-${mm.padStart(2, '0')}`, label: `${MONTH_NAMES[mIdx]} ${yyyy}` }
 }
 
-export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
+export function TsiView({ tsiData, tsiUpdatedAt, onImport, tsiHistorico = [] }: TsiViewProps) {
   const m = useMemo(() => {
     let sumT2B = 0, cntT2B = 0, sumTsi = 0, cntTsi = 0
     const lojas: Record<string, LojaAgg> = {}
@@ -79,13 +80,21 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
     })
     alertas.sort((a, b) => (Number(a.t2b) || 0) - (Number(b.t2b) || 0))
 
-    const monthlyEvolution = Object.keys(monthlyAgg)
+    const liveKeys = new Set(Object.keys(monthlyAgg))
+    const merged: Record<string, { label: string; avg: number }> = {}
+    tsiHistorico.forEach((h) => {
+      if (!liveKeys.has(h.mes)) merged[h.mes] = { label: h.label, avg: h.avg_t2b }
+    })
+    Object.keys(monthlyAgg).forEach((key) => {
+      merged[key] = { label: monthlyAgg[key].label, avg: monthlyAgg[key].count > 0 ? monthlyAgg[key].sum / monthlyAgg[key].count : 0 }
+    })
+    const monthlyEvolution = Object.keys(merged)
       .sort()
       .slice(-12)
-      .map((key) => ({ label: monthlyAgg[key].label, avg: monthlyAgg[key].count > 0 ? monthlyAgg[key].sum / monthlyAgg[key].count : 0 }))
+      .map((key) => merged[key])
 
     return { total: tsiData.length, avgT2B, avgTsi, lojas, matriz, feedbacks, alertas, sortedLojas, monthlyEvolution }
-  }, [tsiData])
+  }, [tsiData, tsiHistorico])
 
   return (
     <div className="view-enter flex flex-col gap-5">

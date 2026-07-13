@@ -236,3 +236,25 @@ export async function deleteReenvioRow(id: string) {
   if (error) throw error
   revalidatePath('/')
 }
+
+// ─── HISTÓRICO MENSAL TSI (para o gráfico de evolução, meses sem pesquisas importadas) ───
+
+export async function getTsiHistoricoMensal(): Promise<{ mes: string; label: string; avg_t2b: number }[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('tsi_historico_mensal')
+    .select('mes, label, avg_t2b')
+    .eq('user_id', USER_ID)
+    .order('mes', { ascending: true })
+  if (error) throw error
+  return data || []
+}
+
+export async function upsertTsiHistoricoMensal(rows: { mes: string; label: string; avg_t2b: number }[]) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('tsi_historico_mensal')
+    .upsert(rows.map((r) => ({ ...r, user_id: USER_ID })), { onConflict: 'user_id,mes' })
+  if (error) throw error
+  revalidatePath('/')
+}
