@@ -47,6 +47,26 @@ CREATE TABLE IF NOT EXISTS clientes_fieis (
   criado_em   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 3.1 Tabela de reenvio de pesquisas
+CREATE TABLE IF NOT EXISTS reenvio_data (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id           UUID NOT NULL,
+  os                TEXT,
+  cliente           TEXT NOT NULL,
+  email             TEXT,
+  celular           TEXT,
+  veiculo           TEXT,
+  data_envio_email  TEXT,
+  data_envio_sms    TEXT,
+  data_reenvio      TEXT,
+  loja              TEXT,
+  is_fiel           BOOLEAN NOT NULL DEFAULT false,
+  contatado         BOOLEAN NOT NULL DEFAULT false,
+  contatado_em      TIMESTAMPTZ,
+  contatado_canal   TEXT,
+  importado_em      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- 4. Tabela de configurações do usuário
 CREATE TABLE IF NOT EXISTS user_settings (
   user_id          UUID PRIMARY KEY,
@@ -67,6 +87,7 @@ ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tsi_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clientes_fieis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reenvio_data ENABLE ROW LEVEL SECURITY;
 
 -- 6. Políticas RLS — permite acesso completo ao usuário fixo
 CREATE POLICY "user_full_access_leads" ON leads
@@ -85,7 +106,12 @@ CREATE POLICY "user_full_access_user_settings" ON user_settings
   FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
   WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
 
+CREATE POLICY "user_full_access_reenvio_data" ON reenvio_data
+  FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000001')
+  WITH CHECK (user_id = '00000000-0000-0000-0000-000000000001');
+
 -- 7. Índices para performance
+CREATE INDEX IF NOT EXISTS idx_reenvio_user ON reenvio_data(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_criado ON leads(criado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_tsi_user ON tsi_data(user_id);

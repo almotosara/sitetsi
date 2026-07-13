@@ -3,8 +3,14 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import type { ReenvioRow, ClienteFiel } from '@/lib/types'
 
+type ImportRow = Omit<ReenvioRow, 'id' | 'user_id' | 'importado_em' | 'contatado' | 'contatado_em' | 'contatado_canal'>
+
 interface TsiReenvioViewProps {
   fieis: ClienteFiel[]
+  rows: ReenvioRow[]
+  onImport: (rows: ImportRow[]) => void | Promise<void>
+  onContatado: (id: string, canal: string) => void | Promise<void>
+  onDelete: (id: string) => void | Promise<void>
 }
 
 const INP: React.CSSProperties = {
@@ -44,8 +50,7 @@ function waLink(celular: string | null) {
   return `https://wa.me/${withCountry}`
 }
 
-export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
-  const [rows, setRows] = useState<ReenvioRow[]>([])
+export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }: TsiReenvioViewProps) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [onlyFieis, setOnlyFieis] = useState(false)
@@ -91,7 +96,7 @@ export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
 
       if (!json.length) { setError('O arquivo não possui dados legíveis.'); setLoading(false); return }
 
-      const mapped: ReenvioRow[] = json.map((r, i) => {
+      const mapped: ImportRow[] = json.map((r) => {
         const os = getCol(r, 'Ordens de Serviço: OS', 'Ordens de Servico: OS', 'OS')
         const cliente = getCol(r, 'Cliente')
         const email = getCol(r, 'E-mail do Cliente', 'Email do Cliente')
@@ -103,7 +108,6 @@ export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
         const loja = getCol(r, 'Nome da conta')
         if (!os && !cliente) return null
         return {
-          id: `${os || 'r'}-${i}`,
           os,
           cliente,
           email: email || null,
@@ -115,11 +119,11 @@ export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
           loja: loja || null,
           isFiel: cliente ? fieisNames.has(normName(cliente)) : false,
         }
-      }).filter(Boolean) as ReenvioRow[]
+      }).filter(Boolean) as ImportRow[]
 
       if (!mapped.length) { setError('Não foi possível reconhecer as colunas esperadas na planilha.'); setLoading(false); return }
 
-      setRows(mapped)
+      await onImport(mapped)
       setFileName(file.name)
       setSelected(new Set())
     } catch (err) {
@@ -128,7 +132,7 @@ export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
     } finally {
       setLoading(false)
     }
-  }, [fieisNames])
+  }, [fieisNames, onImport])
 
   const filtered = useMemo(() => rows.filter((r) => {
     if (onlyFieis && !r.isFiel) return false
@@ -287,19 +291,30 @@ export function TsiReenvioView({ fieis }: TsiReenvioViewProps) {
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioEmail || '—'}</td>
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioSms || '—'}</td>
                           <td className="px-3.5 py-2.5">
-                            <div className="flex gap-1.5">
+                            <div className="flex gap-1.5 items-center">
                               {wa && (
                                 <a href={wa} target="_blank" rel="noopener noreferrer" title="Reenviar via WhatsApp"
+                                  onClick={() => onContatado(r.id, 'whatsapp')}
                                   className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#2fd67526', color: '#2fd675' }}>
                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/></svg>
                                 </a>
                               )}
                               {r.email && (
                                 <a href={`mailto:${r.email}`} title="Reenviar via e-mail"
+                                  onClick={() => onContatado(r.id, 'email')}
                                   className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#4c8dff26', color: '#4c8dff' }}>
                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
                                 </a>
                               )}
+                              {r.contatado && (
+                                <span title={`Contatado via ${r.contatado_canal || ''}`} className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#f5a62326', color: '#f5a623' }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                </span>
+                              )}
+                              <button onClick={() => onDelete(r.id)} title="Remover registro"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer border-0" style={{ background: '#ff5a5f1a', color: '#ff5a5f' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+                              </button>
                             </div>
                           </td>
                         </tr>

@@ -43,6 +43,7 @@ export interface ClienteFiel {
 
 export interface ReenvioRow {
   id: string
+  user_id?: string
   os: string
   cliente: string
   email: string | null
@@ -53,6 +54,10 @@ export interface ReenvioRow {
   dataReenvio: string | null
   loja: string | null
   isFiel: boolean
+  contatado?: boolean
+  contatado_em?: string | null
+  contatado_canal?: string | null
+  importado_em?: string
 }
 
 export interface UserSettings {

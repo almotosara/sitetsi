@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Lead, TsiRow, ClienteFiel } from '@/lib/types'
+import type { Lead, TsiRow, ClienteFiel, ReenvioRow } from '@/lib/types'
 
 // ID fixo do usuário (single-user)
 const USER_ID = '00000000-0000-0000-0000-000000000001'
@@ -158,6 +158,81 @@ export async function updateProfile(display_name: string | null, avatar_url: str
   const { error } = await supabase
     .from('user_settings')
     .upsert({ user_id: USER_ID, display_name, avatar_url })
+  if (error) throw error
+  revalidatePath('/')
+}
+// ─── REENVIO DE PESQUISAS ─────────────────────────────────────────────────────
+
+function rowFromDb(r: any): ReenvioRow {
+  return {
+    id: r.id,
+    os: r.os || '',
+    cliente: r.cliente,
+    email: r.email,
+    celular: r.celular,
+    veiculo: r.veiculo,
+    dataEnvioEmail: r.data_envio_email,
+    dataEnvioSms: r.data_envio_sms,
+    dataReenvio: r.data_reenvio,
+    loja: r.loja,
+    isFiel: r.is_fiel,
+    contatado: r.contatado,
+    contatado_em: r.contatado_em,
+    contatado_canal: r.contatado_canal,
+    importado_em: r.importado_em,
+  }
+}
+
+export async function getReenvioData(): Promise<ReenvioRow[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('reenvio_data')
+    .select('*')
+    .eq('user_id', USER_ID)
+    .order('importado_em', { ascending: false })
+  if (error) throw error
+  return (data || []).map(rowFromDb)
+}
+
+export async function replaceReenvioData(rows: Omit<ReenvioRow, 'id' | 'user_id' | 'importado_em' | 'contatado' | 'contatado_em' | 'contatado_canal'>[]) {
+  const supabase = await createClient()
+  await supabase.from('reenvio_data').delete().eq('user_id', USER_ID)
+  if (rows.length === 0) { revalidatePath('/'); return [] }
+  const { data, error } = await supabase
+    .from('reenvio_data')
+    .insert(rows.map((r) => ({
+      user_id: USER_ID,
+      os: r.os,
+      cliente: r.cliente,
+      email: r.email,
+      celular: r.celular,
+      veiculo: r.veiculo,
+      data_envio_email: r.dataEnvioEmail,
+      data_envio_sms: r.dataEnvioSms,
+      data_reenvio: r.dataReenvio,
+      loja: r.loja,
+      is_fiel: r.isFiel,
+    })))
+    .select('*')
+  if (error) throw error
+  revalidatePath('/')
+  return (data || []).map(rowFromDb)
+}
+
+export async function markReenvioContatado(id: string, canal: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('reenvio_data')
+    .update({ contatado: true, contatado_em: new Date().toISOString(), contatado_canal: canal })
+    .eq('id', id)
+    .eq('user_id', USER_ID)
+  if (error) throw error
+  revalidatePath('/')
+}
+
+export async function deleteReenvioRow(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('reenvio_data').delete().eq('id', id).eq('user_id', USER_ID)
   if (error) throw error
   revalidatePath('/')
 }

@@ -7,12 +7,13 @@ import { ThemeProvider } from '@/components/theme-provider'
 // Tenta carregar dados do Supabase se disponível
 async function loadData() {
   try {
-    const { getLeads, getTsiData, getClientesFieis, getSettings } = await import('@/app/actions')
-    const [leads, tsiData, fieis, settings] = await Promise.all([
+    const { getLeads, getTsiData, getClientesFieis, getSettings, getReenvioData } = await import('@/app/actions')
+    const [leads, tsiData, fieis, settings, reenvio] = await Promise.all([
       getLeads().catch((e) => { console.warn('[Supabase] getLeads falhou:', e.message); return [] }),
       getTsiData().catch((e) => { console.warn('[Supabase] getTsiData falhou:', e.message); return [] }),
       getClientesFieis().catch((e) => { console.warn('[Supabase] getClientesFieis falhou:', e.message); return [] }),
       getSettings().catch((e) => { console.warn('[Supabase] getSettings falhou:', e.message); return null }),
+      getReenvioData().catch((e) => { console.warn('[Supabase] getReenvioData falhou:', e.message); return [] }),
     ])
     return {
       leads: leads || [],
@@ -22,9 +23,10 @@ async function loadData() {
       tsiUpdatedAt: settings?.tsi_updated_at ?? null,
       displayName: settings?.display_name ?? null,
       avatarUrl: settings?.avatar_url ?? null,
+      reenvio: reenvio || [],
     }
   } catch {
-    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null }
+    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null, reenvio: [] }
   }
 }
 
@@ -32,7 +34,7 @@ export default async function Page() {
   const session = await getSession()
   if (!session) redirect('/auth/login')
 
-  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl } = await loadData()
+  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl, reenvio } = await loadData()
 
   return (
     <ThemeProvider>
@@ -47,6 +49,7 @@ export default async function Page() {
           initialTsiUpdatedAt={tsiUpdatedAt}
           initialDisplayName={displayName}
           initialAvatarUrl={avatarUrl}
+          initialReenvio={reenvio}
         />
       </ToastProvider>
     </ThemeProvider>
