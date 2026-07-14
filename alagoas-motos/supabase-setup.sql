@@ -136,6 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_reenvio_user ON reenvio_data(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_criado ON leads(criado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_tsi_user ON tsi_data(user_id);
+CREATE INDEX IF NOT EXISTS idx_tsi_importado ON tsi_data(importado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_tsi_historico_user ON tsi_historico_mensal(user_id);
 CREATE INDEX IF NOT EXISTS idx_fieis_user ON clientes_fieis(user_id);
 

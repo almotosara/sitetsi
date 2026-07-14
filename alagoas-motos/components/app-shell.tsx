@@ -1,17 +1,11 @@
 'use client'
 
 import { useState, useTransition, useRef, useCallback, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import type { Lead, TsiRow, ClienteFiel, ReenvioRow, LeadOrigem, LeadStatus } from '@/lib/types'
 import { TSI_STORE_MAP } from '@/lib/constants'
 import { Sidebar } from './sidebar'
 import { LeadModal } from './lead-modal'
-import { DashView } from './views/dash-view'
-import { LeadsView } from './views/leads-view'
-import { ReportView } from './views/report-view'
-import { TsiView } from './views/tsi-view'
-import { TsiListView } from './views/tsi-list-view'
-import { FieisView } from './views/fieis-view'
-import { TsiReenvioView } from './views/tsi-reenvio-view'
 import { useToast } from './toast'
 import {
   createLead, updateLead, deleteLead,
@@ -20,6 +14,24 @@ import {
   bulkCreateLeads,
   replaceReenvioData, markReenvioContatado, deleteReenvioRow,
 } from '@/app/actions'
+
+// ─── Views carregadas sob demanda (code-splitting): só baixa o JS da aba que o usuário abre ───
+function ViewSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 animate-pulse">
+      <div className="h-7 w-56 rounded-lg" style={{ background: 'var(--bg-panel-2)' }} />
+      <div className="h-40 rounded-2xl" style={{ background: 'var(--bg-panel-2)' }} />
+      <div className="h-40 rounded-2xl" style={{ background: 'var(--bg-panel-2)' }} />
+    </div>
+  )
+}
+const DashView = dynamic(() => import('./views/dash-view').then((m) => m.DashView), { loading: ViewSkeleton, ssr: false })
+const LeadsView = dynamic(() => import('./views/leads-view').then((m) => m.LeadsView), { loading: ViewSkeleton, ssr: false })
+const ReportView = dynamic(() => import('./views/report-view').then((m) => m.ReportView), { loading: ViewSkeleton, ssr: false })
+const TsiView = dynamic(() => import('./views/tsi-view').then((m) => m.TsiView), { loading: ViewSkeleton, ssr: false })
+const TsiListView = dynamic(() => import('./views/tsi-list-view').then((m) => m.TsiListView), { loading: ViewSkeleton, ssr: false })
+const FieisView = dynamic(() => import('./views/fieis-view').then((m) => m.FieisView), { loading: ViewSkeleton, ssr: false })
+const TsiReenvioView = dynamic(() => import('./views/tsi-reenvio-view').then((m) => m.TsiReenvioView), { loading: ViewSkeleton, ssr: false })
 
 type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis' | 'reenvio'
 

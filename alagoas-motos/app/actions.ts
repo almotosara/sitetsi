@@ -49,7 +49,7 @@ export async function updateLead(
   const supabase = await createClient()
   const { error } = await supabase
     .from('leads')
-    .update(lead)
+    .update({ ...lead, atualizado_em: new Date().toISOString() })
     .eq('id', id)
   if (error) throw error
   revalidatePath('/')
