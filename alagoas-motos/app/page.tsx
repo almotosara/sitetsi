@@ -1,20 +1,19 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { AppShell } from '@/components/app-shell'
+import { OficinaShell } from '@/components/oficina-shell'
 import { ToastProvider } from '@/components/toast'
 import { ThemeProvider } from '@/components/theme-provider'
 
 // Tenta carregar dados do Supabase se disponível
 async function loadData() {
   try {
-    const { getLeads, getTsiData, getClientesFieis, getSettings, getReenvioData, getTsiHistoricoMensal } = await import('@/app/actions')
-    const [leads, tsiData, fieis, settings, reenvio, tsiHistorico] = await Promise.all([
+    const { getLeads, getTsiData, getClientesFieis, getSettings } = await import('@/app/actions')
+    const [leads, tsiData, fieis, settings] = await Promise.all([
       getLeads().catch((e) => { console.warn('[Supabase] getLeads falhou:', e.message); return [] }),
       getTsiData().catch((e) => { console.warn('[Supabase] getTsiData falhou:', e.message); return [] }),
       getClientesFieis().catch((e) => { console.warn('[Supabase] getClientesFieis falhou:', e.message); return [] }),
       getSettings().catch((e) => { console.warn('[Supabase] getSettings falhou:', e.message); return null }),
-      getReenvioData().catch((e) => { console.warn('[Supabase] getReenvioData falhou:', e.message); return [] }),
-      getTsiHistoricoMensal().catch((e) => { console.warn('[Supabase] getTsiHistoricoMensal falhou:', e.message); return [] }),
     ])
     return {
       leads: leads || [],
@@ -24,11 +23,9 @@ async function loadData() {
       tsiUpdatedAt: settings?.tsi_updated_at ?? null,
       displayName: settings?.display_name ?? null,
       avatarUrl: settings?.avatar_url ?? null,
-      reenvio: reenvio || [],
-      tsiHistorico: tsiHistorico || [],
     }
   } catch {
-    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null, reenvio: [], tsiHistorico: [] }
+    return { leads: [], tsiData: [], fieis: [], goal: 150, tsiUpdatedAt: null, displayName: null, avatarUrl: null }
   }
 }
 
@@ -36,7 +33,17 @@ export default async function Page() {
   const session = await getSession()
   if (!session) redirect('/auth/login')
 
-  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl, reenvio, tsiHistorico } = await loadData()
+  if (session.role === 'oficina') {
+    return (
+      <ThemeProvider>
+        <ToastProvider>
+          <OficinaShell userName={session.name} userEmail={session.email} />
+        </ToastProvider>
+      </ThemeProvider>
+    )
+  }
+
+  const { leads, tsiData, fieis, goal, tsiUpdatedAt, displayName, avatarUrl } = await loadData()
 
   return (
     <ThemeProvider>
@@ -51,8 +58,6 @@ export default async function Page() {
           initialTsiUpdatedAt={tsiUpdatedAt}
           initialDisplayName={displayName}
           initialAvatarUrl={avatarUrl}
-          initialReenvio={reenvio}
-          initialTsiHistorico={tsiHistorico}
         />
       </ToastProvider>
     </ThemeProvider>

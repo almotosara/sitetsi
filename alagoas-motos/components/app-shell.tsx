@@ -1,39 +1,25 @@
 'use client'
 
 import { useState, useTransition, useRef, useCallback, useMemo } from 'react'
-import dynamic from 'next/dynamic'
-import type { Lead, TsiRow, ClienteFiel, ReenvioRow, LeadOrigem, LeadStatus } from '@/lib/types'
+import type { Lead, TsiRow, ClienteFiel, LeadOrigem, LeadStatus } from '@/lib/types'
 import { TSI_STORE_MAP } from '@/lib/constants'
 import { Sidebar } from './sidebar'
 import { LeadModal } from './lead-modal'
+import { DashView } from './views/dash-view'
+import { LeadsView } from './views/leads-view'
+import { ReportView } from './views/report-view'
+import { TsiView } from './views/tsi-view'
+import { TsiListView } from './views/tsi-list-view'
+import { FieisView } from './views/fieis-view'
 import { useToast } from './toast'
 import {
   createLead, updateLead, deleteLead,
   replaceTsiData, upsertSettings, updateProfile,
   createClienteFiel, updateClienteFiel, deleteClienteFiel,
   bulkCreateLeads,
-  replaceReenvioData, markReenvioContatado, deleteReenvioRow,
 } from '@/app/actions'
 
-// ─── Views carregadas sob demanda (code-splitting): só baixa o JS da aba que o usuário abre ───
-function ViewSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 animate-pulse">
-      <div className="h-7 w-56 rounded-lg" style={{ background: 'var(--bg-panel-2)' }} />
-      <div className="h-40 rounded-2xl" style={{ background: 'var(--bg-panel-2)' }} />
-      <div className="h-40 rounded-2xl" style={{ background: 'var(--bg-panel-2)' }} />
-    </div>
-  )
-}
-const DashView = dynamic(() => import('./views/dash-view').then((m) => m.DashView), { loading: ViewSkeleton, ssr: false })
-const LeadsView = dynamic(() => import('./views/leads-view').then((m) => m.LeadsView), { loading: ViewSkeleton, ssr: false })
-const ReportView = dynamic(() => import('./views/report-view').then((m) => m.ReportView), { loading: ViewSkeleton, ssr: false })
-const TsiView = dynamic(() => import('./views/tsi-view').then((m) => m.TsiView), { loading: ViewSkeleton, ssr: false })
-const TsiListView = dynamic(() => import('./views/tsi-list-view').then((m) => m.TsiListView), { loading: ViewSkeleton, ssr: false })
-const FieisView = dynamic(() => import('./views/fieis-view').then((m) => m.FieisView), { loading: ViewSkeleton, ssr: false })
-const TsiReenvioView = dynamic(() => import('./views/tsi-reenvio-view').then((m) => m.TsiReenvioView), { loading: ViewSkeleton, ssr: false })
-
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis' | 'reenvio'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis'
 
 const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   dash:    { title: 'Painel de Leads', sub: 'Visão geral do mês' },
@@ -42,7 +28,6 @@ const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   tsi:     { title: 'TSI — Top2Box', sub: 'Metas e indicadores' },
   tsilist: { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
   fieis:   { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
-  reenvio: { title: 'Reenvio de Pesquisas', sub: 'Anexe a lista e filtre clientes fiéis' },
 }
 
 // ID fixo do usuário (single-user)
@@ -104,13 +89,11 @@ interface AppShellProps {
   initialTsiUpdatedAt: string | null
   initialDisplayName?: string | null
   initialAvatarUrl?: string | null
-  initialReenvio?: ReenvioRow[]
-  initialTsiHistorico?: { mes: string; label: string; avg_t2b: number }[]
 }
 
 export function AppShell({
   userName, userEmail, initialLeads, initialTsi, initialFieis, initialGoal, initialTsiUpdatedAt,
-  initialDisplayName, initialAvatarUrl, initialReenvio, initialTsiHistorico,
+  initialDisplayName, initialAvatarUrl,
 }: AppShellProps) {
   const [view, setView] = useState<View>('dash')
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
@@ -120,8 +103,6 @@ export function AppShell({
   const [tsiUpdatedAt, setTsiUpdatedAt] = useState(initialTsiUpdatedAt)
   const [displayName, setDisplayName] = useState(initialDisplayName || '')
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl || '')
-  const [reenvio, setReenvio] = useState<ReenvioRow[]>(initialReenvio || [])
-  const [tsiHistorico] = useState(initialTsiHistorico || [])
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Lead | null>(null)
   const [, startTrans] = useTransition()
@@ -307,35 +288,6 @@ export function AppShell({
       toast('Cliente removido.')
     } catch {
       toast('Erro ao remover cliente.', true)
-    }
-  }, [toast])
-
-  // ─── Reenvio de Pesquisas (server-side) ──────────────────────────────────────
-  const handleReenvioImport = useCallback(async (rows: Omit<ReenvioRow, 'id' | 'user_id' | 'importado_em' | 'contatado' | 'contatado_em' | 'contatado_canal'>[]) => {
-    try {
-      const saved = await replaceReenvioData(rows)
-      setReenvio(saved)
-      toast('Planilha importada e salva.')
-    } catch {
-      toast('Erro ao salvar planilha.', true)
-    }
-  }, [toast])
-
-  const handleReenvioContatado = useCallback(async (id: string, canal: string) => {
-    setReenvio((prev) => prev.map((r) => r.id === id ? { ...r, contatado: true, contatado_em: new Date().toISOString(), contatado_canal: canal } : r))
-    try {
-      await markReenvioContatado(id, canal)
-    } catch {
-      toast('Erro ao marcar contato.', true)
-    }
-  }, [toast])
-
-  const handleReenvioDelete = useCallback(async (id: string) => {
-    setReenvio((prev) => prev.filter((r) => r.id !== id))
-    try {
-      await deleteReenvioRow(id)
-    } catch {
-      toast('Erro ao remover registro.', true)
     }
   }, [toast])
 
@@ -573,19 +525,10 @@ export function AppShell({
               onNew={() => { setEditing(null); setModalOpen(true) }} />
           )}
           {view === 'report' && <ReportView leads={leads} />}
-          {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} tsiHistorico={tsiHistorico} />}
+          {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}
           {view === 'tsilist' && <TsiListView tsiData={tsiData} onImport={handleTsiImport} />}
           {view === 'fieis' && (
             <FieisView fieis={fieis} onAdd={handleAddFiel} onEdit={handleEditFiel} onDelete={handleDeleteFiel} />
-          )}
-          {view === 'reenvio' && (
-            <TsiReenvioView
-              fieis={fieis}
-              rows={reenvio}
-              onImport={handleReenvioImport}
-              onContatado={handleReenvioContatado}
-              onDelete={handleReenvioDelete}
-            />
           )}
         </div>
       </div>

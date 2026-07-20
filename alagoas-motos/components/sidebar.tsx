@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useTheme } from './theme-provider'
 import { SettingsModal } from './settings-modal'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis' | 'reenvio'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis'
 
 interface SidebarProps {
   view: View
@@ -49,7 +49,6 @@ const NAV_ITEMS: NavItemDef[] = [
       { id: 'tsi', label: 'Metas', icon: <IconTarget /> },
       { id: 'tsilist', label: 'Pesquisas', icon: <IconCheck /> },
       { id: 'fieis', label: 'Clientes Fiéis', icon: <IconHeart /> },
-      { id: 'reenvio', label: 'Reenvio de Pesquisas', icon: <IconResend /> },
     ],
   },
 ]
@@ -66,7 +65,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     if (view === 'leads' || view === 'report') init['leads'] = true
-    if (['tsi', 'tsilist', 'fieis', 'reenvio'].includes(view)) init['tsi'] = true
+    if (['tsi', 'tsilist', 'fieis'].includes(view)) init['tsi'] = true
     return init
   })
 
@@ -451,9 +450,6 @@ function IconCheck() {
 }
 function IconHeart() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-}
-function IconResend() {
-  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
 }
 function IconMoon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>

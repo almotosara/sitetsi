@@ -47,12 +47,7 @@ export function ReportView({ leads }: ReportViewProps) {
 
   const byDay = useMemo(() => {
     const m: Record<string, number> = {}
-    filtered.forEach((l) => {
-      if (l.status === 'Convertido' && l.atualizado_em) {
-        const day = l.atualizado_em.slice(0, 10) // YYYY-MM-DD, dia em que o status virou "Convertido"
-        m[day] = (m[day] || 0) + 1
-      }
-    })
+    filtered.forEach((l) => { if (l.data && l.status === 'Convertido') m[l.data] = (m[l.data] || 0) + 1 })
     return Object.entries(m).sort(([a], [b]) => a.localeCompare(b))
   }, [filtered])
 

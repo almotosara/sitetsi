@@ -41,23 +41,18 @@ export interface ClienteFiel {
   criado_em: string
 }
 
-export interface ReenvioRow {
+export interface TsiResendRow {
   id: string
-  user_id?: string
+  user_id: string
   os: string
-  cliente: string
+  cliente: string | null
+  veiculo: string | null
   email: string | null
   celular: string | null
-  veiculo: string | null
-  dataEnvioEmail: string | null
-  dataEnvioSms: string | null
-  dataReenvio: string | null
-  loja: string | null
-  isFiel: boolean
-  contatado?: boolean
-  contatado_em?: string | null
-  contatado_canal?: string | null
-  importado_em?: string
+  data_envio_email: string | null
+  data_envio_sms: string | null
+  data_reenvio: string | null
+  importado_em: string
 }
 
 export interface UserSettings {

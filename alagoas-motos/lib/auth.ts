@@ -1,20 +1,49 @@
 import { cookies } from 'next/headers'
 
-// Credenciais fixas do sistema
-const VALID_EMAIL = 'consultor@alagoasmotos.com'
-const VALID_PASSWORD = 'Consul@01'
+export type Role = 'consultor' | 'oficina'
+
+interface Account {
+  email: string
+  password: string
+  name: string
+  role: Role
+  userId: string
+}
+
+// Contas fixas do sistema
+const ACCOUNTS: Account[] = [
+  {
+    email: 'consultor@alagoasmotos.com',
+    password: 'Consul@01',
+    name: 'Consultor',
+    role: 'consultor',
+    userId: '00000000-0000-0000-0000-000000000001',
+  },
+  {
+    email: 'oficina@alagoasmotos.com',
+    password: 'Oficina@01',
+    name: 'Oficina',
+    role: 'oficina',
+    userId: '00000000-0000-0000-0000-000000000002',
+  },
+]
+
 const SESSION_COOKIE = 'am_session'
 const SESSION_SECRET = 'alagoas-motos-secret-2024'
 
 // Gera token simples de sessão
 function hashToken(email: string): string {
   const data = `${email}:${SESSION_SECRET}`
-  // Hash simples base64 (suficiente para app single-user)
   return Buffer.from(data).toString('base64url')
 }
 
+function findAccount(email: string): Account | undefined {
+  return ACCOUNTS.find((a) => a.email.toLowerCase() === email.toLowerCase())
+}
+
 export function validateCredentials(email: string, password: string): boolean {
-  return email === VALID_EMAIL && password === VALID_PASSWORD
+  const acc = findAccount(email)
+  return !!acc && acc.password === password
 }
 
 export function createSession(email: string) {
@@ -34,12 +63,15 @@ export async function getSession() {
   const cookieStore = await cookies()
   const token = cookieStore.get(SESSION_COOKIE)?.value
   if (!token) return null
-  const expected = hashToken(VALID_EMAIL)
-  if (token !== expected) return null
+
+  const acc = ACCOUNTS.find((a) => hashToken(a.email) === token)
+  if (!acc) return null
+
   return {
-    email: VALID_EMAIL,
-    name: 'Consultor',
-    id: '00000000-0000-0000-0000-000000000001',
+    email: acc.email,
+    name: acc.name,
+    id: acc.userId,
+    role: acc.role,
   }
 }
 
