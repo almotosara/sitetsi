@@ -42,14 +42,14 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
 
   const R = 70; const ARC = Math.PI * R
   const filled = (pct / 100) * ARC
-  const gColor = pct >= 100 ? '#2fd675' : pct >= 70 ? '#ffc400' : '#ff4b2b'
+  const gColor = pct >= 100 ? '#2fd675' : pct >= 70 ? '#ffc400' : '#0f7a5a'
 
   return (
     <div className="view-enter flex flex-col gap-5">
       {/* Stats row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <StatCard label="Total do mês" value={total} color="#ff4b2b" sub={MONTH_NAME}
-          glowHSL="12 100 55" colors={['#ff4b2b', '#ff7849', '#ff9a76']} />
+        <StatCard label="Total do mês" value={total} color="#0f7a5a" sub={MONTH_NAME}
+          glowHSL="12 100 55" colors={['#0f7a5a', '#22c55e', '#7ed6b1']} />
         <StatCard label="Bot WhatsApp" value={byOrigem['Bot WhatsApp'] || 0} color="#b083ff" sub="leads via WhatsApp"
           glowHSL="270 100 75" colors={['#b083ff', '#c9a0ff', '#7c5ce0']} />
         <StatCard label="Website" value={byOrigem['Website'] || 0} color="#4c8dff" sub="leads via site"
@@ -66,7 +66,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
           glowRadius={30}
           glowIntensity={0.8}
           glowColor="12 100 60"
-          colors={['#ff4b2b', '#ffc400', '#ff7849']}
+          colors={['#0f7a5a', '#ffc400', '#22c55e']}
           animated
         >
           <div className="p-5">
@@ -103,8 +103,8 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
           borderRadius={16}
           glowRadius={30}
           glowIntensity={0.8}
-          glowColor={pct >= 100 ? '145 70 50' : pct >= 70 ? '45 100 60' : '12 100 55'}
-          colors={pct >= 100 ? ['#2fd675', '#5ce89a', '#1ab855'] : pct >= 70 ? ['#ffc400', '#ffd54f', '#e6b000'] : ['#ff4b2b', '#ff7849', '#d63a1e']}
+          glowColor={pct >= 100 ? '145 70 50' : pct >= 70 ? '45 100 60' : '155 65 30'}
+          colors={pct >= 100 ? ['#2fd675', '#5ce89a', '#1ab855'] : pct >= 70 ? ['#ffc400', '#ffd54f', '#e6b000'] : ['#0f7a5a', '#22c55e', '#065f46']}
           animated
         >
           <div className="p-5 flex flex-col items-center">
@@ -131,7 +131,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
                   border: '1px solid var(--border-line)',
                   color: 'var(--text-primary)',
                 }}
-                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#ff4b2b' }}
+                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#0f7a5a' }}
                 onBlur={(e) => { (e.target as HTMLElement).style.borderColor = 'var(--border-line)' }}
               />
             </div>
@@ -145,7 +145,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
         glowRadius={30}
         glowIntensity={0.8}
         glowColor="218 100 65"
-        colors={['#ff4b2b', '#b083ff', '#4c8dff']}
+        colors={['#0f7a5a', '#b083ff', '#4c8dff']}
         animated
         fillOpacity={0.35}
       >
@@ -166,7 +166,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
             <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
               <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
               <p className="text-sm">Nenhum lead cadastrado ainda</p>
-              <button onClick={onNewLead} className="mt-3 flex items-center gap-1.5 text-xs text-[#ff4b2b] hover:underline cursor-pointer">
+              <button onClick={onNewLead} className="mt-3 flex items-center gap-1.5 text-xs text-[#0f7a5a] hover:underline cursor-pointer">
                 Cadastrar primeiro lead
               </button>
             </div>

@@ -102,8 +102,8 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                 onClick={() => setTab(t.id)}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] text-[13.5px] font-semibold cursor-pointer transition-colors text-left"
                 style={{
-                  background: tab === t.id ? '#ff4b2b1f' : 'transparent',
-                  color: tab === t.id ? '#ff4b2b' : 'var(--text-dim)',
+                  background: tab === t.id ? '#0f7a5a1f' : 'transparent',
+                  color: tab === t.id ? '#0f7a5a' : 'var(--text-dim)',
                 }}
               >
                 {t.icon}
@@ -123,7 +123,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                     className="relative rounded-full flex items-center justify-center font-bold text-white cursor-pointer group"
                     style={{
                       width: 60, height: 60, fontSize: 22, flexShrink: 0,
-                      background: avatarDraft ? undefined : 'linear-gradient(135deg, #ff4b2b, #d63a1e)',
+                      background: avatarDraft ? undefined : 'linear-gradient(135deg, #0f7a5a, #065f46)',
                       backgroundImage: avatarDraft ? `url(${avatarDraft})` : undefined,
                       backgroundSize: 'cover', backgroundPosition: 'center',
                       border: '1px solid var(--border-line-soft)',
@@ -147,7 +147,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="text-[11.5px] font-semibold cursor-pointer mt-1"
-                      style={{ color: '#ff4b2b' }}
+                      style={{ color: '#0f7a5a' }}
                     >
                       Alterar foto
                     </button>
@@ -254,14 +254,14 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                         onClick={() => { if (theme !== t) toggle() }}
                         className="flex-1 flex flex-col items-center gap-2 rounded-[12px] border py-4 cursor-pointer transition-all"
                         style={{
-                          borderColor: sel ? '#ff4b2b' : 'var(--border-line)',
-                          background: sel ? '#ff4b2b14' : 'var(--bg-input)',
+                          borderColor: sel ? '#0f7a5a' : 'var(--border-line)',
+                          background: sel ? '#0f7a5a14' : 'var(--bg-input)',
                         }}
                       >
-                        <div style={{ color: sel ? '#ff4b2b' : 'var(--text-dim)' }}>
+                        <div style={{ color: sel ? '#0f7a5a' : 'var(--text-dim)' }}>
                           {t === 'dark' ? <IconMoonLg /> : <IconSunLg />}
                         </div>
-                        <span className="text-[13px] font-semibold" style={{ color: sel ? '#ff4b2b' : 'var(--text-dim)' }}>
+                        <span className="text-[13px] font-semibold" style={{ color: sel ? '#0f7a5a' : 'var(--text-dim)' }}>
                           {t === 'dark' ? 'Escuro' : 'Claro'}
                         </span>
                       </button>
@@ -298,13 +298,13 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           padding: 9px 12px; border-radius: 9px; font-size: 13.5px; outline: none; width: 100%;
           font-family: inherit; transition: border-color 0.12s, box-shadow 0.12s;
         }
-        .settings-inp:focus { border-color: #ff4b2b; box-shadow: 0 0 0 3px #ff4b2b33; }
+        .settings-inp:focus { border-color: #0f7a5a; box-shadow: 0 0 0 3px #0f7a5a33; }
         .settings-btn-primary {
           display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 16px; border-radius: 9px; border: 1px solid #ff4b2b;
-          background: linear-gradient(135deg, #ff4b2b, #d63a1e); color: #fff;
+          padding: 8px 16px; border-radius: 9px; border: 1px solid #0f7a5a;
+          background: linear-gradient(135deg, #0f7a5a, #065f46); color: #fff;
           font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #ff4b2b70; font-family: inherit;
+          box-shadow: 0 6px 16px -6px #0f7a5a70; font-family: inherit;
         }
         .settings-btn-primary:hover { filter: brightness(1.08); }
       `}</style>

@@ -40,7 +40,7 @@ export default function LoginPage() {
     <div
       className="min-h-screen flex items-center justify-center transition-colors duration-300"
       style={{
-        background: 'radial-gradient(1100px 600px at 85% -10%, #ff4b2b14, transparent 60%), radial-gradient(900px 500px at -10% 110%, #ffc40010, transparent 55%), var(--bg-main, #101215)',
+        background: 'radial-gradient(1100px 600px at 85% -10%, #0f7a5a14, transparent 60%), radial-gradient(900px 500px at -10% 110%, #ffc40010, transparent 55%), var(--bg-main, #101215)',
       }}
     >
       <div
@@ -96,7 +96,7 @@ export default function LoginPage() {
               placeholder="seu@email.com"
               required
               autoComplete="email"
-              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[#ff4b2b50]"
+              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0f7a5a50]"
               style={{
                 background: 'var(--bg-input, #20242a)',
                 borderColor: error ? '#ff5a5f' : 'var(--border-line, #31363d)',
@@ -122,7 +122,7 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
               autoComplete="current-password"
-              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[#ff4b2b50]"
+              className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0f7a5a50]"
               style={{
                 background: 'var(--bg-input, #20242a)',
                 borderColor: error ? '#ff5a5f' : 'var(--border-line, #31363d)',
@@ -141,9 +141,9 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 rounded-xl text-white font-semibold text-[15px] py-3.5 px-5 transition-all hover:-translate-y-px cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)',
+              background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
               fontFamily: 'Inter, sans-serif',
-              boxShadow: '0 6px 20px -6px #ff4b2b60',
+              boxShadow: '0 6px 20px -6px #0f7a5a60',
             }}
           >
             {loading ? (

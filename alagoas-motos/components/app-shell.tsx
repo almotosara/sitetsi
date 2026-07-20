@@ -472,9 +472,9 @@ export function AppShell({
             <button onClick={handleTsiImport}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
               style={{
-                background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)',
-                borderColor: '#ff4b2b',
-                boxShadow: '0 6px 16px -6px #ff4b2b70',
+                background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
+                borderColor: '#0f7a5a',
+                boxShadow: '0 6px 16px -6px #0f7a5a70',
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -498,9 +498,9 @@ export function AppShell({
               <button onClick={() => { setEditing(null); setModalOpen(true) }}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
                 style={{
-                  background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)',
-                  borderColor: '#ff4b2b',
-                  boxShadow: '0 6px 16px -6px #ff4b2b70',
+                  background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
+                  borderColor: '#0f7a5a',
+                  boxShadow: '0 6px 16px -6px #0f7a5a70',
                 }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>

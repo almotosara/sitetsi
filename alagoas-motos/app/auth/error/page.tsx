@@ -21,7 +21,7 @@ export default function AuthErrorPage() {
         </div>
         <Link
           href="/auth/login"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#ff4b2b] text-white font-semibold text-sm hover:brightness-110 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0f7a5a] text-white font-semibold text-sm hover:brightness-110 transition-all"
         >
           Voltar para o login
         </Link>

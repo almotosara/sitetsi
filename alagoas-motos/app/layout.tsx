@@ -20,14 +20,14 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#101215',
+  themeColor: '#f5f6f2',
 }
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`} data-theme="dark" suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`} data-theme="light" suppressHydrationWarning>
       <body className="antialiased font-sans" style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
         {children}
       </body>

@@ -21,9 +21,9 @@ const GHOST_BTN: React.CSSProperties = {
 }
 const PRIMARY_BTN: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 9,
-  border: '1px solid #ff4b2b', background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)', color: '#fff',
+  border: '1px solid #0f7a5a', background: 'linear-gradient(135deg, #0f7a5a, #065f46)', color: '#fff',
   fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-  boxShadow: '0 6px 16px -6px #ff4b2b70',
+  boxShadow: '0 6px 16px -6px #0f7a5a70',
 }
 
 export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
@@ -72,7 +72,7 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{fieis.length} clientes cadastrados</p>
         </div>
         <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)', border: '1px solid #ff4b2b', boxShadow: '0 6px 16px -6px #ff4b2b70' }}>
+          style={{ background: 'linear-gradient(135deg, #0f7a5a, #065f46)', border: '1px solid #0f7a5a', boxShadow: '0 6px 16px -6px #0f7a5a70' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           Adicionar cliente
         </button>
@@ -99,7 +99,7 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-panel-2)' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-none"
-                style={{ background: '#ff4b2b26', color: '#ff4b2b' }}>
+                style={{ background: '#0f7a5a26', color: '#0f7a5a' }}>
                 {f.nome.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">

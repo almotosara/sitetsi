@@ -177,7 +177,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           padding: 10px 12px; border-radius: 9px; font-size: 14px; outline: none; width: 100%;
           transition: border-color 0.12s, box-shadow 0.12s; font-family: inherit;
         }
-        .inp:focus { border-color: #ff4b2b; box-shadow: 0 0 0 3px #ff4b2b33; }
+        .inp:focus { border-color: #0f7a5a; box-shadow: 0 0 0 3px #0f7a5a33; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .btn-ghost-sm {
           display: inline-flex; align-items: center; gap: 7px;
@@ -188,10 +188,10 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
         .btn-ghost-sm:hover { background: var(--bg-elevated); }
         .btn-primary-sm {
           display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 14px; border-radius: 9px; border: 1px solid #ff4b2b;
-          background: linear-gradient(135deg, #ff4b2b, #d63a1e); color: #fff;
+          padding: 8px 14px; border-radius: 9px; border: 1px solid #0f7a5a;
+          background: linear-gradient(135deg, #0f7a5a, #065f46); color: #fff;
           font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #ff4b2b70; font-family: inherit;
+          box-shadow: 0 6px 16px -6px #0f7a5a70; font-family: inherit;
         }
         .btn-primary-sm:hover:not(:disabled) { filter: brightness(1.08); }
         .btn-primary-sm:disabled { opacity: 0.45; cursor: not-allowed; }

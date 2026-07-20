@@ -95,7 +95,7 @@ function Highlight({ text, term }: { text: string; term: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: '#ff4b2b3a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
+      <mark style={{ background: '#0f7a5a3a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
         {text.slice(idx, idx + t.length)}
       </mark>
       {text.slice(idx + t.length)}
@@ -217,7 +217,7 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
 
             {selectedModelo && revisaoAtual && (
               <div className="flex flex-col gap-4">
-                <button onClick={() => setSelectedModelo(null)} className="self-start text-[12.5px] font-semibold cursor-pointer" style={{ color: '#ff4b2b' }}>
+                <button onClick={() => setSelectedModelo(null)} className="self-start text-[12.5px] font-semibold cursor-pointer" style={{ color: '#0f7a5a' }}>
                   ← Voltar aos modelos
                 </button>
                 <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 19, fontWeight: 700 }}>
@@ -230,9 +230,9 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
                     <button key={r.numero} onClick={() => setRevisaoIdx(i)}
                       className="flex-shrink-0 px-3.5 py-2 text-[12.5px] font-bold cursor-pointer rounded-t-[9px] transition-colors"
                       style={{
-                        color: revisaoIdx === i ? '#ff4b2b' : 'var(--text-muted)',
+                        color: revisaoIdx === i ? '#0f7a5a' : 'var(--text-muted)',
                         background: revisaoIdx === i ? 'var(--card-bg)' : 'transparent',
-                        borderBottom: revisaoIdx === i ? '2px solid #ff4b2b' : '2px solid transparent',
+                        borderBottom: revisaoIdx === i ? '2px solid #0f7a5a' : '2px solid transparent',
                         marginBottom: -1,
                       }}>
                       {r.numero}ª · {r.km.toLocaleString('pt-BR')}km
@@ -252,7 +252,7 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
                           {r.numero}ª Revisão — {r.km.toLocaleString('pt-BR')} km{r.meses ? ` ou ${r.meses} meses` : ''}
                         </h3>
                         {r.tmo_horas != null && (
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#ff4b2b26', color: '#ff4b2b' }}>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#0f7a5a26', color: '#0f7a5a' }}>
                             TMO: {r.tmo_horas}h
                           </span>
                         )}
@@ -302,7 +302,7 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
                             </span>
                           )}
                         </span>
-                        <span style={{ color: 'var(--text-muted)' }}>Total: <b style={{ color: '#ff4b2b' }}>{fmtBRL(totalFinal)}</b></span>
+                        <span style={{ color: 'var(--text-muted)' }}>Total: <b style={{ color: '#0f7a5a' }}>{fmtBRL(totalFinal)}</b></span>
                       </div>
                     </div>
                   )
@@ -403,4 +403,4 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
   )
 }
 
-function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4b2b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }
+function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f7a5a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }

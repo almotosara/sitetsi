@@ -75,7 +75,7 @@ export function ReportView({ leads }: ReportViewProps) {
 
       {/* KPI cards */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <KPICard label="Total" value={total} color="#ff4b2b" />
+        <KPICard label="Total" value={total} color="#0f7a5a" />
         <KPICard label="Convertidos" value={conv} color="#2fd675" sub={`${convRate}% taxa`} />
         <KPICard label="Bot WhatsApp" value={byOrigem['Bot WhatsApp'] || 0} color="#b083ff" />
         <KPICard label="Website" value={byOrigem['Website'] || 0} color="#4c8dff" />
@@ -111,7 +111,7 @@ export function ReportView({ leads }: ReportViewProps) {
 
         {/* Status breakdown */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, margin: '0 0 16px 0', borderLeft: '3px solid #ff4b2b', paddingLeft: 10, color: 'var(--text-primary)' }}>
+          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, margin: '0 0 16px 0', borderLeft: '3px solid #0f7a5a', paddingLeft: 10, color: 'var(--text-primary)' }}>
             Por status
           </h3>
           <div className="flex flex-col gap-3">

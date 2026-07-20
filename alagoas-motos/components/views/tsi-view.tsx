@@ -77,7 +77,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
         </div>
         <button onClick={onImport}
           className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)', border: '1px solid #ff4b2b', boxShadow: '0 6px 16px -6px #ff4b2b70' }}
+          style={{ background: 'linear-gradient(135deg, #0f7a5a, #065f46)', border: '1px solid #0f7a5a', boxShadow: '0 6px 16px -6px #0f7a5a70' }}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
           Anexar planilha TSI
@@ -86,7 +86,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
 
       {tsiData.length === 0 ? (
         <div className="rounded-2xl p-12 text-center cursor-pointer transition-colors" style={{ border: '2px dashed var(--border-line)', color: 'var(--text-muted)' }}
-          onClick={onImport} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#ff4b2b'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)' }}
+          onClick={onImport} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#0f7a5a'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-line)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)' }}>
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-3 opacity-50"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
           <p className="font-semibold mb-1">Nenhuma pesquisa carregada</p>
@@ -231,7 +231,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
 
           {/* Feedbacks */}
           <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)', borderLeft: '3px solid #ff4b2b', paddingLeft: 10 }}>
+            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)', borderLeft: '3px solid #0f7a5a', paddingLeft: 10 }}>
               Mural de Feedbacks e Elogios
             </h3>
             <ul className="list-none m-0 p-0">
@@ -275,7 +275,7 @@ function KpiCard({ label, value, color, sub }: { label: string; value: string; c
 function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-      <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)', borderLeft: '3px solid #ff4b2b', paddingLeft: 10 }}>
+      <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)', borderLeft: '3px solid #0f7a5a', paddingLeft: 10 }}>
         {title} {sub && <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{sub}</span>}
       </h3>
       {children}

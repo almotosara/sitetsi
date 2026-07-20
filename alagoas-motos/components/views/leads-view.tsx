@@ -184,9 +184,9 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: 
           style={{
             ...INP_STYLE,
             fontWeight: 600,
-            color: hideCnpj ? '#ff4b2b' : 'var(--text-dim)',
-            borderColor: hideCnpj ? '#ff4b2b' : 'var(--border-line)',
-            background: hideCnpj ? '#ff4b2b18' : 'var(--bg-input)',
+            color: hideCnpj ? '#0f7a5a' : 'var(--text-dim)',
+            borderColor: hideCnpj ? '#0f7a5a' : 'var(--border-line)',
+            background: hideCnpj ? '#0f7a5a18' : 'var(--bg-input)',
           }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -202,9 +202,9 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: 
             style={{
               ...INP_STYLE,
               fontWeight: 600,
-              color: onlyFieis ? '#ff4b2b' : 'var(--text-dim)',
-              borderColor: onlyFieis ? '#ff4b2b' : 'var(--border-line)',
-              background: onlyFieis ? '#ff4b2b18' : 'var(--bg-input)',
+              color: onlyFieis ? '#0f7a5a' : 'var(--text-dim)',
+              borderColor: onlyFieis ? '#0f7a5a' : 'var(--border-line)',
+              background: onlyFieis ? '#0f7a5a18' : 'var(--bg-input)',
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill={onlyFieis ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -226,7 +226,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: 
           <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
             <p className="text-sm">Nenhum lead encontrado com esses filtros.</p>
-            <button onClick={onNew} className="mt-3 flex items-center gap-1.5 text-xs text-[#ff4b2b] hover:underline cursor-pointer">
+            <button onClick={onNew} className="mt-3 flex items-center gap-1.5 text-xs text-[#0f7a5a] hover:underline cursor-pointer">
               Cadastrar primeiro lead
             </button>
           </div>
@@ -256,7 +256,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: 
                         <div className="flex items-center gap-1.5">
                           <b className="block font-semibold" style={{ color: 'var(--text-primary)' }}>{l.nome}</b>
                           {isLeadFiel(l) && (
-                            <span title="Cliente fiel" style={{ color: '#ff4b2b', flexShrink: 0 }}>
+                            <span title="Cliente fiel" style={{ color: '#0f7a5a', flexShrink: 0 }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                             </span>
                           )}
