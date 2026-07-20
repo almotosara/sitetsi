@@ -1,9 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import type { Lead } from '@/lib/types'
-import { STATUS_COLORS, ORIGEM_COLORS, fmtDate } from '@/lib/constants'
-import BorderGlow from '@/components/border-glow'
+import { STATUS_COLORS, fmtDate } from '@/lib/constants'
 
 interface DashViewProps {
   leads: Lead[]
@@ -13,6 +12,324 @@ interface DashViewProps {
   onNewLead: () => void
 }
 
+// ── Ícones inline ───────────────────────────────────────────────────
+const IconArrow = ({ className = '' }: { className?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M7 17L17 7M8 7h9v9" />
+  </svg>
+)
+const IconPlus = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+)
+const IconDownload = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+)
+const IconVideo = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+)
+const IconPlay = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+)
+const IconPause = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+)
+const IconStop = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+)
+
+// ── Card auxiliar ───────────────────────────────────────────────────
+function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-2xl border ${className}`} style={{ background: 'var(--card-bg)', borderColor: 'var(--border-line-soft)' }}>
+      {children}
+    </div>
+  )
+}
+
+// ── Stat card branco ────────────────────────────────────────────────
+function StatCard({ label, value, sub }: { label: string; value: number; sub: string }) {
+  return (
+    <Panel className="p-5 flex flex-col gap-6">
+      <div className="flex items-start justify-between">
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>{label}</span>
+        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+          <IconArrow />
+        </button>
+      </div>
+      <div className="flex flex-col gap-3">
+        <span className="text-4xl font-bold leading-none" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{value}</span>
+        <span className="text-[11.5px] flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+          <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#0f7a5a1a', color: '#0f7a5a' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </span>
+          {sub}
+        </span>
+      </div>
+    </Panel>
+  )
+}
+
+// ── Stat card destacado (verde escuro) ──────────────────────────────
+function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
+  return (
+    <div className="rounded-2xl p-5 flex flex-col gap-6" style={{ background: '#0f7a5a', color: '#ffffff' }}>
+      <div className="flex items-start justify-between">
+        <span className="text-sm font-semibold opacity-90">{label}</span>
+        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#0f7a5a' }}>
+          <IconArrow />
+        </button>
+      </div>
+      <div className="flex flex-col gap-3">
+        <span className="text-4xl font-bold leading-none" style={{ fontFamily: 'var(--font-display)' }}>{value}</span>
+        <span className="text-[11.5px] flex items-center gap-1.5 opacity-90">
+          <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#ffffff33' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </span>
+          {sub}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Time tracker ─────────────────────────────────────────────────────
+function TimeTracker() {
+  const [seconds, setSeconds] = useState(5048) // 01:24:08
+  const [running, setRunning] = useState(true)
+  useEffect(() => {
+    if (!running) return
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000)
+    return () => clearInterval(id)
+  }, [running])
+  const h = String(Math.floor(seconds / 3600)).padStart(2, '0')
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0')
+  const s = String(seconds % 60).padStart(2, '0')
+
+  return (
+    <div className="rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden" style={{ background: '#141618', color: '#ffffff', minHeight: 180 }}>
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 30% 20%, #0f7a5a 0%, transparent 55%), radial-gradient(circle at 80% 90%, #22c55e33 0%, transparent 60%)',
+        }}
+        aria-hidden
+      />
+      <div className="relative flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
+        <span className="text-sm font-semibold">Time Tracker</span>
+      </div>
+      <div className="relative">
+        <div className="text-5xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{h}:{m}:{s}</div>
+        <div className="flex items-center gap-2 mt-4">
+          <button onClick={() => setRunning((r) => !r)} className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-105" style={{ background: '#ffffff', color: '#141618' }} aria-label={running ? 'Pausar' : 'Iniciar'}>
+            {running ? <IconPause /> : <IconPlay />}
+          </button>
+          <button onClick={() => { setRunning(false); setSeconds(0) }} className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-105" style={{ background: '#d0524d', color: '#ffffff' }} aria-label="Parar">
+            <IconStop />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Project Analytics (barras) ──────────────────────────────────────
+function ProjectAnalytics({ leads }: { leads: Lead[] }) {
+  const days = useMemo(() => {
+    const arr: { label: string; count: number; isToday: boolean }[] = []
+    const labels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+    const now = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(now.getDate() - i)
+      const key = d.toISOString().slice(0, 10)
+      const count = leads.filter((l) => l.data === key).length
+      arr.push({ label: labels[d.getDay()], count, isToday: i === 0 })
+    }
+    return arr
+  }, [leads])
+  const max = Math.max(1, ...days.map((d) => d.count))
+  const highlight = days.reduce((a, b) => (b.count > a.count ? b : a), days[0])
+
+  return (
+    <Panel className="p-5 flex flex-col gap-5" >
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Análise dos leads</h3>
+        <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>Últimos 7 dias</span>
+      </div>
+      <div className="flex items-end justify-between gap-3 h-40 relative">
+        {days.map((d, i) => {
+          const h = 12 + (d.count / max) * 120
+          const isMax = d === highlight && d.count > 0
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
+              {isMax && (
+                <span className="absolute -top-2 text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: '#0f7a5a', color: '#fff' }}>{Math.round((d.count / (max || 1)) * 100)}%</span>
+              )}
+              <div
+                className="w-full rounded-full transition-all"
+                style={{
+                  height: h,
+                  maxWidth: 42,
+                  background: isMax
+                    ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
+                    : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
+                }}
+              />
+              <span className="text-xs font-semibold" style={{ color: d.isToday ? 'var(--text-primary)' : 'var(--text-muted)' }}>{d.label}</span>
+            </div>
+          )
+        })}
+      </div>
+    </Panel>
+  )
+}
+
+// ── Reminders ───────────────────────────────────────────────────────
+function Reminders() {
+  return (
+    <Panel className="p-5 flex flex-col justify-between gap-4">
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>Lembretes</span>
+        <h4 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>Reunião comercial da semana</h4>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Horário: 14:00 – 16:00</p>
+      </div>
+      <button className="w-full rounded-full py-3 flex items-center justify-center gap-2 text-sm font-semibold transition-transform hover:scale-[1.02]" style={{ background: '#0f7a5a', color: '#ffffff' }}>
+        <IconVideo /> Iniciar reunião
+      </button>
+    </Panel>
+  )
+}
+
+// ── Project list ────────────────────────────────────────────────────
+function ProjectsList({ leads, onView }: { leads: Lead[]; onView: (v: string) => void }) {
+  const recent = leads.slice(0, 5)
+  const colors = ['#0f7a5a', '#4f7ac7', '#d9a441', '#8a6bc4', '#d0524d']
+  return (
+    <Panel className="p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Leads recentes</h3>
+        <button onClick={() => onView('leads')} className="text-xs px-2.5 py-1 rounded-full font-semibold transition-colors hover:opacity-80" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+          Ver todos
+        </button>
+      </div>
+      <div className="flex flex-col gap-3">
+        {recent.length === 0 && (
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Nenhum lead cadastrado.</p>
+        )}
+        {recent.map((l, i) => (
+          <div key={l.id} className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${colors[i % colors.length]}1a`, color: colors[i % colors.length] }}>
+              {(l.nome || '?').slice(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{l.nome || 'Sem nome'}</div>
+              <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{l.modelo || l.origem} · {fmtDate(l.data)}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  )
+}
+
+// ── Team collaboration ──────────────────────────────────────────────
+function TeamCollaboration({ leads }: { leads: Lead[] }) {
+  const items = leads.slice(0, 4).map((l) => ({
+    nome: l.nome || '—',
+    tarefa: l.modelo || l.origem,
+    status: l.status as string,
+  }))
+  const fallback = [
+    { nome: 'Alexandra Deff', tarefa: 'Aprovação do orçamento', status: 'Convertido' },
+    { nome: 'Edwin Adenike', tarefa: 'Contato com cliente', status: 'Em contato' },
+    { nome: 'Isaac Oluwatemilorun', tarefa: 'Proposta comercial', status: 'Proposta enviada' },
+    { nome: 'David Oshodi', tarefa: 'Novo contato', status: 'Novo' },
+  ]
+  const rows = items.length ? items : fallback
+  const colors = ['#0f7a5a', '#4f7ac7', '#d9a441', '#8a6bc4']
+
+  return (
+    <Panel className="p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Colaboração da equipe</h3>
+        <button className="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 transition-colors hover:opacity-80" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+          <IconPlus /> Adicionar
+        </button>
+      </div>
+      <div className="flex flex-col gap-3">
+        {rows.map((r, i) => {
+          const sc = STATUS_COLORS[r.status] || { bg: '#eef0ea', text: '#4a4f55' }
+          return (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: `${colors[i % colors.length]}1a`, color: colors[i % colors.length] }}>
+                {r.nome.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{r.nome}</div>
+                <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Trabalhando em <span className="font-semibold" style={{ color: 'var(--text-dim)' }}>{r.tarefa}</span></div>
+              </div>
+              <span className="text-[10.5px] px-2 py-1 rounded-full font-semibold" style={{ background: sc.bg, color: sc.text }}>{r.status}</span>
+            </div>
+          )
+        })}
+      </div>
+    </Panel>
+  )
+}
+
+// ── Progress gauge ──────────────────────────────────────────────────
+function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: number; done: number; onGoalChange: (g: number) => void }) {
+  const R = 82
+  const CIRC = Math.PI * R
+  const filled = (pct / 100) * CIRC
+  return (
+    <Panel className="p-5 flex flex-col gap-3">
+      <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Progresso da meta</h3>
+      <div className="flex-1 flex flex-col items-center justify-center relative">
+        <svg width="220" height="130" viewBox="0 0 220 130">
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
+          <defs>
+            <linearGradient id="gauge" x1="0" x2="1">
+              <stop offset="0%" stopColor="#22c55e" />
+              <stop offset="100%" stopColor="#0f7a5a" />
+            </linearGradient>
+            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="4" height="8" fill="#eef0ea" />
+            </pattern>
+          </defs>
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.6" />
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gauge)" strokeWidth="18" strokeLinecap="round"
+            strokeDasharray={`${filled} ${CIRC}`}
+            style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{Math.round(pct)}%</div>
+          <div className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>convertidos</div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
+        <div className="flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#0f7a5a' }} />Convertidos {done}</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#eef0ea' }} />Restante {Math.max(0, goal - done)}</span>
+        </div>
+        <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          Meta:
+          <input type="number" value={goal} min={1}
+            onChange={(e) => onGoalChange(Number(e.target.value))}
+            className="w-14 px-2 py-1 rounded-md text-center text-xs font-bold outline-none"
+            style={{ background: 'var(--bg-input)', border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}
+          />
+        </div>
+      </div>
+    </Panel>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Dashboard principal
+// ═══════════════════════════════════════════════════════════════════
 export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashViewProps) {
   const now = new Date()
   const monthLeads = useMemo(() => leads.filter((l) => {
@@ -22,11 +339,6 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
   }), [leads])
 
   const total = monthLeads.length
-  const byOrigem = useMemo(() => {
-    const m: Record<string, number> = {}
-    monthLeads.forEach((l) => { m[l.origem] = (m[l.origem] || 0) + 1 })
-    return m
-  }, [monthLeads])
   const byStatus = useMemo(() => {
     const m: Record<string, number> = {}
     monthLeads.forEach((l) => { m[l.status] = (m[l.status] || 0) + 1 })
@@ -35,203 +347,49 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
 
   const convertidos = byStatus['Convertido'] || 0
   const perdidos = byStatus['Perdido'] || 0
+  const emAndamento = (byStatus['Em contato'] || 0) + (byStatus['Proposta enviada'] || 0)
+  const novos = byStatus['Novo'] || 0
   const pct = goal > 0 ? Math.min(100, (convertidos / goal) * 100) : 0
-
-  const MONTH_NAME = now.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
-  const recent = leads.slice(0, 8)
-
-  const R = 70; const ARC = Math.PI * R
-  const filled = (pct / 100) * ARC
-  const gColor = pct >= 100 ? '#2fd675' : pct >= 70 ? '#ffc400' : '#0f7a5a'
 
   return (
     <div className="view-enter flex flex-col gap-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Painel</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Planeje, priorize e acompanhe seus leads com facilidade.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onNewLead} className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-transform hover:scale-[1.02]" style={{ background: '#0f7a5a', color: '#ffffff' }}>
+            <IconPlus /> Novo lead
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors hover:bg-[var(--sidebar-hover)]" style={{ border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}>
+            <IconDownload /> Importar
+          </button>
+        </div>
+      </div>
+
       {/* Stats row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <StatCard label="Total do mês" value={total} color="#0f7a5a" sub={MONTH_NAME}
-          glowHSL="12 100 55" colors={['#0f7a5a', '#22c55e', '#7ed6b1']} />
-        <StatCard label="Bot WhatsApp" value={byOrigem['Bot WhatsApp'] || 0} color="#b083ff" sub="leads via WhatsApp"
-          glowHSL="270 100 75" colors={['#b083ff', '#c9a0ff', '#7c5ce0']} />
-        <StatCard label="Website" value={byOrigem['Website'] || 0} color="#4c8dff" sub="leads via site"
-          glowHSL="218 100 65" colors={['#4c8dff', '#74a8ff', '#2d6be0']} />
-        <StatCard label="Convertidos" value={convertidos} color="#2fd675" sub={`${perdidos} perdidos`}
-          glowHSL="145 70 50" colors={['#2fd675', '#5ce89a', '#1ab855']} />
+        <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" />
+        <StatCard label="Convertidos" value={convertidos} sub={`${perdidos} perdidos`} />
+        <StatCard label="Em andamento" value={emAndamento} sub="Contato + proposta" />
+        <StatCard label="Novos" value={novos} sub="Aguardando 1º contato" />
       </div>
 
       {/* Middle row */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '2fr 1fr' }}>
-        {/* Funil por status */}
-        <BorderGlow
-          borderRadius={16}
-          glowRadius={30}
-          glowIntensity={0.8}
-          glowColor="12 100 60"
-          colors={['#0f7a5a', '#ffc400', '#22c55e']}
-          animated
-        >
-          <div className="p-5">
-            <p className="text-[11.5px] uppercase tracking-widest font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>Funil por status</p>
-            <div className="flex flex-col gap-2.5">
-              {['Novo', 'Em contato', 'Proposta enviada', 'Convertido', 'Perdido'].map((s) => {
-                const count = byStatus[s] || 0
-                const w = total > 0 ? (count / total) * 100 : 0
-                const c = STATUS_COLORS[s]
-                return (
-                  <div key={s} className="flex items-center gap-3">
-                    <span className="text-xs w-[130px] flex-none" style={{ color: 'var(--text-muted)' }}>{s}</span>
-                    <div className="flex-1 h-2 rounded-full" style={{ background: 'var(--bg-elevated)' }}>
-                      <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${w}%`, background: c.text }} />
-                    </div>
-                    <span className="text-xs font-bold w-6 text-right" style={{ color: c.text }}>{count}</span>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="mt-4 pt-4 flex gap-4 flex-wrap" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
-              {Object.entries(ORIGEM_COLORS).map(([o, c]) => (
-                <span key={o} className="flex items-center gap-1.5 text-xs" style={{ color: c.text }}>
-                  <span className="w-2 h-2 rounded-sm" style={{ background: c.text }} />
-                  {o}: <b>{byOrigem[o] || 0}</b>
-                </span>
-              ))}
-            </div>
-          </div>
-        </BorderGlow>
-
-        {/* Meta gauge */}
-        <BorderGlow
-          borderRadius={16}
-          glowRadius={30}
-          glowIntensity={0.8}
-          glowColor={pct >= 100 ? '145 70 50' : pct >= 70 ? '45 100 60' : '155 65 30'}
-          colors={pct >= 100 ? ['#2fd675', '#5ce89a', '#1ab855'] : pct >= 70 ? ['#ffc400', '#ffd54f', '#e6b000'] : ['#0f7a5a', '#22c55e', '#065f46']}
-          animated
-        >
-          <div className="p-5 flex flex-col items-center">
-            <p className="text-[11.5px] uppercase tracking-widest font-semibold mb-3 self-start" style={{ color: 'var(--text-muted)' }}>Meta mensal</p>
-            <svg width="180" height="100" viewBox="0 0 180 100">
-              <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="var(--bg-elevated)" strokeWidth="14" strokeLinecap="round" />
-              <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke={gColor} strokeWidth="14" strokeLinecap="round"
-                strokeDasharray={`${filled} ${ARC}`} strokeDashoffset={0}
-                style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
-            </svg>
-            <div style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 40, fontWeight: 700, marginTop: -34, color: gColor, lineHeight: 1 }}>
-              {convertidos}
-            </div>
-            <div className="text-[11.5px] uppercase tracking-widest mt-1" style={{ color: 'var(--text-muted)' }}>de {goal} convertidos</div>
-            <div className="flex items-center gap-1.5 mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-              <span>Meta:</span>
-              <input
-                type="number" value={goal} min={1}
-                onChange={(e) => onGoalChange(Number(e.target.value))}
-                className="w-16 px-2 py-1 rounded-lg text-center text-sm font-bold outline-none"
-                style={{
-                  fontFamily: 'Rajdhani, sans-serif',
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-line)',
-                  color: 'var(--text-primary)',
-                }}
-                onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#0f7a5a' }}
-                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = 'var(--border-line)' }}
-              />
-            </div>
-          </div>
-        </BorderGlow>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
+        <ProjectAnalytics leads={leads} />
+        <Reminders />
+        <ProjectsList leads={leads} onView={onView} />
       </div>
 
-      {/* Recent leads */}
-      <BorderGlow
-        borderRadius={16}
-        glowRadius={30}
-        glowIntensity={0.8}
-        glowColor="218 100 65"
-        colors={['#0f7a5a', '#b083ff', '#4c8dff']}
-        animated
-        fillOpacity={0.35}
-      >
-        <div>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
-            <div>
-              <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Leads recentes</h2>
-              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Últimos {recent.length} cadastrados</p>
-            </div>
-            <button onClick={() => onView('leads')}
-              className="flex items-center gap-1.5 text-xs rounded-lg cursor-pointer transition-colors"
-              style={{ color: 'var(--text-muted)', border: '1px solid var(--border-line)', background: 'var(--bg-elevated)', padding: '6px 12px' }}>
-              Ver todos
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-          {recent.length === 0 ? (
-            <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-              <p className="text-sm">Nenhum lead cadastrado ainda</p>
-              <button onClick={onNewLead} className="mt-3 flex items-center gap-1.5 text-xs text-[#0f7a5a] hover:underline cursor-pointer">
-                Cadastrar primeiro lead
-              </button>
-            </div>
-          ) : (
-            <table className="w-full border-collapse text-[13.5px]">
-              <thead>
-                <tr>
-                  {['Cliente', 'Origem', 'Status', 'Data', 'Modelo'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-[10.5px] uppercase tracking-widest font-bold"
-                      style={{ background: 'var(--bg-panel-2)', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-line-soft)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((l) => {
-                  const sc = STATUS_COLORS[l.status]
-                  const oc = ORIGEM_COLORS[l.origem]
-                  return (
-                    <tr key={l.id} className="transition-colors last:border-0"
-                      style={{ borderBottom: '1px solid var(--border-line-soft)' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-panel-2)' }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
-                      <td className="px-4 py-3">
-                        <b className="block font-semibold" style={{ color: 'var(--text-primary)' }}>{l.nome}</b>
-                        {l.telefone && <span className="text-[11.5px]" style={{ color: 'var(--text-muted)' }}>{l.telefone}</span>}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11.5px] font-semibold" style={{ background: oc.bg, color: oc.text }}>{l.origem}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11.5px] font-semibold" style={{ background: sc.bg, color: sc.text }}>{l.status}</span>
-                      </td>
-                      <td className="px-4 py-3" style={{ color: 'var(--text-dim)' }}>{fmtDate(l.data)}</td>
-                      <td className="px-4 py-3" style={{ color: 'var(--text-dim)' }}>{l.modelo || '—'}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </BorderGlow>
+      {/* Bottom row */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
+        <TeamCollaboration leads={leads} />
+        <ProgressGauge pct={pct} goal={goal} done={convertidos} onGoalChange={onGoalChange} />
+        <TimeTracker />
+      </div>
     </div>
-  )
-}
-
-function StatCard({ label, value, color, sub, glowHSL, colors }: {
-  label: string; value: number; color: string; sub?: string
-  glowHSL: string; colors: string[]
-}) {
-  return (
-    <BorderGlow
-      borderRadius={16}
-      glowRadius={25}
-      glowIntensity={0.9}
-      glowColor={glowHSL}
-      colors={colors}
-      animated
-      fillOpacity={0.4}
-    >
-      <div className="px-5 py-4 flex flex-col gap-1.5 transition-shadow hover:shadow-lg">
-        <p className="text-[11.5px] uppercase tracking-widest font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <p style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 32, fontWeight: 700, lineHeight: 1, color }}>{value}</p>
-        {sub && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
-      </div>
-    </BorderGlow>
   )
 }
