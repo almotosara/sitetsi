@@ -3,6 +3,7 @@
 @theme inline {
   --font-sans: var(--font-inter), 'Inter', sans-serif;
   --font-display: var(--font-rajdhani), 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-numeric: var(--font-instrument-serif), 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
   --font-mono: var(--font-mono), 'JetBrains Mono', monospace;
 
   --color-background: #f5f6f2;

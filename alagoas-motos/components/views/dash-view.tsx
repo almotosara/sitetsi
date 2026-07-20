@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import type { Lead } from '@/lib/types'
-import { STATUS_COLORS, fmtDate } from '@/lib/constants'
+import { STATUS_COLORS, STATUS_OPTIONS, fmtDate } from '@/lib/constants'
 
 interface DashViewProps {
   leads: Lead[]
@@ -23,9 +23,6 @@ const IconPlus = () => (
 )
 const IconDownload = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-)
-const IconVideo = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
 )
 const IconPlay = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -52,12 +49,26 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
     <Panel className="p-5 flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>{label}</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+        <button
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 hover:shadow-md"
+          style={{
+            border: '1.5px solid var(--border-line)',
+            color: 'var(--text-primary)',
+            background: 'var(--card-bg)',
+            boxShadow: 'inset 0 -2px 0 var(--border-line-soft)',
+          }}
+          aria-label="Ver detalhes"
+        >
           <IconArrow />
         </button>
       </div>
       <div className="flex flex-col gap-3">
-        <span className="text-4xl font-bold leading-none" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{value}</span>
+        <span
+          className="text-[46px] leading-none tracking-tight"
+          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}
+        >
+          {value}
+        </span>
         <span className="text-[11.5px] flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
           <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#0f7a5a1a', color: '#0f7a5a' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -72,15 +83,38 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
 // ── Stat card destacado (verde escuro) ──────────────────────────────
 function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-6" style={{ background: '#0f7a5a', color: '#ffffff' }}>
-      <div className="flex items-start justify-between">
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-6 relative overflow-hidden"
+      style={{
+        background: 'radial-gradient(120% 100% at 20% 0%, #14916b 0%, #0f7a5a 55%, #0a5a43 100%)',
+        color: '#ffffff',
+        boxShadow: '0 20px 40px -18px rgba(15,122,90,.55), 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 60px -20px rgba(34,197,94,.45)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(60% 45% at 85% 15%, rgba(34,197,94,.35) 0%, transparent 70%), radial-gradient(50% 40% at 10% 100%, rgba(255,255,255,.08) 0%, transparent 70%)',
+        }}
+      />
+      <div className="relative flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#0f7a5a' }}>
+        <button
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5"
+          style={{ background: '#ffffff', color: '#0f7a5a', boxShadow: '0 6px 14px -6px rgba(0,0,0,.35)' }}
+        >
           <IconArrow />
         </button>
       </div>
-      <div className="flex flex-col gap-3">
-        <span className="text-4xl font-bold leading-none" style={{ fontFamily: 'var(--font-display)' }}>{value}</span>
+      <div className="relative flex flex-col gap-3">
+        <span
+          className="text-[46px] leading-none tracking-tight"
+          style={{ fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em', textShadow: '0 2px 24px rgba(255,255,255,.18)' }}
+        >
+          {value}
+        </span>
         <span className="text-[11.5px] flex items-center gap-1.5 opacity-90">
           <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#ffffff33' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -94,8 +128,8 @@ function StatCardHighlight({ label, value, sub }: { label: string; value: number
 
 // ── Time tracker ─────────────────────────────────────────────────────
 function TimeTracker() {
-  const [seconds, setSeconds] = useState(5048) // 01:24:08
-  const [running, setRunning] = useState(true)
+  const [seconds, setSeconds] = useState(0)
+  const [running, setRunning] = useState(false)
   useEffect(() => {
     if (!running) return
     const id = setInterval(() => setSeconds((s) => s + 1), 1000)
@@ -120,7 +154,7 @@ function TimeTracker() {
         <span className="text-sm font-semibold">Time Tracker</span>
       </div>
       <div className="relative">
-        <div className="text-5xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{h}:{m}:{s}</div>
+        <div className="text-5xl tracking-tight" style={{ fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}>{h}:{m}:{s}</div>
         <div className="flex items-center gap-2 mt-4">
           <button onClick={() => setRunning((r) => !r)} className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-105" style={{ background: '#ffffff', color: '#141618' }} aria-label={running ? 'Pausar' : 'Iniciar'}>
             {running ? <IconPause /> : <IconPlay />}
@@ -135,28 +169,36 @@ function TimeTracker() {
 }
 
 // ── Project Analytics (barras) ──────────────────────────────────────
+// Mostra quantos leads foram CONVERTIDOS em cada um dos últimos 7 dias.
+// Como não existe uma data de conversão dedicada, usamos "atualizado_em"
+// (data da última atualização do lead) como referência de quando ele
+// passou pro status "Convertido" — é a melhor aproximação disponível.
 function ProjectAnalytics({ leads }: { leads: Lead[] }) {
   const days = useMemo(() => {
     const arr: { label: string; count: number; isToday: boolean }[] = []
     const labels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
     const now = new Date()
+    const convertidos = leads.filter((l) => l.status === 'Convertido')
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now)
       d.setDate(now.getDate() - i)
       const key = d.toISOString().slice(0, 10)
-      const count = leads.filter((l) => l.data === key).length
+      const count = convertidos.filter((l) => (l.atualizado_em || '').slice(0, 10) === key).length
       arr.push({ label: labels[d.getDay()], count, isToday: i === 0 })
     }
     return arr
   }, [leads])
   const max = Math.max(1, ...days.map((d) => d.count))
+  const total = days.reduce((s, d) => s + d.count, 0)
   const highlight = days.reduce((a, b) => (b.count > a.count ? b : a), days[0])
 
   return (
     <Panel className="p-5 flex flex-col gap-5" >
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Análise dos leads</h3>
-        <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>Últimos 7 dias</span>
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Leads convertidos</h3>
+        <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>
+          {total > 0 ? `${total} nos últimos 7 dias` : 'Últimos 7 dias'}
+        </span>
       </div>
       <div className="flex items-end justify-between gap-3 h-40 relative">
         {days.map((d, i) => {
@@ -182,22 +224,121 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
           )
         })}
       </div>
+      {total === 0 && (
+        <p className="text-xs text-center -mt-2" style={{ color: 'var(--text-muted)' }}>Nenhum lead convertido nos últimos 7 dias.</p>
+      )}
     </Panel>
   )
 }
 
 // ── Reminders ───────────────────────────────────────────────────────
+interface ReminderItem { id: string; text: string; done: boolean }
+const REMINDERS_KEY = 'am_reminders'
+
 function Reminders() {
+  const [items, setItems] = useState<ReminderItem[]>([])
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(REMINDERS_KEY)
+      if (raw) setItems(JSON.parse(raw))
+    } catch {}
+    setLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!loaded) return
+    try { localStorage.setItem(REMINDERS_KEY, JSON.stringify(items)) } catch {}
+  }, [items, loaded])
+
+  function addReminder() {
+    const text = draft.trim()
+    if (!text) { setAdding(false); return }
+    setItems((prev) => [{ id: `${Date.now()}`, text, done: false }, ...prev])
+    setDraft('')
+    setAdding(false)
+  }
+
+  function toggle(id: string) {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, done: !it.done } : it)))
+  }
+
+  function remove(id: string) {
+    setItems((prev) => prev.filter((it) => it.id !== id))
+  }
+
+  const pending = items.filter((i) => !i.done).length
+
   return (
-    <Panel className="p-5 flex flex-col justify-between gap-4">
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>Lembretes</span>
-        <h4 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>Reunião comercial da semana</h4>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Horário: 14:00 – 16:00</p>
+    <Panel className="p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Lembretes</span>
+          <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{pending > 0 ? `${pending} pendente${pending > 1 ? 's' : ''}` : 'Tudo em dia'}</span>
+        </div>
+        <button
+          onClick={() => setAdding((a) => !a)}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105"
+          style={{ background: '#0f7a5a', color: '#ffffff' }}
+          title="Adicionar lembrete"
+        >
+          <IconPlus />
+        </button>
       </div>
-      <button className="w-full rounded-full py-3 flex items-center justify-center gap-2 text-sm font-semibold transition-transform hover:scale-[1.02]" style={{ background: '#0f7a5a', color: '#ffffff' }}>
-        <IconVideo /> Iniciar reunião
-      </button>
+
+      {adding && (
+        <div className="flex items-center gap-2">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') addReminder(); if (e.key === 'Escape') { setAdding(false); setDraft('') } }}
+            placeholder="Novo lembrete…"
+            className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+            style={{ background: 'var(--bg-input)', border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}
+          />
+          <button onClick={addReminder} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: '#0f7a5a', color: '#fff' }}>
+            Adicionar
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 220 }}>
+        {items.length === 0 && !adding && (
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Nenhum lembrete. Clique em + para adicionar.</p>
+        )}
+        {items.map((it) => (
+          <div key={it.id} className="group flex items-center gap-2.5 py-1.5 px-1 rounded-lg transition-colors hover:bg-[var(--sidebar-hover)]">
+            <button
+              onClick={() => toggle(it.id)}
+              className="w-[18px] h-[18px] rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+              style={{ border: it.done ? 'none' : '1.5px solid var(--border-line)', background: it.done ? '#0f7a5a' : 'transparent' }}
+              aria-label={it.done ? 'Marcar como pendente' : 'Marcar como concluído'}
+            >
+              {it.done && (
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              )}
+            </button>
+            <span
+              className="flex-1 text-[13px] truncate"
+              style={{ color: it.done ? 'var(--text-muted)' : 'var(--text-primary)', textDecoration: it.done ? 'line-through' : 'none' }}
+            >
+              {it.text}
+            </span>
+            <button
+              onClick={() => remove(it.id)}
+              className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label="Remover lembrete"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        ))}
+      </div>
     </Panel>
   )
 }
@@ -234,44 +375,50 @@ function ProjectsList({ leads, onView }: { leads: Lead[]; onView: (v: string) =>
   )
 }
 
-// ── Team collaboration ──────────────────────────────────────────────
-function TeamCollaboration({ leads }: { leads: Lead[] }) {
-  const items = leads.slice(0, 4).map((l) => ({
-    nome: l.nome || '—',
-    tarefa: l.modelo || l.origem,
-    status: l.status as string,
+// ── Leads por status ─────────────────────────────────────────────────
+// Substitui o antigo card de "colaboração da equipe" (nomes fictícios que
+// não vinham de lugar nenhum) por um resumo real: quantos leads existem
+// em cada status hoje, com barra de proporção e link direto pra lista
+// filtrada.
+function StatusBreakdown({ leads, onView }: { leads: Lead[]; onView: (v: string) => void }) {
+  const total = leads.length
+  const rows = STATUS_OPTIONS.map((status) => ({
+    status,
+    count: leads.filter((l) => l.status === status).length,
   }))
-  const fallback = [
-    { nome: 'Alexandra Deff', tarefa: 'Aprovação do orçamento', status: 'Convertido' },
-    { nome: 'Edwin Adenike', tarefa: 'Contato com cliente', status: 'Em contato' },
-    { nome: 'Isaac Oluwatemilorun', tarefa: 'Proposta comercial', status: 'Proposta enviada' },
-    { nome: 'David Oshodi', tarefa: 'Novo contato', status: 'Novo' },
-  ]
-  const rows = items.length ? items : fallback
-  const colors = ['#0f7a5a', '#4f7ac7', '#d9a441', '#8a6bc4']
 
   return (
     <Panel className="p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Colaboração da equipe</h3>
-        <button className="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 transition-colors hover:opacity-80" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
-          <IconPlus /> Adicionar
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Leads por status</h3>
+        <button onClick={() => onView('leads')} className="text-xs px-2.5 py-1 rounded-full font-semibold transition-colors hover:opacity-80" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+          Ver todos
         </button>
       </div>
-      <div className="flex flex-col gap-3">
-        {rows.map((r, i) => {
+      <div className="flex flex-col gap-3.5">
+        {total === 0 && (
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Nenhum lead cadastrado ainda.</p>
+        )}
+        {total > 0 && rows.map((r) => {
           const sc = STATUS_COLORS[r.status] || { bg: '#eef0ea', text: '#4a4f55' }
+          const pct = total > 0 ? (r.count / total) * 100 : 0
           return (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: `${colors[i % colors.length]}1a`, color: colors[i % colors.length] }}>
-                {r.nome.slice(0, 2).toUpperCase()}
+            <button
+              key={r.status}
+              onClick={() => onView('leads')}
+              className="flex flex-col gap-1.5 text-left group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[12.5px] font-semibold" style={{ color: 'var(--text-dim)' }}>{r.status}</span>
+                <span className="text-[12.5px] font-bold" style={{ color: sc.text }}>{r.count}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{r.nome}</div>
-                <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Trabalhando em <span className="font-semibold" style={{ color: 'var(--text-dim)' }}>{r.tarefa}</span></div>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-elevated)' }}>
+                <div
+                  className="h-full rounded-full transition-all group-hover:opacity-80"
+                  style={{ width: `${pct}%`, background: sc.text, minWidth: r.count > 0 ? 6 : 0 }}
+                />
               </div>
-              <span className="text-[10.5px] px-2 py-1 rounded-full font-semibold" style={{ background: sc.bg, color: sc.text }}>{r.status}</span>
-            </div>
+            </button>
           )
         })}
       </div>
@@ -289,24 +436,38 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
       <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Progresso da meta</h3>
       <div className="flex-1 flex flex-col items-center justify-center relative">
         <svg width="220" height="130" viewBox="0 0 220 130">
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
           <defs>
             <linearGradient id="gauge" x1="0" x2="1">
-              <stop offset="0%" stopColor="#22c55e" />
+              <stop offset="0%" stopColor="#34d399" />
+              <stop offset="55%" stopColor="#22c55e" />
               <stop offset="100%" stopColor="#0f7a5a" />
             </linearGradient>
+            <linearGradient id="gaugeGlow" x1="0" x2="1">
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#0f7a5a" stopOpacity="0.55" />
+            </linearGradient>
+            <filter id="gaugeBlur" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="4" />
+            </filter>
             <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="4" height="8" fill="#eef0ea" />
             </pattern>
           </defs>
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.6" />
+          {/* trilho */}
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.55" />
+          {/* glow atrás */}
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gaugeGlow)" strokeWidth="22" strokeLinecap="round"
+            strokeDasharray={`${filled} ${CIRC}`} filter="url(#gaugeBlur)"
+            style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
+          {/* preenchimento */}
           <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gauge)" strokeWidth="18" strokeLinecap="round"
             strokeDasharray={`${filled} ${CIRC}`}
             style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{Math.round(pct)}%</div>
-          <div className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>convertidos</div>
+          <div className="text-[40px] leading-none tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}>{Math.round(pct)}%</div>
+          <div className="text-[11px] font-semibold mt-1" style={{ color: 'var(--text-muted)' }}>convertidos</div>
         </div>
       </div>
       <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
@@ -386,7 +547,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
 
       {/* Bottom row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
-        <TeamCollaboration leads={leads} />
+        <StatusBreakdown leads={leads} onView={onView} />
         <ProgressGauge pct={pct} goal={goal} done={convertidos} onGoalChange={onGoalChange} />
         <TimeTracker />
       </div>

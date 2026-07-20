@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Rajdhani, Inter, JetBrains_Mono } from 'next/font/google'
+import { Rajdhani, Inter, JetBrains_Mono, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -7,6 +7,12 @@ const rajdhani = Rajdhani({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-rajdhani',
+})
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-instrument-serif',
 })
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -17,6 +23,14 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Leads · Alagoas Motos',
   description: 'Painel de cadastro e relatório de leads — Alagoas Motos',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-light-32x32.png', sizes: '32x32', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-dark-32x32.png', sizes: '32x32', media: '(prefers-color-scheme: dark)' },
+    ],
+    apple: '/apple-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -27,7 +41,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`} data-theme="light" suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`} data-theme="light" suppressHydrationWarning>
       <body className="antialiased font-sans" style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
         {children}
       </body>
