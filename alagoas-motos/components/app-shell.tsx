@@ -428,7 +428,8 @@ export function AppShell({
   }, [])
 
   return (
-    <div className="flex min-h-screen">
+    <div className="donezo-shell">
+      <div className="donezo-inner">
       <Sidebar
         view={view}
         onView={(v) => setView(v as View)}
@@ -444,16 +445,16 @@ export function AppShell({
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
         <div
-          className="sticky top-0 z-20 flex items-center gap-3.5 px-6 py-4"
+          className="sticky top-0 z-20 flex items-center gap-3.5 px-6 py-4 flex-wrap"
           style={{
             background: 'var(--topbar-bg)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid var(--border-line-soft)',
           }}
         >
-          <div className="flex-1">
+          <div className="min-w-0">
             <h1
-              className="transition-colors duration-300"
+              className="transition-colors duration-300 truncate"
               style={{
                 fontFamily: 'Rajdhani, sans-serif',
                 fontSize: 21,
@@ -465,8 +466,25 @@ export function AppShell({
             >
               {title}
             </h1>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+            <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>{sub}</p>
           </div>
+
+          {/* Search — Donezo style */}
+          <label className="topbar-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input placeholder="Buscar…" aria-label="Buscar" />
+            <span className="kbd">⌘F</span>
+          </label>
+
+          {/* Notification + mail */}
+          <button type="button" className="topbar-icon-btn" aria-label="Mensagens" title="Mensagens">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          </button>
+          <button type="button" className="topbar-icon-btn" aria-label="Notificações" title="Notificações">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span className="dot" aria-hidden />
+          </button>
+
 
           {(view === 'tsi' || view === 'tsilist') && (
             <button onClick={handleTsiImport}
@@ -544,6 +562,8 @@ export function AppShell({
       {/* Hidden file inputs */}
       <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileChange} />
       <input ref={mwFileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleMicroWorkImport} />
+      </div>
     </div>
   )
 }
+

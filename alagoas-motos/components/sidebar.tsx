@@ -220,6 +220,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
       </button>
 
       {/* ─── PillNav Navigation ─────────────────────────────────── */}
+      {!collapsed && <div className="sidebar-section-label">Menu</div>}
       <nav className="flex flex-col gap-1 mt-1.5 flex-1">
         {NAV_ITEMS.map((group, gi) => {
           const groupActive = isGroupActive(group)
@@ -285,7 +286,24 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
             </div>
           )
         })}
+
+        {/* Promo card — inspirado no "Download our Mobile App" do Donezo */}
+        {!collapsed && (
+          <div className="sidebar-promo mt-auto">
+            <div className="sidebar-promo-title">Turbine seu<br/>atendimento</div>
+            <div className="sidebar-promo-sub">Importe leads do MicroWork em segundos.</div>
+            <button
+              type="button"
+              className="sidebar-promo-cta"
+              onClick={() => onView('leads')}
+            >
+              Começar
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        )}
       </nav>
+
 
       {/* ─── Footer: Theme + Account ───────────────────────────── */}
       <div className="flex flex-col gap-2 pt-3 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
