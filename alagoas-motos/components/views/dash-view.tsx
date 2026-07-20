@@ -91,8 +91,9 @@ function StatCardHighlight({ label, value, sub }: { label: string; value: number
 
 // ── Time tracker ─────────────────────────────────────────────────────
 function TimeTracker() {
-  const [seconds, setSeconds] = useState(5048) // 01:24:08
-  const [running, setRunning] = useState(true)
+  const [seconds, setSeconds] = useState(0)
+  const [running, setRunning] = useState(false)
+  const [leadsFeitos, setLeadsFeitos] = useState<number>(0)
   useEffect(() => {
     if (!running) return
     const id = setInterval(() => setSeconds((s) => s + 1), 1000)
@@ -102,8 +103,12 @@ function TimeTracker() {
   const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0')
   const s = String(seconds % 60).padStart(2, '0')
 
+  const media = leadsFeitos > 0 ? Math.round(seconds / leadsFeitos) : 0
+  const mm = String(Math.floor(media / 60)).padStart(2, '0')
+  const ss = String(media % 60).padStart(2, '0')
+
   return (
-    <div className="rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden" style={{ background: '#141618', color: '#ffffff', minHeight: 180 }}>
+    <div className="rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden gap-4" style={{ background: '#141618', color: '#ffffff', minHeight: 220 }}>
       <div
         className="absolute inset-0 opacity-40"
         style={{
@@ -113,8 +118,8 @@ function TimeTracker() {
         aria-hidden
       />
       <div className="relative flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
-        <span className="text-sm font-semibold">Time Tracker</span>
+        <span className="w-2 h-2 rounded-full" style={{ background: running ? '#22c55e' : '#6b7280' }} />
+        <span className="text-sm font-semibold">Tempo de trabalho</span>
       </div>
       <div className="relative">
         <div className="text-5xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{h}:{m}:{s}</div>
@@ -127,6 +132,22 @@ function TimeTracker() {
           </button>
         </div>
       </div>
+      <div className="relative flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #ffffff22' }}>
+        <label className="flex items-center gap-2 text-[11.5px] opacity-90 flex-shrink-0">
+          Leads feitos
+          <input
+            type="number"
+            min={0}
+            value={leadsFeitos}
+            onChange={(e) => setLeadsFeitos(Math.max(0, Number(e.target.value)))}
+            className="w-14 px-2 py-1 rounded-md text-center text-xs font-bold outline-none"
+            style={{ background: '#ffffff1a', border: '1px solid #ffffff33', color: '#ffffff' }}
+          />
+        </label>
+        <span className="text-[11.5px] font-semibold text-right" style={{ color: '#8fe3c0' }}>
+          {leadsFeitos > 0 ? `${mm}:${ss} / lead` : '— / lead'}
+        </span>
+      </div>
     </div>
   )
 }
@@ -136,6 +157,9 @@ function TimeTracker() {
 // Como não existe uma data de conversão dedicada, usamos "atualizado_em"
 // (data da última atualização do lead) como referência de quando ele
 // passou pro status "Convertido" — é a melhor aproximação disponível.
+// Meta diária de conversões — 100% de uma barra equivale a esse número.
+const DAILY_GOAL = 10
+
 function ProjectAnalytics({ leads }: { leads: Lead[] }) {
   const days = useMemo(() => {
     const arr: { label: string; count: number; isToday: boolean }[] = []
@@ -151,7 +175,6 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
     }
     return arr
   }, [leads])
-  const max = Math.max(1, ...days.map((d) => d.count))
   const total = days.reduce((s, d) => s + d.count, 0)
   const highlight = days.reduce((a, b) => (b.count > a.count ? b : a), days[0])
 
@@ -163,15 +186,21 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
           {total > 0 ? `${total} nos últimos 7 dias` : 'Últimos 7 dias'}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-3 h-40 relative">
+      <div className="flex items-end justify-between gap-3 h-40 relative pt-6">
         {days.map((d, i) => {
-          const h = 12 + (d.count / max) * 120
+          const pct = Math.round((d.count / DAILY_GOAL) * 100)
+          const h = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 120
           const isMax = d === highlight && d.count > 0
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
-              {isMax && (
-                <span className="absolute -top-2 text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: '#0f7a5a', color: '#fff' }}>{Math.round((d.count / (max || 1)) * 100)}%</span>
-              )}
+              <span
+                className="absolute -top-6 text-[10px] font-bold px-1.5 py-0.5 rounded"
+                style={isMax
+                  ? { background: '#0f7a5a', color: '#fff' }
+                  : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
+              >
+                {pct}%
+              </span>
               <div
                 className="w-full rounded-full transition-all"
                 style={{
@@ -183,10 +212,12 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
                 }}
               />
               <span className="text-xs font-semibold" style={{ color: d.isToday ? 'var(--text-primary)' : 'var(--text-muted)' }}>{d.label}</span>
+              <span className="text-[10.5px] font-bold -mt-1.5" style={{ color: 'var(--text-muted)' }}>{d.count}</span>
             </div>
           )
         })}
       </div>
+      <p className="text-[11px] -mt-2" style={{ color: 'var(--text-muted)' }}>Meta diária: {DAILY_GOAL} conversões (100%)</p>
       {total === 0 && (
         <p className="text-xs text-center -mt-2" style={{ color: 'var(--text-muted)' }}>Nenhum lead convertido nos últimos 7 dias.</p>
       )}

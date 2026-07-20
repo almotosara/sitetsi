@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useCallback, useMemo } from 'react'
-import type { Lead, TsiRow, ClienteFiel, LeadOrigem, LeadStatus } from '@/lib/types'
+import type { Lead, TsiRow, TsiResendRow, ClienteFiel, LeadOrigem, LeadStatus } from '@/lib/types'
 import { TSI_STORE_MAP } from '@/lib/constants'
 import { Sidebar } from './sidebar'
 import { LeadModal } from './lead-modal'
@@ -10,24 +10,26 @@ import { LeadsView } from './views/leads-view'
 import { ReportView } from './views/report-view'
 import { TsiView } from './views/tsi-view'
 import { TsiListView } from './views/tsi-list-view'
+import { TsiResendView } from './views/tsi-resend-view'
 import { FieisView } from './views/fieis-view'
 import { useToast } from './toast'
 import {
   createLead, updateLead, deleteLead,
   replaceTsiData, upsertSettings, updateProfile,
   createClienteFiel, updateClienteFiel, deleteClienteFiel,
-  bulkCreateLeads,
+  bulkCreateLeads, replaceTsiResend, markTsiResendSent,
 } from '@/app/actions'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'tsiresend' | 'fieis'
 
 const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
-  dash:    { title: 'Painel de Leads', sub: 'Visão geral do mês' },
-  leads:   { title: 'Leads', sub: 'Todos os registros' },
-  report:  { title: 'Relatórios', sub: 'Análise por período' },
-  tsi:     { title: 'TSI — Top2Box', sub: 'Metas e indicadores' },
-  tsilist: { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
-  fieis:   { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
+  dash:      { title: 'Painel de Leads', sub: 'Visão geral do mês' },
+  leads:     { title: 'Leads', sub: 'Todos os registros' },
+  report:    { title: 'Relatórios', sub: 'Análise por período' },
+  tsi:       { title: 'TSI — Top2Box', sub: 'Metas e indicadores' },
+  tsilist:   { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
+  tsiresend: { title: 'Reenvio de Pesquisas', sub: 'Controle de reenvio TSI' },
+  fieis:     { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
 }
 
 // ID fixo do usuário (single-user)
@@ -84,6 +86,7 @@ interface AppShellProps {
   userEmail: string
   initialLeads: Lead[]
   initialTsi: TsiRow[]
+  initialTsiResend?: TsiResendRow[]
   initialFieis: ClienteFiel[]
   initialGoal: number
   initialTsiUpdatedAt: string | null
@@ -92,12 +95,13 @@ interface AppShellProps {
 }
 
 export function AppShell({
-  userName, userEmail, initialLeads, initialTsi, initialFieis, initialGoal, initialTsiUpdatedAt,
+  userName, userEmail, initialLeads, initialTsi, initialTsiResend, initialFieis, initialGoal, initialTsiUpdatedAt,
   initialDisplayName, initialAvatarUrl,
 }: AppShellProps) {
   const [view, setView] = useState<View>('dash')
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [tsiData, setTsiData] = useState<TsiRow[]>(initialTsi)
+  const [tsiResend, setTsiResend] = useState<TsiResendRow[]>(initialTsiResend || [])
   const [fieis, setFieis] = useState<ClienteFiel[]>(initialFieis)
   const [goal, setGoalState] = useState(initialGoal)
   const [tsiUpdatedAt, setTsiUpdatedAt] = useState(initialTsiUpdatedAt)
@@ -107,6 +111,7 @@ export function AppShell({
   const [editing, setEditing] = useState<Lead | null>(null)
   const [, startTrans] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const resendFileInputRef = useRef<HTMLInputElement>(null)
   const mwFileInputRef = useRef<HTMLInputElement>(null)
   const toast = useToast()
 
@@ -256,6 +261,64 @@ export function AppShell({
       toast('Erro ao importar planilha TSI.', true)
     }
   }, [goal, toast])
+
+  // ─── Reenvio de Pesquisas TSI ─────────────────────────────────────────────────
+
+  const handleTsiResendImport = useCallback(() => {
+    resendFileInputRef.current?.click()
+  }, [])
+
+  const handleResendFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    try {
+      const XLSX = await import('xlsx')
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(new Uint8Array(buf), { type: 'array' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const json: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws, { defval: '' })
+
+      if (!json.length) { toast('O arquivo não possui dados legíveis.', true); return }
+
+      const filtered = json.filter(row => !tsiRowIsMeta(row))
+      const skipped = json.length - filtered.length
+
+      const mapped = filtered.map(r => {
+        const osKey = getCol(r, 'Ordens de Serviço: OS', 'OS', 'N° O.S.', 'Nº O.S.')
+        if (!osKey) return null
+        return {
+          os: osKey,
+          cliente: getCol(r, 'Cliente', 'Nome', 'Pessoa') || null,
+          veiculo: getCol(r, 'Veículo', 'Veiculo', 'Modelo') || null,
+          email: getCol(r, 'E-mail', 'Email') || null,
+          celular: getCol(r, 'Celular', 'Telefone Celular', 'Telefone') || null,
+          data_envio_email: tsiFmtDate(getCol(r, 'Data envio e-mail', 'Data Envio Email', 'Envio e-mail')) || null,
+          data_envio_sms: tsiFmtDate(getCol(r, 'Data envio SMS', 'Envio SMS')) || null,
+          data_reenvio: null,
+        }
+      }).filter(Boolean) as Omit<TsiResendRow, 'id' | 'user_id' | 'importado_em'>[]
+
+      await replaceTsiResend(mapped)
+      setTsiResend(mapped.map((r, i) => ({ ...r, id: `r${i}`, user_id: USER_ID, importado_em: new Date().toISOString() })))
+      toast(`${mapped.length} registros de reenvio importados.${skipped ? ` (${skipped} linhas de rodapé ignoradas)` : ''}`)
+    } catch (err) {
+      console.error('[TSI Resend] import error:', err)
+      toast('Erro ao importar planilha de reenvio.', true)
+    }
+  }, [toast])
+
+  const handleMarkTsiResendSent = useCallback(async (id: string, data_reenvio: string | null) => {
+    setTsiResend((prev) => prev.map((r) => r.id === id ? { ...r, data_reenvio } : r))
+    try {
+      await markTsiResendSent(id, data_reenvio)
+      toast(data_reenvio ? 'Reenvio marcado.' : 'Reenvio desfeito.')
+    } catch {
+      setTsiResend((prev) => prev.map((r) => r.id === id ? { ...r, data_reenvio: r.data_reenvio } : r))
+      toast('Erro ao atualizar reenvio.', true)
+    }
+  }, [toast])
 
   // ─── Clientes Fiéis ──────────────────────────────────────────────────────────
 
@@ -482,6 +545,20 @@ export function AppShell({
             </button>
           )}
 
+          {view === 'tsiresend' && (
+            <button onClick={handleTsiResendImport}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
+                borderColor: '#0f7a5a',
+                boxShadow: '0 6px 16px -6px #0f7a5a70',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
+              Anexar planilha de reenvio
+            </button>
+          )}
+
           {(view === 'dash' || view === 'leads') && (
             <>
               <button onClick={() => mwFileInputRef.current?.click()}
@@ -508,6 +585,42 @@ export function AppShell({
               </button>
             </>
           )}
+
+          {/* Account cluster (mail / notificações / avatar) */}
+          <div className="flex items-center gap-2.5 pl-3 ml-1" style={{ borderLeft: '1px solid var(--border-line-soft)' }}>
+            <a
+              href={`mailto:${userEmail}`}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
+              style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
+              title="Enviar e-mail"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+            </a>
+            <button
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
+              style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
+              title="Notificações"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <div className="flex items-center gap-2.5 pl-1">
+              <div
+                className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                style={{
+                  color: '#fff',
+                  ...(avatarUrl
+                    ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: 'linear-gradient(135deg, #0f7a5a, #16a34a)' }),
+                }}
+              >
+                {!avatarUrl && (effectiveName || userName).charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden sm:block min-w-0">
+                <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{effectiveName || userName}</div>
+                <div className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{userEmail}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
@@ -527,6 +640,7 @@ export function AppShell({
           {view === 'report' && <ReportView leads={leads} />}
           {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}
           {view === 'tsilist' && <TsiListView tsiData={tsiData} onImport={handleTsiImport} />}
+          {view === 'tsiresend' && <TsiResendView data={tsiResend} onImport={handleTsiResendImport} onMarkSent={handleMarkTsiResendSent} />}
           {view === 'fieis' && (
             <FieisView fieis={fieis} onAdd={handleAddFiel} onEdit={handleEditFiel} onDelete={handleDeleteFiel} />
           )}
@@ -543,6 +657,7 @@ export function AppShell({
 
       {/* Hidden file inputs */}
       <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileChange} />
+      <input ref={resendFileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleResendFileChange} />
       <input ref={mwFileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleMicroWorkImport} />
     </div>
   )

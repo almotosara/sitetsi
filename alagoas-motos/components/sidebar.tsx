@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useTheme } from './theme-provider'
 import { SettingsModal } from './settings-modal'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'fieis'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'tsiresend' | 'fieis'
 
 interface SidebarProps {
   view: View
@@ -48,6 +48,7 @@ const NAV_ITEMS: NavItemDef[] = [
     children: [
       { id: 'tsi', label: 'Metas', icon: <IconTarget /> },
       { id: 'tsilist', label: 'Pesquisas', icon: <IconCheck /> },
+      { id: 'tsiresend', label: 'Reenvio de Pesquisas', icon: <IconResend /> },
       { id: 'fieis', label: 'Clientes Fiéis', icon: <IconHeart /> },
     ],
   },
@@ -55,17 +56,15 @@ const NAV_ITEMS: NavItemDef[] = [
 
 export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut, goal, onGoalChange, onProfileChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [accountOpen, setAccountOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [avatarHover, setAvatarHover] = useState(false)
+  const [settingsTab, setSettingsTab] = useState<'perfil' | 'meta' | 'aparencia' | 'sobre'>('perfil')
   const { theme, toggle } = useTheme()
-  const avatarExpanded = !collapsed && (avatarHover || accountOpen)
 
   // Estado de abertura dos grupos
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     if (view === 'leads' || view === 'report') init['leads'] = true
-    if (['tsi', 'tsilist', 'fieis'].includes(view)) init['tsi'] = true
+    if (['tsi', 'tsilist', 'tsiresend', 'fieis'].includes(view)) init['tsi'] = true
     return init
   })
 
@@ -146,28 +145,6 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
   const isActive = (id: View) => view === id
   const isGroupActive = (group: NavItemDef) =>
     group.id === view || group.children?.some((c) => c.id === view)
-
-  // Fecha o menu ao clicar fora
-  useEffect(() => {
-    if (!accountOpen) return
-    const handler = (e: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
-        setAccountOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [accountOpen])
-
-  // Tecla Escape fecha menu
-  useEffect(() => {
-    if (!accountOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setAccountOpen(false)
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [accountOpen])
 
   return (
     <aside
@@ -287,9 +264,43 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         })}
       </nav>
 
-      {/* ─── Footer: Theme + Account ───────────────────────────── */}
-      <div className="flex flex-col gap-2 pt-3 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
-        {/* Theme Toggle */}
+      {/* ─── GERAL ──────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-1 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
+        {!collapsed && (
+          <span className="px-2.5 pb-1 text-[10.5px] font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            GERAL
+          </span>
+        )}
+        <button
+          className="pill-nav-item"
+          onClick={() => { setSettingsTab('perfil'); setSettingsOpen(true) }}
+          title={collapsed ? 'Configurações' : undefined}
+          style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
+        >
+          <span className="pill-icon"><IconSettings /></span>
+          {!collapsed && <span className="label-stack"><span className="pill-label">Configurações</span></span>}
+        </button>
+        <button
+          className="pill-nav-item"
+          onClick={() => { setSettingsTab('meta'); setSettingsOpen(true) }}
+          title={collapsed ? 'Metas' : undefined}
+          style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
+        >
+          <span className="pill-icon"><IconTarget /></span>
+          {!collapsed && <span className="label-stack"><span className="pill-label">Metas</span></span>}
+        </button>
+        <button
+          className="pill-nav-item"
+          onClick={onSignOut}
+          title={collapsed ? 'Sair' : undefined}
+          style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
+        >
+          <span className="pill-icon"><IconLogout /></span>
+          {!collapsed && <span className="label-stack"><span className="pill-label">Sair</span></span>}
+        </button>
+      </div>
+      {/* ─── Footer: Theme ──────────────────────────────────────── */}
+      <div className="flex flex-col gap-2 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         <button
           className="theme-toggle"
           onClick={toggle}
@@ -316,99 +327,6 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
             </>
           )}
         </button>
-
-        {/* Account Menu */}
-        <div
-          className="relative"
-          onMouseEnter={() => setAvatarHover(true)}
-          onMouseLeave={() => setAvatarHover(false)}
-        >
-          <button
-            className="account-trigger"
-            onClick={() => setAccountOpen(!accountOpen)}
-            style={{
-              justifyContent: collapsed || !avatarExpanded ? 'center' : 'flex-start',
-              gap: collapsed || !avatarExpanded ? 0 : 10,
-              padding: collapsed ? '10px' : avatarExpanded ? '10px 12px' : '7px',
-              width: collapsed ? '100%' : avatarExpanded ? '100%' : 'fit-content',
-              margin: collapsed || avatarExpanded ? 0 : '0 auto',
-            }}
-          >
-            <div className="account-avatar" style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-              {!avatarUrl && userName.charAt(0).toUpperCase()}
-            </div>
-            {!collapsed && avatarExpanded && (
-              <>
-                <div className="flex-1 min-w-0 text-left">
-                  <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{userName}</div>
-                  <div className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{userEmail}</div>
-                </div>
-                <svg
-                  width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                  style={{
-                    color: 'var(--text-muted)',
-                    transform: accountOpen ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 0.2s',
-                    flexShrink: 0,
-                  }}
-                >
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-              </>
-            )}
-          </button>
-
-          {/* Popup Menu */}
-          {accountOpen && !collapsed && (
-            <>
-              <div className="account-overlay" onClick={() => setAccountOpen(false)} />
-              <div className="account-menu-popup modal-anim">
-                {/* User info header */}
-                <div className="flex items-center gap-3 px-3 py-3">
-                  <div
-                    className="account-avatar"
-                    style={{
-                      width: 38, height: 38, fontSize: 16,
-                      ...(avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
-                    }}
-                  >
-                    {!avatarUrl && userName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{userName}</div>
-                    <div className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{userEmail}</div>
-                  </div>
-                </div>
-                <div className="menu-divider" />
-                <button className="menu-item" onClick={() => { setAccountOpen(false); setSettingsOpen(true) }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-                  </svg>
-                  Configurações
-                </button>
-                <button className="menu-item" onClick={() => { setAccountOpen(false); toggle() }}>
-                  {theme === 'dark' ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                    </svg>
-                  )}
-                  {theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-                </button>
-                <div className="menu-divider" />
-                <button className="menu-item danger" onClick={onSignOut}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-                  </svg>
-                  Sair da conta
-                </button>
-              </div>
-            </>
-          )}
-        </div>
       </div>
 
       <SettingsModal
@@ -421,6 +339,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         onGoalChange={onGoalChange}
         onProfileChange={onProfileChange}
         onSignOut={onSignOut}
+        initialTab={settingsTab}
       />
     </aside>
   )
@@ -448,8 +367,17 @@ function IconTarget() {
 function IconCheck() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
 }
+function IconResend() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+}
 function IconHeart() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+}
+function IconSettings() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+}
+function IconLogout() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 }
 function IconMoon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>

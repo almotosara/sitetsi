@@ -15,6 +15,7 @@ interface SettingsModalProps {
   onGoalChange: (g: number) => void
   onProfileChange: (name: string, avatar: string) => void
   onSignOut: () => void
+  initialTab?: Tab
 }
 
 type Tab = 'perfil' | 'meta' | 'aparencia' | 'sobre'
@@ -26,8 +27,8 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'sobre', label: 'Sobre', icon: <IconInfo /> },
 ]
 
-export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, goal, onGoalChange, onProfileChange, onSignOut }: SettingsModalProps) {
-  const [tab, setTab] = useState<Tab>('perfil')
+export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, goal, onGoalChange, onProfileChange, onSignOut, initialTab }: SettingsModalProps) {
+  const [tab, setTab] = useState<Tab>(initialTab || 'perfil')
   const [goalDraft, setGoalDraft] = useState(goal)
   const [saved, setSaved] = useState(false)
   const [nameDraft, setNameDraft] = useState(userName)
@@ -45,8 +46,9 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
     if (open) {
       setNameDraft(userName)
       setAvatarDraft(avatarUrl || '')
+      setTab(initialTab || 'perfil')
     }
-  }, [open, userName, avatarUrl])
+  }, [open, userName, avatarUrl, initialTab])
 
   if (!open || !mounted) return null
 

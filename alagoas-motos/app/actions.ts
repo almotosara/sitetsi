@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Lead, TsiRow, ClienteFiel } from '@/lib/types'
+import type { Lead, TsiRow, ClienteFiel, TsiResendRow } from '@/lib/types'
 
 // ID fixo do usuário (single-user)
 const USER_ID = '00000000-0000-0000-0000-000000000001'
