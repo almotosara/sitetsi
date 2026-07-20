@@ -49,26 +49,12 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
     <Panel className="p-5 flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>{label}</span>
-        <button
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 hover:shadow-md"
-          style={{
-            border: '1.5px solid var(--border-line)',
-            color: 'var(--text-primary)',
-            background: 'var(--card-bg)',
-            boxShadow: 'inset 0 -2px 0 var(--border-line-soft)',
-          }}
-          aria-label="Ver detalhes"
-        >
+        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
           <IconArrow />
         </button>
       </div>
       <div className="flex flex-col gap-3">
-        <span
-          className="text-[46px] leading-none tracking-tight"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}
-        >
-          {value}
-        </span>
+        <span className="text-4xl font-bold leading-none" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{value}</span>
         <span className="text-[11.5px] flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
           <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#0f7a5a1a', color: '#0f7a5a' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -83,38 +69,15 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
 // ── Stat card destacado (verde escuro) ──────────────────────────────
 function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div
-      className="rounded-2xl p-5 flex flex-col gap-6 relative overflow-hidden"
-      style={{
-        background: 'radial-gradient(120% 100% at 20% 0%, #14916b 0%, #0f7a5a 55%, #0a5a43 100%)',
-        color: '#ffffff',
-        boxShadow: '0 20px 40px -18px rgba(15,122,90,.55), 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 60px -20px rgba(34,197,94,.45)',
-      }}
-    >
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(60% 45% at 85% 15%, rgba(34,197,94,.35) 0%, transparent 70%), radial-gradient(50% 40% at 10% 100%, rgba(255,255,255,.08) 0%, transparent 70%)',
-        }}
-      />
-      <div className="relative flex items-start justify-between">
+    <div className="rounded-2xl p-5 flex flex-col gap-6" style={{ background: '#0f7a5a', color: '#ffffff' }}>
+      <div className="flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
-        <button
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5"
-          style={{ background: '#ffffff', color: '#0f7a5a', boxShadow: '0 6px 14px -6px rgba(0,0,0,.35)' }}
-        >
+        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#0f7a5a' }}>
           <IconArrow />
         </button>
       </div>
-      <div className="relative flex flex-col gap-3">
-        <span
-          className="text-[46px] leading-none tracking-tight"
-          style={{ fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em', textShadow: '0 2px 24px rgba(255,255,255,.18)' }}
-        >
-          {value}
-        </span>
+      <div className="flex flex-col gap-3">
+        <span className="text-4xl font-bold leading-none" style={{ fontFamily: 'var(--font-display)' }}>{value}</span>
         <span className="text-[11.5px] flex items-center gap-1.5 opacity-90">
           <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#ffffff33' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -128,8 +91,8 @@ function StatCardHighlight({ label, value, sub }: { label: string; value: number
 
 // ── Time tracker ─────────────────────────────────────────────────────
 function TimeTracker() {
-  const [seconds, setSeconds] = useState(0)
-  const [running, setRunning] = useState(false)
+  const [seconds, setSeconds] = useState(5048) // 01:24:08
+  const [running, setRunning] = useState(true)
   useEffect(() => {
     if (!running) return
     const id = setInterval(() => setSeconds((s) => s + 1), 1000)
@@ -154,7 +117,7 @@ function TimeTracker() {
         <span className="text-sm font-semibold">Time Tracker</span>
       </div>
       <div className="relative">
-        <div className="text-5xl tracking-tight" style={{ fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}>{h}:{m}:{s}</div>
+        <div className="text-5xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{h}:{m}:{s}</div>
         <div className="flex items-center gap-2 mt-4">
           <button onClick={() => setRunning((r) => !r)} className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-105" style={{ background: '#ffffff', color: '#141618' }} aria-label={running ? 'Pausar' : 'Iniciar'}>
             {running ? <IconPause /> : <IconPlay />}
@@ -436,38 +399,24 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
       <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Progresso da meta</h3>
       <div className="flex-1 flex flex-col items-center justify-center relative">
         <svg width="220" height="130" viewBox="0 0 220 130">
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
           <defs>
             <linearGradient id="gauge" x1="0" x2="1">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="55%" stopColor="#22c55e" />
+              <stop offset="0%" stopColor="#22c55e" />
               <stop offset="100%" stopColor="#0f7a5a" />
             </linearGradient>
-            <linearGradient id="gaugeGlow" x1="0" x2="1">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#0f7a5a" stopOpacity="0.55" />
-            </linearGradient>
-            <filter id="gaugeBlur" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" />
-            </filter>
             <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="4" height="8" fill="#eef0ea" />
             </pattern>
           </defs>
-          {/* trilho */}
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.55" />
-          {/* glow atrás */}
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gaugeGlow)" strokeWidth="22" strokeLinecap="round"
-            strokeDasharray={`${filled} ${CIRC}`} filter="url(#gaugeBlur)"
-            style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
-          {/* preenchimento */}
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.6" />
           <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gauge)" strokeWidth="18" strokeLinecap="round"
             strokeDasharray={`${filled} ${CIRC}`}
             style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-          <div className="text-[40px] leading-none tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-numeric)', fontWeight: 400, letterSpacing: '-0.02em' }}>{Math.round(pct)}%</div>
-          <div className="text-[11px] font-semibold mt-1" style={{ color: 'var(--text-muted)' }}>convertidos</div>
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{Math.round(pct)}%</div>
+          <div className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>convertidos</div>
         </div>
       </div>
       <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
