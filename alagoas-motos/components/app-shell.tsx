@@ -14,7 +14,7 @@ import { TsiResendView } from './views/tsi-resend-view'
 import { FieisView } from './views/fieis-view'
 import { useToast } from './toast'
 import {
-  createLead, updateLead, deleteLead,
+  createLead, updateLead, deleteLead, getLeads, dedupeLeadsByOs,
   replaceTsiData, upsertSettings, updateProfile,
   createClienteFiel, updateClienteFiel, deleteClienteFiel,
   bulkCreateLeads, replaceTsiResend, markTsiResendSent,
@@ -171,6 +171,21 @@ export function AppShell({
       toast('Lead excluído.')
     } catch {
       toast('Erro ao excluir lead.', true)
+    }
+  }, [toast])
+
+  const handleDedupeLeads = useCallback(async () => {
+    try {
+      const { removidos } = await dedupeLeadsByOs()
+      if (removidos > 0) {
+        const fresh = await getLeads()
+        setLeads(fresh)
+        toast(`${removidos} lead${removidos > 1 ? 's' : ''} duplicado${removidos > 1 ? 's' : ''} removido${removidos > 1 ? 's' : ''}.`)
+      } else {
+        toast('Nenhum lead duplicado encontrado.')
+      }
+    } catch {
+      toast('Erro ao remover duplicatas.', true)
     }
   }, [toast])
 
@@ -371,6 +386,17 @@ export function AppShell({
       console.log('[MicroWork] Colunas:', rows[0] ? Object.keys(rows[0]) : [])
       console.log('[MicroWork] Total de linhas:', rows.length)
 
+      // Busca leads atuais direto do banco (nao confia so no estado local,
+      // que pode estar desatualizado se o usuario importar o mesmo arquivo 2x seguidas)
+      let leadsAtuais: Lead[]
+      try {
+        leadsAtuais = await getLeads()
+      } catch {
+        leadsAtuais = leads
+      }
+      // OS ja decididas para criacao neste mesmo lote (evita duplicar dentro do proprio arquivo)
+      const osNesteLote = new Set<string>()
+
       let added = 0, updated = 0, skipped = 0
       const toCreate: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'>[] = []
       const toUpdate: { id: string; data: Partial<Lead> }[] = []
@@ -392,10 +418,17 @@ export function AppShell({
         const situacao = getCol(row, 'Situação', 'Situacao', 'Status')
         const status: LeadStatus = 'Novo'
 
-        // Deduplicação por OS
+        // Deduplicação por OS: contra o banco (fresco) e contra o que ja foi
+        // decidido criar neste mesmo lote (evita duplicar se a mesma OS aparecer
+        // 2x no arquivo, ou se o usuario reimportar o mesmo arquivo em seguida)
         const existing = osNum
-          ? leads.find(x => x.os && String(x.os).replace(/\s/g, '') === osNum)
+          ? leadsAtuais.find(x => x.os && String(x.os).replace(/\s/g, '') === osNum)
           : null
+
+        if (osNum && osNesteLote.has(osNum)) {
+          skipped++
+          continue
+        }
 
         if (existing) {
           const changed = (
@@ -434,6 +467,7 @@ export function AppShell({
             status,
             obs: situacao ? `Situação no MicroWork: ${situacao}` : 'Importado do MicroWork CLOUD DMS',
           })
+          if (osNum) osNesteLote.add(osNum)
           added++
         }
       }
@@ -635,7 +669,8 @@ export function AppShell({
               onEdit={(l) => { setEditing(l); setModalOpen(true) }}
               onDelete={handleDeleteLead}
               onConvert={handleConvertLead}
-              onNew={() => { setEditing(null); setModalOpen(true) }} />
+              onNew={() => { setEditing(null); setModalOpen(true) }}
+              onDedupe={handleDedupeLeads} />
           )}
           {view === 'report' && <ReportView leads={leads} />}
           {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}

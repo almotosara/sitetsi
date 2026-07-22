@@ -65,6 +65,40 @@ export async function deleteLead(id: string) {
   revalidatePath('/')
 }
 
+// Remove leads duplicados (mesma O.S.), mantendo o registro mais antigo (o original)
+// e apagando as reimportações repetidas. Leads sem O.S. nunca sao tocados.
+export async function dedupeLeadsByOs() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('leads')
+    .select('id, os, criado_em')
+    .order('criado_em', { ascending: true })
+  if (error) throw error
+
+  const seen = new Set<string>()
+  const idsParaRemover: string[] = []
+  for (const row of (data as { id: string; os: string | null; criado_em: string }[])) {
+    if (!row.os) continue
+    const key = String(row.os).replace(/\s/g, '')
+    if (seen.has(key)) {
+      idsParaRemover.push(row.id)
+    } else {
+      seen.add(key)
+    }
+  }
+
+  if (idsParaRemover.length > 0) {
+    const { error: delError } = await supabase
+      .from('leads')
+      .delete()
+      .in('id', idsParaRemover)
+    if (delError) throw delError
+  }
+
+  revalidatePath('/')
+  return { removidos: idsParaRemover.length }
+}
+
 // ─── TSI ──────────────────────────────────────────────────────────────────────
 
 export async function getTsiData() {

@@ -12,6 +12,7 @@ interface LeadsViewProps {
   onDelete: (id: string) => void
   onConvert: (id: string) => void
   onNew: () => void
+  onDedupe?: () => void
 }
 
 const INP_STYLE: React.CSSProperties = {
@@ -50,7 +51,7 @@ function normName(v?: string | null): string {
   return (v || '').trim().toLowerCase()
 }
 
-export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: LeadsViewProps) {
+export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, onDedupe }: LeadsViewProps) {
   const [q, setQ] = useState('')
   const [origem, setOrigem] = useState('')
   const [status, setStatus] = useState('')
@@ -218,6 +219,23 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew }: 
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>até</span>
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} style={INP_STYLE} title="Até" />
         </div>
+        {onDedupe && (
+          <button
+            onClick={() => {
+              if (confirm('Isso vai remover leads duplicados (mesma O.S.), mantendo o registro mais antigo de cada. Continuar?')) {
+                onDedupe()
+              }
+            }}
+            title="Remove leads duplicados que ficaram no banco por causa de reimportações repetidas da mesma planilha"
+            className="flex items-center gap-1.5 cursor-pointer"
+            style={{ ...INP_STYLE, fontWeight: 600, color: 'var(--text-dim)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+            Remover duplicatas
+          </button>
+        )}
       </div>
 
       {/* Table — igual ao HTML de referência */}
