@@ -186,31 +186,34 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
           {total > 0 ? `${total} nos últimos 7 dias` : 'Últimos 7 dias'}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-3 h-40 relative pt-6">
+      <div className="flex-1 flex items-end justify-between gap-3 relative" style={{ minHeight: 160 }}>
         {days.map((d, i) => {
           const pct = Math.round((d.count / DAILY_GOAL) * 100)
-          const h = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 120
+          const barH = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 110
           const isMax = d === highlight && d.count > 0
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
-              <span
-                className="absolute -top-6 text-[10px] font-bold px-1.5 py-0.5 rounded"
-                style={isMax
-                  ? { background: '#0f7a5a', color: '#fff' }
-                  : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
-              >
-                {pct}%
-              </span>
-              <div
-                className="w-full rounded-full transition-all"
-                style={{
-                  height: h,
-                  maxWidth: 42,
-                  background: isMax
-                    ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
-                    : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
-                }}
-              />
+            <div key={i} className="flex-1 self-stretch flex flex-col items-center gap-2">
+              {/* Área flexível: empurra o selo de % + barra para o fundo, sem sobreposição */}
+              <div className="flex-1 w-full flex flex-col items-center justify-end gap-1.5 min-h-0">
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
+                  style={isMax
+                    ? { background: '#0f7a5a', color: '#fff' }
+                    : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
+                >
+                  {pct}%
+                </span>
+                <div
+                  className="w-full rounded-full transition-all"
+                  style={{
+                    height: barH,
+                    maxWidth: 42,
+                    background: isMax
+                      ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
+                      : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
+                  }}
+                />
+              </div>
               <span className="text-xs font-semibold" style={{ color: d.isToday ? 'var(--text-primary)' : 'var(--text-muted)' }}>{d.label}</span>
               <span className="text-[10.5px] font-bold -mt-1.5" style={{ color: 'var(--text-muted)' }}>{d.count}</span>
             </div>
