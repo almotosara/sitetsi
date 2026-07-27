@@ -228,3 +228,44 @@ export async function updateProfile(display_name: string | null, avatar_url: str
   if (error) throw error
   revalidatePath('/')
 }
+// ─── CHAT (Consultor <-> Oficina) ──────────────────────────────────────────────
+
+export interface ChatMessage {
+  id: string
+  sender_id: string
+  texto: string
+  criado_em: string
+  lido: boolean
+}
+
+export async function getChatMessages(): Promise<ChatMessage[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .order('criado_em', { ascending: true })
+    .limit(200)
+  if (error) throw error
+  return (data as ChatMessage[]) || []
+}
+
+export async function sendChatMessage(sender_id: string, texto: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert({ sender_id, texto })
+    .select()
+    .single()
+  if (error) throw error
+  return data as ChatMessage
+}
+
+export async function markChatRead(otherUserId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('chat_messages')
+    .update({ lido: true })
+    .eq('sender_id', otherUserId)
+    .eq('lido', false)
+  if (error) throw error
+}

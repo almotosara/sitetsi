@@ -7,6 +7,7 @@ import { Sidebar } from './sidebar'
 import { LeadModal } from './lead-modal'
 import { DashView } from './views/dash-view'
 import { LeadsView } from './views/leads-view'
+import { ChatPanel } from './chat-panel'
 import { ReportView } from './views/report-view'
 import { TsiView } from './views/tsi-view'
 import { TsiListView } from './views/tsi-list-view'
@@ -84,6 +85,7 @@ function tsiRowIsMeta(row: Record<string, unknown>): boolean {
 interface AppShellProps {
   userName: string
   userEmail: string
+  userId: string
   initialLeads: Lead[]
   initialTsi: TsiRow[]
   initialTsiResend?: TsiResendRow[]
@@ -95,10 +97,11 @@ interface AppShellProps {
 }
 
 export function AppShell({
-  userName, userEmail, initialLeads, initialTsi, initialTsiResend, initialFieis, initialGoal, initialTsiUpdatedAt,
+  userName, userEmail, userId, initialLeads, initialTsi, initialTsiResend, initialFieis, initialGoal, initialTsiUpdatedAt,
   initialDisplayName, initialAvatarUrl,
 }: AppShellProps) {
   const [view, setView] = useState<View>('dash')
+  const [chatOpen, setChatOpen] = useState(false)
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [tsiData, setTsiData] = useState<TsiRow[]>(initialTsi)
   const [tsiResend, setTsiResend] = useState<TsiResendRow[]>(initialTsiResend || [])
@@ -307,11 +310,11 @@ export function AppShell({
           os: osKey,
           cliente: getCol(r, 'Cliente', 'Nome', 'Pessoa') || null,
           veiculo: getCol(r, 'Veículo', 'Veiculo', 'Modelo') || null,
-          email: getCol(r, 'E-mail', 'Email') || null,
-          celular: getCol(r, 'Celular', 'Telefone Celular', 'Telefone') || null,
-          data_envio_email: tsiFmtDate(getCol(r, 'Data envio e-mail', 'Data Envio Email', 'Envio e-mail')) || null,
-          data_envio_sms: tsiFmtDate(getCol(r, 'Data envio SMS', 'Envio SMS')) || null,
-          data_reenvio: null,
+          email: getCol(r, 'E-mail do Cliente', 'E-mail', 'Email') || null,
+          celular: getCol(r, 'Celular do Cliente', 'Celular', 'Telefone Celular', 'Telefone') || null,
+          data_envio_email: tsiFmtDate(getCol(r, 'Data de envio pesquisa por email', 'Data envio e-mail', 'Data Envio Email', 'Envio e-mail')) || null,
+          data_envio_sms: tsiFmtDate(getCol(r, 'Data de envio pesquisa por SMS', 'Data envio SMS', 'Envio SMS')) || null,
+          data_reenvio: tsiFmtDate(getCol(r, 'Data de reenvio do TSI', 'Data reenvio', 'Reenvio')) || null,
         }
       }).filter(Boolean) as Omit<TsiResendRow, 'id' | 'user_id' | 'importado_em'>[]
 
@@ -320,7 +323,8 @@ export function AppShell({
       toast(`${mapped.length} registros de reenvio importados.${skipped ? ` (${skipped} linhas de rodapé ignoradas)` : ''}`)
     } catch (err) {
       console.error('[TSI Resend] import error:', err)
-      toast('Erro ao importar planilha de reenvio.', true)
+      const msg = err instanceof Error ? err.message : ''
+      toast(msg ? `Erro ao importar planilha de reenvio: ${msg}` : 'Erro ao importar planilha de reenvio.', true)
     }
   }, [toast])
 
@@ -622,14 +626,14 @@ export function AppShell({
 
           {/* Account cluster (mail / notificações / avatar) */}
           <div className="flex items-center gap-2.5 pl-3 ml-1" style={{ borderLeft: '1px solid var(--border-line-soft)' }}>
-            <a
-              href={`mailto:${userEmail}`}
+            <button
+              onClick={() => setChatOpen((v) => !v)}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
-              title="Enviar e-mail"
+              title="Chat com a Oficina"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
-            </a>
+            </button>
             <button
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
@@ -694,6 +698,8 @@ export function AppShell({
       <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileChange} />
       <input ref={resendFileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleResendFileChange} />
       <input ref={mwFileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleMicroWorkImport} />
+
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} myUserId={userId} myName={userName} />
     </div>
   )
 }

@@ -165,13 +165,16 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
     const arr: { label: string; count: number; isToday: boolean }[] = []
     const labels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
     const now = new Date()
+    const sunday = new Date(now)
+    sunday.setDate(now.getDate() - now.getDay()) // sempre volta pro domingo desta semana
+    const todayKey = now.toISOString().slice(0, 10)
     const convertidos = leads.filter((l) => l.status === 'Convertido')
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now)
-      d.setDate(now.getDate() - i)
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sunday)
+      d.setDate(sunday.getDate() + i)
       const key = d.toISOString().slice(0, 10)
       const count = convertidos.filter((l) => (l.atualizado_em || '').slice(0, 10) === key).length
-      arr.push({ label: labels[d.getDay()], count, isToday: i === 0 })
+      arr.push({ label: labels[d.getDay()], count, isToday: key === todayKey })
     }
     return arr
   }, [leads])
@@ -179,41 +182,38 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
   const highlight = days.reduce((a, b) => (b.count > a.count ? b : a), days[0])
 
   return (
-    <Panel className="p-5 flex flex-col gap-5" >
+    <Panel className="p-5 flex flex-col gap-6" >
       <div className="flex items-center justify-between">
         <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Leads convertidos</h3>
         <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>
           {total > 0 ? `${total} nos últimos 7 dias` : 'Últimos 7 dias'}
         </span>
       </div>
-      <div className="flex-1 flex items-end justify-between gap-3 relative" style={{ minHeight: 160 }}>
+      <div className="flex items-end justify-between gap-3 h-40 relative pt-6">
         {days.map((d, i) => {
           const pct = Math.round((d.count / DAILY_GOAL) * 100)
-          const barH = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 110
+          const h = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 120
           const isMax = d === highlight && d.count > 0
           return (
-            <div key={i} className="flex-1 self-stretch flex flex-col items-center gap-2">
-              {/* Área flexível: empurra o selo de % + barra para o fundo, sem sobreposição */}
-              <div className="flex-1 w-full flex flex-col items-center justify-end gap-1.5 min-h-0">
-                <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
-                  style={isMax
-                    ? { background: '#0f7a5a', color: '#fff' }
-                    : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
-                >
-                  {pct}%
-                </span>
-                <div
-                  className="w-full rounded-full transition-all"
-                  style={{
-                    height: barH,
-                    maxWidth: 42,
-                    background: isMax
-                      ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
-                      : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
-                  }}
-                />
-              </div>
+            <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
+              <span
+                className="absolute -top-1 text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
+                style={isMax
+                  ? { background: '#0f7a5a', color: '#fff' }
+                  : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
+              >
+                {pct}%
+              </span>
+              <div
+                className="w-full rounded-full transition-all"
+                style={{
+                  height: h,
+                  maxWidth: 42,
+                  background: isMax
+                    ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
+                    : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
+                }}
+              />
               <span className="text-xs font-semibold" style={{ color: d.isToday ? 'var(--text-primary)' : 'var(--text-muted)' }}>{d.label}</span>
               <span className="text-[10.5px] font-bold -mt-1.5" style={{ color: 'var(--text-muted)' }}>{d.count}</span>
             </div>
@@ -495,30 +495,38 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
   const novos = byStatus['Novo'] || 0
   const pct = goal > 0 ? Math.min(100, (convertidos / goal) * 100) : 0
 
+  const convertidosCompSemana = useMemo(() => {
+    const startOfWeek = (d: Date) => {
+      const x = new Date(d)
+      x.setDate(x.getDate() - x.getDay())
+      x.setHours(0, 0, 0, 0)
+      return x
+    }
+    const thisWeekStart = startOfWeek(now)
+    const lastWeekStart = new Date(thisWeekStart)
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7)
+    let estaSemana = 0, semanaPassada = 0
+    for (const l of leads) {
+      if (l.status !== 'Convertido' || !l.atualizado_em) continue
+      const d = new Date(l.atualizado_em)
+      if (d >= thisWeekStart) estaSemana++
+      else if (d >= lastWeekStart && d < thisWeekStart) semanaPassada++
+    }
+    return estaSemana - semanaPassada
+  }, [leads, now])
+
   return (
     <div className="view-enter flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Painel</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Planeje, priorize e acompanhe seus leads com facilidade.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={onNewLead} className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-transform hover:scale-[1.02]" style={{ background: '#0f7a5a', color: '#ffffff' }}>
-            <IconPlus /> Novo lead
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors hover:bg-[var(--sidebar-hover)]" style={{ border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}>
-            <IconDownload /> Importar
-          </button>
-        </div>
-      </div>
-
       {/* Stats row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" />
-        <StatCard label="Convertidos" value={convertidos} sub={`${perdidos} perdidos`} />
-        <StatCard label="Em andamento" value={emAndamento} sub="Contato + proposta" />
-        <StatCard label="Novos" value={novos} sub="Aguardando 1º contato" />
+        <StatCard label="Convertidos" value={convertidos} sub={
+          convertidosCompSemana === 0
+            ? 'Igual à semana passada'
+            : `${Math.abs(convertidosCompSemana)} a ${convertidosCompSemana > 0 ? 'mais' : 'menos'} que semana passada`
+        } />
+        <StatCard label="Em andamento" value={emAndamento} sub="Seguradoras e proteções veiculares" />
+        <StatCard label="Novos" value={novos} sub="Aguardando conversão no myHonda" />
       </div>
 
       {/* Middle row */}

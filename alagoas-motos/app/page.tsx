@@ -39,7 +39,7 @@ export default async function Page() {
     return (
       <ThemeProvider>
         <ToastProvider>
-          <OficinaShell userName={session.name} userEmail={session.email} />
+          <OficinaShell userName={session.name} userEmail={session.email} userId={session.id} />
         </ToastProvider>
       </ThemeProvider>
     )
@@ -53,6 +53,7 @@ export default async function Page() {
         <AppShell
           userName={session.name}
           userEmail={session.email}
+          userId={session.id}
           initialLeads={leads}
           initialTsi={tsiData}
           initialTsiResend={tsiResend}

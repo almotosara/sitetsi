@@ -116,3 +116,37 @@ CREATE INDEX IF NOT EXISTS idx_tsi_resend_user ON tsi_resend(user_id);
 INSERT INTO user_settings (user_id, goal)
 VALUES ('00000000-0000-0000-0000-000000000001', 150)
 ON CONFLICT (user_id) DO NOTHING;
+-- ═══════════════════════════════════════════════════════════════════
+-- 9. Chat entre Consultor e Oficina
+-- ═══════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  sender_id    UUID NOT NULL,
+  texto        TEXT NOT NULL,
+  criado_em    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  lido         BOOLEAN NOT NULL DEFAULT false
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+-- As duas contas fixas do sistema (consultor e oficina) compartilham
+-- o mesmo canal de chat, então a policy libera leitura/escrita geral
+-- para qualquer um dos dois user_ids conhecidos do app.
+CREATE POLICY "chat_full_access" ON chat_messages
+  FOR ALL USING (
+    sender_id IN (
+      '00000000-0000-0000-0000-000000000001',
+      '00000000-0000-0000-0000-000000000002'
+    )
+  )
+  WITH CHECK (
+    sender_id IN (
+      '00000000-0000-0000-0000-000000000001',
+      '00000000-0000-0000-0000-000000000002'
+    )
+  );
+
+CREATE INDEX IF NOT EXISTS idx_chat_criado ON chat_messages(criado_em ASC);
+
+-- Habilita Realtime para a tabela (necessário pra atualização instantânea no chat)
+ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { OficinaSidebar } from './oficina-sidebar'
+import { ChatPanel } from './chat-panel'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
 interface Servico { servico: string; acao: string }
@@ -118,8 +119,9 @@ function Skeleton() {
   )
 }
 
-export function OficinaShell({ userName, userEmail }: { userName: string; userEmail: string }) {
+export function OficinaShell({ userName, userEmail, userId }: { userName: string; userEmail: string; userId: string }) {
   const [tab, setTab] = useState<Tab>('revisao')
+  const [chatOpen, setChatOpen] = useState(false)
   const [data, setData] = useState<RevisoesData | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [q, setQ] = useState('')
@@ -411,6 +413,20 @@ export function OficinaShell({ userName, userEmail }: { userName: string; userEm
           </div>
         )}
       </div>
+
+      {/* Botão flutuante de chat com o Consultor */}
+      <button
+        onClick={() => setChatOpen(true)}
+        title="Chat com o Consultor"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center transition-transform hover:scale-105 z-30"
+        style={{ background: '#0f7a5a', color: '#fff', boxShadow: '0 10px 30px -8px #0f7a5a99' }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} myUserId={userId} myName={userName} />
     </div>
   )
 }
