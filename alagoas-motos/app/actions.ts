@@ -236,9 +236,11 @@ export interface ChatMessage {
   texto: string
   criado_em: string
   lido: boolean
+  apagada_para_todos: boolean
+  apagada_para: string[]
 }
 
-export async function getChatMessages(): Promise<ChatMessage[]> {
+export async function getChatMessages(myUserId: string): Promise<ChatMessage[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('chat_messages')
@@ -246,7 +248,7 @@ export async function getChatMessages(): Promise<ChatMessage[]> {
     .order('criado_em', { ascending: true })
     .limit(200)
   if (error) throw error
-  return (data as ChatMessage[]) || []
+  return ((data as ChatMessage[]) || []).filter((m) => !(m.apagada_para || []).includes(myUserId))
 }
 
 export async function sendChatMessage(sender_id: string, texto: string) {
@@ -267,5 +269,31 @@ export async function markChatRead(otherUserId: string) {
     .update({ lido: true })
     .eq('sender_id', otherUserId)
     .eq('lido', false)
+  if (error) throw error
+}
+
+export async function deleteChatMessageForMe(id: string, myUserId: string) {
+  const supabase = await createClient()
+  const { data: row, error: fetchErr } = await supabase
+    .from('chat_messages')
+    .select('apagada_para')
+    .eq('id', id)
+    .single()
+  if (fetchErr) throw fetchErr
+  const atual: string[] = row?.apagada_para || []
+  if (atual.includes(myUserId)) return
+  const { error } = await supabase
+    .from('chat_messages')
+    .update({ apagada_para: [...atual, myUserId] })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteChatMessageForEveryone(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('chat_messages')
+    .update({ apagada_para_todos: true })
+    .eq('id', id)
   if (error) throw error
 }

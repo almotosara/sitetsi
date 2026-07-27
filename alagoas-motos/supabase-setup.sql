@@ -120,12 +120,18 @@ ON CONFLICT (user_id) DO NOTHING;
 -- 9. Chat entre Consultor e Oficina
 -- ═══════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS chat_messages (
-  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  sender_id    UUID NOT NULL,
-  texto        TEXT NOT NULL,
-  criado_em    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  lido         BOOLEAN NOT NULL DEFAULT false
+  id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  sender_id           UUID NOT NULL,
+  texto               TEXT NOT NULL,
+  criado_em           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  lido                BOOLEAN NOT NULL DEFAULT false,
+  apagada_para_todos  BOOLEAN NOT NULL DEFAULT false,
+  apagada_para        TEXT[] NOT NULL DEFAULT '{}'
 );
+
+-- Se a tabela já existia antes (instalação antiga), rode este bloco pra adicionar as colunas novas:
+-- ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS apagada_para_todos BOOLEAN NOT NULL DEFAULT false;
+-- ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS apagada_para TEXT[] NOT NULL DEFAULT '{}';
 
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 
