@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Menu de Revisão + Autofill
 // @namespace    alagoasmotos
-// @version      0.8
+// @version      0.9
 // @description  Menu de seleção de moto/revisão + autofill automático + integração com o dashboard da oficina (abre a OS já com a moto/revisão e dispara ao informar placa/chassi)
 // v0.7: seletor de placa/chassi corrigido para o HTML real (kendo-autocomplete
 //   com placeholder="placa"/"chassi", sem <label>). Antes, quando o operador
@@ -14,6 +14,12 @@
 //   arruela do dreno na BIZ. "Revisão totalmente configurada" agora exige
 //   tipo de ordem + serviço + mercadorias específicas; sem isso o confirm()
 //   continua avisando que vai usar valores base da 1ª revisão.
+// v0.9: troca de óleo avulsa (tipo 7 / serviço 24) e o fallback genérico de
+//   mercadorias agora usam o ÓLEO CERTO por família de modelo — antes o
+//   código ficava sempre fixo em 1002 (óleo de moto normal), inclusive nas
+//   scooters (PCX, Elite, ADV, X-ADV, SH150i), que usam o óleo de scooter
+//   082332MB024. Quantidade por modelo também revisada (TRX420 2,7L,
+//   Twister/Sahara/XRE300 1,6L, etc.).
 // @match        https://microworkcloud.com.br/cloud/*
 // @grant        none
 // ==/UserScript==
@@ -1713,18 +1719,44 @@
   // base de troca de óleo até você me passar os códigos específicos de
   // cada revisão (kit de revisão, vela, filtro etc.) cadastrados no DMS.
   // ═══════════════════════════════════════════════════════════════════
-  // Quantidade do item 1002 (óleo) varia por modelo. Chaves = trecho do
-  // nome do modelo (como aparece em REVISOES_POR_MODELO) que identifica
-  // o motor/família. Ajuste/adicione conforme for confirmando outros modelos.
-  const QUANTIDADE_OLEO_POR_MODELO = [
-    { contem: 'POP110i', quantidade: '0,8' },
-    { contem: 'BIZ 125 EX', quantidade: '0,9' },   // "nova biz"
-    { contem: 'BIZ110i',   quantidade: '0,8' },    // "biz 110"
+  // Óleo (código + quantidade) por família de modelo. Motos "normais" usam
+  // o óleo 1002; scooters (PCX, Elite, ADV, X-ADV, SH150i) usam o óleo de
+  // scooter 082332MB024. Casa contra o nome do modelo NORMALIZADO (ver
+  // amNorm mais abaixo) — a primeira regra que bater vence, por isso as
+  // mais específicas (X-ADV antes de ADV, BIZ125EX antes de BIZ125) vêm
+  // primeiro. Usado tanto na troca de óleo avulsa quanto no fallback
+  // genérico de mercadorias das revisões ainda não configuradas.
+  const OLEO_POR_MODELO = [
+    { contem: ['BIZ125EX'], codigo: '1002', quantidade: '0,9' },       // "nova biz"
+    { contem: ['BIZ125'], codigo: '1002', quantidade: '0,9' },
+    { contem: ['BIZ110I'], codigo: '1002', quantidade: '0,8' }, // "biz 110"
+    { contem: ['POP'], codigo: '1002', quantidade: '0,8' },
+    { contem: ['PCX160'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['PCX150'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['ELITE'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['XADV'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['ADV'], exceto: ['XADV'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['SH150'], codigo: '082332MB024', quantidade: '0,8' },
+    { contem: ['TRX420'], codigo: '1002', quantidade: '2,7' },
+    { contem: ['TWISTER'], codigo: '1002', quantidade: '1,6' },
+    { contem: ['SAHARA'], codigo: '1002', quantidade: '1,6' },
+    { contem: ['XRE300'], codigo: '1002', quantidade: '1,6' },
+    // demais modelos (CG160 TITAN/START/FAN/CARGO, NXR160/BROS, XRE190 etc.)
+    // usam 1002 na quantidade padrão de 1L até confirmar o contrário.
   ];
 
+  function oleoParaModelo(nomeModelo) {
+    const n = amNorm(nomeModelo || '');
+    for (const r of OLEO_POR_MODELO) {
+      if (r.exceto && r.exceto.some((e) => n.includes(e))) continue;
+      if (r.contem.every((c) => n.includes(c))) return { codigo: r.codigo, quantidade: r.quantidade };
+    }
+    return { codigo: '1002', quantidade: '1' }; // padrão caso o modelo ainda não tenha sido configurado
+  }
+
+  // Mantido por compatibilidade — só a quantidade (assume código 1002).
   function quantidadeOleoParaModelo(nomeModelo) {
-    const achou = QUANTIDADE_OLEO_POR_MODELO.find((r) => nomeModelo.includes(r.contem));
-    return achou ? achou.quantidade : '1'; // padrão caso o modelo ainda não tenha sido configurado
+    return oleoParaModelo(nomeModelo).quantidade;
   }
 
   // "Tipo de ordem de serviço" por número de revisão.
@@ -1873,11 +1905,11 @@
   function configurarCfgParaSelecao(selecao) {
     // Mercadorias: por padrão os mesmos 4 itens genéricos da 1ª revisão
     // (usados quando ainda não há uma tabela específica pra esse
-    // modelo/revisão em MERCADORIAS_POR_REVISAO). Só a quantidade do óleo
-    // (1002) muda conforme o modelo.
-    const qtdOleo = quantidadeOleoParaModelo(selecao.modelo || '');
+    // modelo/revisão em MERCADORIAS_POR_REVISAO). O código e a quantidade
+    // do óleo mudam conforme a família do modelo (scooter x moto normal).
+    const oleo = oleoParaModelo(selecao.modelo || '');
     CFG.mercadorias = [
-      { codigo: '1002', match: '1002', quantidade: qtdOleo },
+      { codigo: oleo.codigo, match: oleo.codigo, quantidade: oleo.quantidade },
       { codigo: '1003', match: '1003', quantidade: '1' },
       { codigo: '1007', match: '1007', quantidade: '1' },
       { codigo: '90401KRMR20', match: '90401KRMR20', quantidade: '1' },
@@ -1896,13 +1928,13 @@
       //   Tipo de ordem de serviço = 7
       //   Serviço                  = 24
       //   TMO                      = 1
-      //   Mercadoria               = só o óleo (1002), qtd conforme o modelo
+      //   Mercadoria               = só o óleo, código e qtd conforme o modelo
       CFG.tipoCortesiaCodigo = TROCA_OLEO.tipoOrdem.codigo;
       CFG.tipoCortesia = TROCA_OLEO.tipoOrdem.match;
       CFG.servicoCortesiaCodigo = TROCA_OLEO.servico.codigo;
       CFG.servicoCortesiaMatch = TROCA_OLEO.servico.match;
       CFG.tmo = TROCA_OLEO.tmo;
-      CFG.mercadorias = [{ codigo: '1002', match: '1002', quantidade: qtdOleo }];
+      CFG.mercadorias = [{ codigo: oleo.codigo, match: oleo.codigo, quantidade: oleo.quantidade }];
       return { configuradoCompletamente: true };
     }
 
