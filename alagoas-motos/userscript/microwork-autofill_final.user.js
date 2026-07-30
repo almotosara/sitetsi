@@ -1745,6 +1745,16 @@
     // demais revisões ainda não configuradas — usa o código da 1ª como base
   };
 
+  // Troca de óleo avulsa (fora de revisão):
+  // Tipo de ordem de serviço = 7, Serviço = 24, TMO = 1,
+  // e a única mercadoria é o óleo (1002).
+  const TROCA_OLEO = {
+    tipoOrdem: { codigo: '7', match: '7 -' },
+    servico: { codigo: '24', match: '(24)' },
+    tmo: '1',
+  };
+
+
   // Mercadorias específicas por família de modelo, por número de revisão.
   // "contem"/"exceto" casam contra o nome do modelo NORMALIZADO (maiúsculas,
   // sem acento, só A-Z0-9 — ver amNorm mais abaixo). A primeira regra que
@@ -1882,13 +1892,20 @@
     }
 
     if (selecao.tipo === 'troca_oleo') {
-      // Troca de óleo avulsa usa os códigos da 1ª revisão como padrão
-      CFG.tipoCortesiaCodigo = TIPO_ORDEM_POR_REVISAO[1].codigo;
-      CFG.tipoCortesia = TIPO_ORDEM_POR_REVISAO[1].match;
-      CFG.servicoCortesiaCodigo = SERVICO_KM_POR_REVISAO[1].codigo;
-      CFG.servicoCortesiaMatch = SERVICO_KM_POR_REVISAO[1].match;
+      // Troca de óleo avulsa:
+      //   Tipo de ordem de serviço = 7
+      //   Serviço                  = 24
+      //   TMO                      = 1
+      //   Mercadoria               = só o óleo (1002), qtd conforme o modelo
+      CFG.tipoCortesiaCodigo = TROCA_OLEO.tipoOrdem.codigo;
+      CFG.tipoCortesia = TROCA_OLEO.tipoOrdem.match;
+      CFG.servicoCortesiaCodigo = TROCA_OLEO.servico.codigo;
+      CFG.servicoCortesiaMatch = TROCA_OLEO.servico.match;
+      CFG.tmo = TROCA_OLEO.tmo;
+      CFG.mercadorias = [{ codigo: '1002', match: '1002', quantidade: qtdOleo }];
       return { configuradoCompletamente: true };
     }
+
 
     if (selecao.tipo === 'revisao') {
       const tipoOrdem = TIPO_ORDEM_POR_REVISAO[selecao.numero];
@@ -2298,15 +2315,19 @@
     const modeloParam = p.get('am_modelo');
     if (!modeloParam) return;
 
+    const tipoParam = (p.get('am_tipo') || 'revisao').toLowerCase();
+    const ehTrocaOleo = tipoParam === 'troca_oleo' || tipoParam === 'oleo';
     const numero = parseInt(p.get('am_rev') || '1', 10) || 1;
     const kmMeses = p.get('am_km') || '';
     const chave = amAcharChaveModelo(modeloParam);
-    const selecao = {
-      tipo: 'revisao',
-      numero,
-      modelo: chave || modeloParam,
-      km_meses: kmMeses,
-    };
+    const selecao = ehTrocaOleo
+      ? { tipo: 'troca_oleo', modelo: chave || modeloParam, km_meses: kmMeses }
+      : {
+          tipo: 'revisao',
+          numero,
+          modelo: chave || modeloParam,
+          km_meses: kmMeses,
+        };
 
     console.log('[Autofill AM] Seleção recebida do dashboard:', selecao, '(param:', modeloParam, ')');
 
@@ -2344,7 +2365,9 @@
     document.getElementById('am-banner-run').onclick = executar;
     document.getElementById('am-banner-close').onclick = () => { cancelado = true; amEsconder(); };
 
-    const rotulo = `${numero}ª revisão — ${selecao.modelo}${kmMeses ? ` (${kmMeses})` : ''}`;
+    const rotulo = ehTrocaOleo
+      ? `Troca de óleo (avulsa) — ${selecao.modelo}`
+      : `${numero}ª revisão — ${selecao.modelo}${kmMeses ? ` (${kmMeses})` : ''}`;
     amMostrar(`${rotulo}. Informe a placa ou o chassi do veículo — o preenchimento começa sozinho.`);
 
     if (!chave) {

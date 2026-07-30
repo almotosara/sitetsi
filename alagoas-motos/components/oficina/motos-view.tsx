@@ -101,6 +101,12 @@ function DetalheMoto({
     setEscolhendoOS(false);
   }
 
+  function abrirTrocaOleo() {
+    const url = urlOrdemServico({ modelo: modelo.modelo, tipo: "troca_oleo" });
+    window.open(url, "_blank", "noopener");
+    setEscolhendoOS(false);
+  }
+
   return (
     <div className="flex flex-col gap-6 animate-oficina-fade" style={{ fontFamily: FONT }}>
       <button
@@ -194,7 +200,7 @@ function DetalheMoto({
               style={{ background: "var(--bg-panel-2)", border: `1px solid ${ACCENT}55` }}
             >
               <div className="text-[11.5px] font-medium" style={{ color: "var(--text-muted)" }}>
-                Qual revisão vai abrir no MicroWork?
+                O que vai abrir no MicroWork?
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {modelo.revisoes.map((rev) => (
@@ -207,6 +213,21 @@ function DetalheMoto({
                     {rev.numero}ª · {rev.km.toLocaleString("pt-BR")}km
                   </button>
                 ))}
+              </div>
+              <div
+                className="mt-0.5 pt-2.5"
+                style={{ borderTop: "1px solid var(--border-line-soft)" }}
+              >
+                <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--text-muted)" }}>
+                  Serviço avulso
+                </div>
+                <button
+                  onClick={abrirTrocaOleo}
+                  className="rounded-xl px-3 py-1.5 text-[12px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
+                  style={{ background: "transparent", color: ACCENT, border: `1px solid ${ACCENT}` }}
+                >
+                  Troca de óleo
+                </button>
               </div>
               <button
                 onClick={() => setEscolhendoOS(false)}

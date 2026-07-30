@@ -182,8 +182,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
       />
 
       {/* Conteúdo */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen p-6 pb-10 max-w-[1200px] w-full mx-auto">
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
         <h1 style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
           {tab === 'revisao' && 'Motos & Ordem de Serviço'}
           {tab === 'valores' && 'Consulta de Valores'}
@@ -295,8 +294,6 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
             ))}
           </div>
         )}
-
-        </div>
 
         <FooterLojas />
       </div>

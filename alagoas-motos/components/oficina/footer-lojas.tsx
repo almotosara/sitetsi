@@ -21,7 +21,7 @@ const LOJAS = [
 export function FooterLojas() {
   return (
     <footer
-      className="mt-16 rounded-3xl overflow-hidden animate-oficina-fade"
+      className="mt-12 rounded-3xl overflow-hidden animate-oficina-fade"
       style={{
         background: "color-mix(in oklab, var(--bg-panel-2) 78%, transparent)",
         backdropFilter: "blur(18px)",
@@ -68,15 +68,7 @@ export function FooterLojas() {
         }}
       >
         <span>© {new Date().getFullYear()} Alagoas Motos · Uso interno da oficina</span>
-        <span className="flex items-center gap-3 font-medium">
-          <img
-            src="/ibama-proconve.png"
-            alt="IBAMA PROCONVE Homologado"
-            className="h-9 w-auto shrink-0 object-contain"
-            loading="lazy"
-          />
-          Paz no trânsito começa por você.
-        </span>
+        <span className="font-medium">Paz no trânsito começa por você.</span>
       </div>
     </footer>
   );

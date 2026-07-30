@@ -79,7 +79,7 @@ const REGRAS: Regra[] = [
   { contem: ["NX500"], foto: "nx500", categoria: "big" },
   { contem: ["CB750"], foto: "cb750-hornet", categoria: "big" },
   { contem: ["CB650"], foto: "cb650r", categoria: "big" },
-  { contem: ["CBR650"], foto: "cbr650r", categoria: "big" },
+  { contem: ["CBR650"], foto: "cb650r", categoria: "big" },
   { contem: ["CBR1000"], foto: "cb650r", categoria: "big" },
   { contem: ["NC750"], foto: "nc750x", categoria: "big" },
   { contem: ["XL750"], foto: "xl750-transalp", categoria: "big" },
@@ -139,9 +139,15 @@ export const MICROWORK_OS_URL = "https://microworkcloud.com.br/cloud/#/servico/o
  * `location.search`, e dispara o preenchimento assim que a placa/chassi do
  * veículo for informada na tela.
  */
-export function urlOrdemServico(opts: { modelo: string; revisao?: number; kmMeses?: string }) {
+export function urlOrdemServico(opts: {
+  modelo: string;
+  revisao?: number;
+  kmMeses?: string;
+  tipo?: "revisao" | "troca_oleo";
+}) {
   const p = new URLSearchParams();
   p.set("am_modelo", opts.modelo);
+  if (opts.tipo === "troca_oleo") p.set("am_tipo", "troca_oleo");
   if (opts.revisao) p.set("am_rev", String(opts.revisao));
   if (opts.kmMeses) p.set("am_km", opts.kmMeses);
   p.set("am_auto", "1");
