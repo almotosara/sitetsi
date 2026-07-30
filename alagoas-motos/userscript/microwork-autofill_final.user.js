@@ -1,13 +1,19 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Menu de Revisão + Autofill
 // @namespace    alagoasmotos
-// @version      0.7
+// @version      0.8
 // @description  Menu de seleção de moto/revisão + autofill automático + integração com o dashboard da oficina (abre a OS já com a moto/revisão e dispara ao informar placa/chassi)
 // v0.7: seletor de placa/chassi corrigido para o HTML real (kendo-autocomplete
 //   com placeholder="placa"/"chassi", sem <label>). Antes, quando o operador
 //   digitava só no campo chassi (placa não identificada), o script continuava
 //   olhando o campo placa vazio e nunca disparava o autofill; agora checa os
 //   dois campos e usa o que tiver conteúdo (placa tem prioridade).
+// v0.8: mercadorias específicas da 2ª revisão por família de modelo (POP,
+//   BIZ125, PCX160, ELITE, ADV, X-ADV, TITAN, START/FAN/CARGO, NXR160/BROS,
+//   XRE190, TRX420, TWISTER, SAHARA/XRE300) — sem SILICONE em nenhuma, sem
+//   arruela do dreno na BIZ. "Revisão totalmente configurada" agora exige
+//   tipo de ordem + serviço + mercadorias específicas; sem isso o confirm()
+//   continua avisando que vai usar valores base da 1ª revisão.
 // @match        https://microworkcloud.com.br/cloud/*
 // @grant        none
 // ==/UserScript==
@@ -1739,10 +1745,126 @@
     // demais revisões ainda não configuradas — usa o código da 1ª como base
   };
 
+  // Mercadorias específicas por família de modelo, por número de revisão.
+  // "contem"/"exceto" casam contra o nome do modelo NORMALIZADO (maiúsculas,
+  // sem acento, só A-Z0-9 — ver amNorm mais abaixo). A primeira regra que
+  // bater vence, então regras mais específicas (ex: X-ADV antes de ADV)
+  // devem vir primeiro dentro da lista de cada revisão.
+  const MERCADORIAS_POR_REVISAO = {
+    2: [
+      { contem: ['BIZ125EX'], itens: [
+        { codigo: '1002', quantidade: '0,9' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: '0123AK62305', quantidade: '1' },
+      ] },
+      { contem: ['BIZ125'], itens: [
+        { codigo: '1002', quantidade: '0,9' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: '0123AK62305', quantidade: '1' },
+      ] },
+      { contem: ['POP'], itens: [
+        { codigo: '1002', quantidade: '0,8' }, { codigo: '0123AK62305', quantidade: '1' },
+        { codigo: '1003', quantidade: '1' }, { codigo: '1007', quantidade: '1' },
+      ] },
+      { contem: ['PCX160'], itens: [
+        { codigo: '082332MB024', quantidade: '0,8' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['ELITE'], itens: [
+        { codigo: '082332MB024', quantidade: '0,8' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['XADV'], itens: [
+        { codigo: '082332MB024', quantidade: '0,8' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: '15410MFJD02', quantidade: '1' },
+      ] },
+      { contem: ['ADV'], exceto: ['XADV'], itens: [
+        { codigo: '082332MB024', quantidade: '0,8' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '90401KRMR20', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['CG160TITAN'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['TITAN'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['CARGO'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['START'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['FAN'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['NXR160'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['BROS'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['XRE190'], itens: [
+        { codigo: '1002', quantidade: '1' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: '0123BKRE305', quantidade: '1' },
+        { codigo: 'GRA005', quantidade: '1' },
+      ] },
+      { contem: ['TRX420'], itens: [
+        { codigo: '1002', quantidade: '2,7' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'H1541HM5A10', quantidade: '1' },
+      ] },
+      { contem: ['TWISTER'], itens: [
+        { codigo: '1002', quantidade: '1,6' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: 'H1541HM5A10', quantidade: '1' }, { codigo: '91302KF0003', quantidade: '1' },
+      ] },
+      { contem: ['SAHARA'], itens: [
+        { codigo: '1002', quantidade: '1,6' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: 'H1541HM5A10', quantidade: '1' }, { codigo: '91302KF0003', quantidade: '1' },
+      ] },
+      { contem: ['XRE300'], itens: [
+        { codigo: '1002', quantidade: '1,6' }, { codigo: '1003', quantidade: '1' },
+        { codigo: '1007', quantidade: '1' }, { codigo: 'GRA005', quantidade: '1' },
+        { codigo: 'H1541HM5A10', quantidade: '1' }, { codigo: '91302KF0003', quantidade: '1' },
+      ] },
+    ],
+    // demais revisões (1, 3, 4...) ainda usam a lista genérica em CFG.mercadorias
+  };
+
+  function mercadoriasEspecificasParaModeloRevisao(nomeModelo, numero) {
+    const regras = MERCADORIAS_POR_REVISAO[numero];
+    if (!regras) return null;
+    const n = amNorm(nomeModelo || '');
+    for (const r of regras) {
+      if (r.exceto && r.exceto.some((e) => n.includes(e))) continue;
+      if (r.contem.every((c) => n.includes(c))) {
+        return r.itens.map((it) => ({ codigo: it.codigo, match: it.codigo, quantidade: it.quantidade }));
+      }
+    }
+    return null;
+  }
+
   function configurarCfgParaSelecao(selecao) {
-    // Mercadorias: os mesmos 4 itens da 1ª revisão, usados em TODAS as
-    // revisões por enquanto (até você passar os itens específicos de cada
-    // uma). Só a quantidade do óleo (1002) muda conforme o modelo.
+    // Mercadorias: por padrão os mesmos 4 itens genéricos da 1ª revisão
+    // (usados quando ainda não há uma tabela específica pra esse
+    // modelo/revisão em MERCADORIAS_POR_REVISAO). Só a quantidade do óleo
+    // (1002) muda conforme o modelo.
     const qtdOleo = quantidadeOleoParaModelo(selecao.modelo || '');
     CFG.mercadorias = [
       { codigo: '1002', match: '1002', quantidade: qtdOleo },
@@ -1750,6 +1872,14 @@
       { codigo: '1007', match: '1007', quantidade: '1' },
       { codigo: '90401KRMR20', match: '90401KRMR20', quantidade: '1' },
     ];
+    let mercadoriasConfiguradas = false;
+    if (selecao.tipo === 'revisao') {
+      const especificas = mercadoriasEspecificasParaModeloRevisao(selecao.modelo, selecao.numero);
+      if (especificas) {
+        CFG.mercadorias = especificas;
+        mercadoriasConfiguradas = true;
+      }
+    }
 
     if (selecao.tipo === 'troca_oleo') {
       // Troca de óleo avulsa usa os códigos da 1ª revisão como padrão
@@ -1782,12 +1912,13 @@
         CFG.servicoCortesiaMatch = SERVICO_KM_POR_REVISAO[1].match;
       }
 
-      if (tipoOrdem && servicoKm) {
-        // Revisão totalmente configurada (tipo + serviço certos; mercadorias
-        // ainda são as genéricas da 1ª revisão)
+      if (tipoOrdem && servicoKm && mercadoriasConfiguradas) {
+        // Revisão totalmente configurada: tipo, serviço E mercadorias
+        // específicas do modelo/revisão.
         return { configuradoCompletamente: true };
       }
-      // Demais revisões: ainda faltam tipo de ordem e/ou serviço específicos.
+      // Falta tipo de ordem, serviço e/ou mercadorias específicas —
+      // o confirm() do banner avisa o operador que vai usar valores base.
       return { configuradoCompletamente: false };
     }
 

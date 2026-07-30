@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CATEGORIAS,
   anosDoModelo,
@@ -17,19 +17,38 @@ import {
 } from "../../lib/revisoes-calc";
 
 const ACCENT = "#0f7a5a";
+const FONT = "var(--font-poppins), Poppins, sans-serif";
 
 /* ────────────────────────────── Galeria ────────────────────────────── */
 
-function MotoCard({ modelo, onOpen }: { modelo: Modelo; onOpen: () => void }) {
+function MotoCard({ modelo, onOpen, index }: { modelo: Modelo; onOpen: () => void; index: number }) {
   const v = visualDoModelo(modelo.modelo);
   return (
     <button
       onClick={onOpen}
-      className="group flex flex-col items-center rounded-2xl p-4 cursor-pointer transition-transform text-center hover:-translate-y-1"
-      style={{ background: "var(--card-bg)", border: "1px solid var(--border-line-soft)" }}
+      className="group relative flex flex-col items-center overflow-hidden rounded-[22px] p-5 text-center cursor-pointer animate-oficina-rise motion-safe:transition-all motion-safe:duration-[420ms] hover:-translate-y-1.5"
+      style={{
+        background: "var(--card-bg)",
+        border: "1px solid var(--border-line-soft)",
+        transitionTimingFunction: "cubic-bezier(.22,1,.36,1)",
+        animationDelay: `${Math.min(index, 12) * 45}ms`,
+        fontFamily: FONT,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 22px 45px -24px rgba(15,122,90,.45)";
+        e.currentTarget.style.borderColor = `${ACCENT}55`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.borderColor = "var(--border-line-soft)";
+      }}
     >
+      <span
+        className="pointer-events-none absolute inset-x-6 top-0 h-px opacity-0 motion-safe:transition-opacity motion-safe:duration-500 group-hover:opacity-100"
+        style={{ background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)` }}
+      />
       <div
-        className="flex items-center justify-center w-full h-[120px] mb-2.5 overflow-hidden rounded-xl"
+        className="mb-4 flex h-[170px] w-full items-center justify-center overflow-hidden rounded-2xl"
         style={{ background: "#fff" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -37,14 +56,14 @@ function MotoCard({ modelo, onOpen }: { modelo: Modelo; onOpen: () => void }) {
           src={v.foto}
           alt={modelo.modelo}
           loading="lazy"
-          className="max-h-[120px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-          style={{ opacity: v.temFotoPropria ? 1 : 0.45 }}
+          className="max-h-[168px] w-auto object-contain motion-safe:transition-transform motion-safe:duration-[550ms] group-hover:scale-[1.09]"
+          style={{ opacity: v.temFotoPropria ? 1 : 0.45, transitionTimingFunction: "cubic-bezier(.22,1,.36,1)" }}
         />
       </div>
-      <div className="font-bold text-[13.5px] leading-tight" style={{ color: "var(--text-primary)" }}>
+      <div className="text-[15px] font-semibold leading-tight tracking-tight" style={{ color: "var(--text-primary)" }}>
         {nomeCurto(modelo.modelo)}
       </div>
-      <div className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
+      <div className="mt-1.5 text-[11.5px] font-medium" style={{ color: "var(--text-muted)" }}>
         {anosDoModelo(modelo.modelo, modelo.periodo)} · {modelo.revisoes.length} revisões
       </div>
     </button>
@@ -83,59 +102,74 @@ function DetalheMoto({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6 animate-oficina-fade" style={{ fontFamily: FONT }}>
       <button
         onClick={onVoltar}
-        className="self-start text-[12.5px] font-semibold cursor-pointer"
+        className="group self-start text-[12.5px] font-semibold cursor-pointer motion-safe:transition-colors"
         style={{ color: ACCENT }}
       >
-        ← Voltar às motos
+        <span className="inline-block motion-safe:transition-transform motion-safe:duration-300 group-hover:-translate-x-1">←</span>{" "}
+        Voltar às motos
       </button>
 
       <div
-        className="rounded-2xl p-6 grid gap-6"
+        className="grid gap-8 rounded-[26px] p-7"
         style={{
           background: "var(--card-bg)",
           border: "1px solid var(--border-line-soft)",
-          gridTemplateColumns: "minmax(260px, 1.2fr) minmax(240px, 1fr)",
+          gridTemplateColumns: "minmax(280px, 1.25fr) minmax(280px, 1fr)",
+          boxShadow: "0 26px 60px -46px rgba(20,30,25,.55)",
         }}
       >
         {/* Coluna da foto */}
-        <div className="flex flex-col min-w-0">
-          <div className="text-[11px] uppercase tracking-widest font-bold mb-1" style={{ color: "var(--text-muted)" }}>
+        <div className="flex min-w-0 flex-col">
+          <div
+            className="mb-1 text-[10.5px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: "var(--text-muted)" }}
+          >
             {categoriaNome}
           </div>
-          <h2 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 26, fontWeight: 700, lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: FONT, fontSize: 30, fontWeight: 600, lineHeight: 1.1, letterSpacing: "-0.02em" }}>
             {nomeCurto(modelo.modelo)}
           </h2>
-          <div className="text-[12px] mb-3" style={{ color: "var(--text-muted)" }}>
+          <div className="mb-4 text-[12.5px] font-medium" style={{ color: "var(--text-muted)" }}>
             {anosDoModelo(modelo.modelo, modelo.periodo)} · {modelo.revisoes.length} revisões cadastradas
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            key={modelo.modelo}
             src={v.foto}
             alt={modelo.modelo}
-            className="w-full max-h-[260px] object-contain rounded-xl"
+            className="w-full max-h-[360px] rounded-2xl object-contain animate-oficina-zoom"
             style={{ background: "#fff", opacity: v.temFotoPropria ? 1 : 0.45 }}
           />
         </div>
 
-        {/* Coluna das ações (área marcada em azul no print) */}
-        <div className="flex flex-col justify-center gap-3">
+        {/* Coluna das ações */}
+        <div className="flex flex-col justify-center gap-3.5">
           <div
-            className="rounded-xl px-4 py-3"
+            className="rounded-2xl px-5 py-4 motion-safe:transition-colors"
             style={{ background: "var(--bg-panel-2)", border: "1px solid var(--border-line-soft)" }}
           >
-            <div className="text-[11px] uppercase tracking-widest font-bold mb-1" style={{ color: "var(--text-muted)" }}>
+            <div
+              className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em]"
+              style={{ color: "var(--text-muted)" }}
+            >
               Próxima revisão selecionada
             </div>
-            <div className="text-[14px] font-bold">
+            <div className="text-[14.5px] font-semibold">
               {r.numero}ª · {r.km.toLocaleString("pt-BR")} km
               {r.meses ? ` ou ${r.meses} meses` : ""}
             </div>
-            <div className="text-[12px] mt-0.5" style={{ color: ACCENT, fontWeight: 700 }}>
-              {fmtBRL(total)}{" "}
-              <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
+            <div className="mt-2 flex flex-wrap items-baseline gap-2">
+              <span
+                key={`${revisaoIdx}-${total}`}
+                className="animate-oficina-pop"
+                style={{ color: ACCENT, fontWeight: 700, fontSize: 32, lineHeight: 1.05, letterSpacing: "-0.02em" }}
+              >
+                {fmtBRL(total)}
+              </span>
+              <span className="text-[12px] font-medium" style={{ color: "var(--text-muted)" }}>
                 ({r.mao_de_obra_gratis ? "M.O. grátis" : `M.O. ${fmtBRL(maoDeObra)}${estimado ? "*" : ""}`})
               </span>
             </div>
@@ -144,17 +178,22 @@ function DetalheMoto({
           {!escolhendoOS ? (
             <button
               onClick={() => setEscolhendoOS(true)}
-              className="w-full rounded-xl px-4 py-3 text-[13.5px] font-bold cursor-pointer transition-opacity hover:opacity-90"
-              style={{ background: ACCENT, color: "#fff", border: "none" }}
+              className="w-full rounded-2xl px-4 py-3.5 text-[14px] font-semibold cursor-pointer motion-safe:transition-all motion-safe:duration-300 hover:-translate-y-0.5 active:translate-y-0"
+              style={{
+                background: ACCENT,
+                color: "#fff",
+                border: "none",
+                boxShadow: "0 16px 30px -18px rgba(15,122,90,.9)",
+              }}
             >
               Abrir ordem de serviço
             </button>
           ) : (
             <div
-              className="rounded-xl p-3 flex flex-col gap-2"
+              className="flex flex-col gap-2.5 rounded-2xl p-4 animate-oficina-rise"
               style={{ background: "var(--bg-panel-2)", border: `1px solid ${ACCENT}55` }}
             >
-              <div className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>
+              <div className="text-[11.5px] font-medium" style={{ color: "var(--text-muted)" }}>
                 Qual revisão vai abrir no MicroWork?
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -162,7 +201,7 @@ function DetalheMoto({
                   <button
                     key={rev.numero}
                     onClick={() => abrirOS(rev.numero)}
-                    className="px-2.5 py-1.5 rounded-lg text-[12px] font-bold cursor-pointer"
+                    className="rounded-xl px-3 py-1.5 text-[12px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
                     style={{ background: ACCENT, color: "#fff", border: "none" }}
                   >
                     {rev.numero}ª · {rev.km.toLocaleString("pt-BR")}km
@@ -181,7 +220,7 @@ function DetalheMoto({
 
           <button
             onClick={() => setMostrarValores((s) => !s)}
-            className="w-full rounded-xl px-4 py-3 text-[13.5px] font-bold cursor-pointer transition-colors"
+            className="w-full rounded-2xl px-4 py-3.5 text-[14px] font-semibold cursor-pointer motion-safe:transition-all motion-safe:duration-300 hover:-translate-y-0.5"
             style={{
               background: "transparent",
               color: "var(--text-primary)",
@@ -191,7 +230,7 @@ function DetalheMoto({
             {mostrarValores ? "Ocultar valores de revisões" : "Ver valores de revisões"}
           </button>
 
-          <p className="text-[11px] leading-snug" style={{ color: "var(--text-muted)" }}>
+          <p className="text-[11.5px] font-medium leading-snug" style={{ color: "var(--text-muted)" }}>
             A OS abre em <b>microworkcloud.com.br</b> já com a moto e a revisão escolhidas. Informe a placa ou o chassi
             do veículo e o autofill continua sozinho.
           </p>
@@ -200,7 +239,7 @@ function DetalheMoto({
 
       {/* Valores de revisões */}
       {mostrarValores && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 animate-oficina-rise">
           <div
             className="flex items-center gap-1.5 overflow-x-auto pb-1"
             style={{ borderBottom: "1px solid var(--border-line-soft)" }}
@@ -209,7 +248,7 @@ function DetalheMoto({
               <button
                 key={rev.numero}
                 onClick={() => setRevisaoIdx(i)}
-                className="flex-shrink-0 px-3.5 py-2 text-[12.5px] font-bold cursor-pointer rounded-t-[9px] transition-colors"
+                className="flex-shrink-0 rounded-t-xl px-4 py-2.5 text-[12.5px] font-semibold cursor-pointer motion-safe:transition-all motion-safe:duration-300"
                 style={{
                   color: revisaoIdx === i ? ACCENT : "var(--text-muted)",
                   background: revisaoIdx === i ? "var(--card-bg)" : "transparent",
@@ -222,23 +261,27 @@ function DetalheMoto({
             ))}
           </div>
 
-          <div className="rounded-2xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--border-line-soft)" }}>
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-              <h3 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 16, fontWeight: 700, margin: 0 }}>
+          <div
+            key={revisaoIdx}
+            className="rounded-[22px] p-6 animate-oficina-fade"
+            style={{ background: "var(--card-bg)", border: "1px solid var(--border-line-soft)" }}
+          >
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h3 style={{ fontFamily: FONT, fontSize: 17, fontWeight: 600, margin: 0, letterSpacing: "-0.01em" }}>
                 {r.numero}ª Revisão — {r.km.toLocaleString("pt-BR")} km{r.meses ? ` ou ${r.meses} meses` : ""}
               </h3>
               <div className="flex items-center gap-2">
                 {r.tmo_horas != null && (
                   <span
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                    style={{ background: `${ACCENT}26`, color: ACCENT }}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                    style={{ background: `${ACCENT}1f`, color: ACCENT }}
                   >
                     TMO: {r.tmo_horas}h
                   </span>
                 )}
                 <button
                   onClick={() => abrirOS(r.numero)}
-                  className="text-[11.5px] font-bold px-3 py-1.5 rounded-full cursor-pointer"
+                  className="rounded-full px-3.5 py-1.5 text-[11.5px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
                   style={{ background: ACCENT, color: "#fff", border: "none" }}
                 >
                   Abrir OS desta revisão
@@ -247,13 +290,17 @@ function DetalheMoto({
             </div>
 
             {r.servicos.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-1.5">
+              <div className="mb-4 flex flex-wrap gap-1.5">
                 {r.servicos.map((s, i) => (
                   <span
                     key={i}
                     title={s.acao}
-                    className="text-[11px] px-2 py-1 rounded-full"
-                    style={{ background: "var(--bg-panel-2)", color: "var(--text-dim)", border: "1px solid var(--border-line-soft)" }}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+                    style={{
+                      background: "var(--bg-panel-2)",
+                      color: "var(--text-dim)",
+                      border: "1px solid var(--border-line-soft)",
+                    }}
                   >
                     {s.servico}
                   </span>
@@ -262,13 +309,13 @@ function DetalheMoto({
             )}
 
             <div className="overflow-x-auto">
-              <table className="w-full text-[12.5px] border-collapse">
+              <table className="w-full border-collapse text-[13px]">
                 <thead>
                   <tr>
                     {["Peça", "Código", "Valor unit.", "Qtd.", "Total"].map((h, i) => (
                       <th
                         key={h}
-                        className="px-2 py-1.5 text-[10px] uppercase tracking-widest font-bold"
+                        className="px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
                         style={{
                           textAlign: i === 0 ? "left" : "right",
                           color: "var(--text-muted)",
@@ -282,14 +329,18 @@ function DetalheMoto({
                 </thead>
                 <tbody>
                   {r.pecas.map((p, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid var(--border-line-soft)" }}>
-                      <td className="px-2 py-1.5">{p.descricao}</td>
-                      <td className="px-2 py-1.5 text-right font-mono text-[11px]" style={{ color: "var(--text-muted)" }}>
+                    <tr
+                      key={i}
+                      className="motion-safe:transition-colors"
+                      style={{ borderBottom: "1px solid var(--border-line-soft)" }}
+                    >
+                      <td className="px-2.5 py-2">{p.descricao}</td>
+                      <td className="px-2.5 py-2 text-right font-mono text-[11px]" style={{ color: "var(--text-muted)" }}>
                         {p.codigo || "—"}
                       </td>
-                      <td className="px-2 py-1.5 text-right">{fmtBRL(p.valor_unitario)}</td>
-                      <td className="px-2 py-1.5 text-right">{p.quantidade ?? "—"}</td>
-                      <td className="px-2 py-1.5 text-right font-semibold">{fmtBRL(p.total)}</td>
+                      <td className="px-2.5 py-2 text-right">{fmtBRL(p.valor_unitario)}</td>
+                      <td className="px-2.5 py-2 text-right">{p.quantidade ?? "—"}</td>
+                      <td className="px-2.5 py-2 text-right font-semibold">{fmtBRL(p.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -297,7 +348,7 @@ function DetalheMoto({
             </div>
 
             <div
-              className="flex justify-end items-center gap-6 mt-3 pt-3 text-[12.5px] flex-wrap"
+              className="mt-4 flex flex-wrap items-center justify-end gap-6 pt-4 text-[13px]"
               style={{ borderTop: "1px solid var(--border-line-soft)" }}
             >
               <span style={{ color: "var(--text-muted)" }}>
@@ -308,7 +359,7 @@ function DetalheMoto({
                 <b style={{ color: "var(--text-primary)" }}>{r.mao_de_obra_gratis ? "Grátis" : fmtBRL(maoDeObra)}</b>
                 {estimado && (
                   <span
-                    className="ml-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    className="ml-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                     style={{ background: "#ffb02e26", color: "#ffb02e" }}
                     title="Calculado a partir do TMO × valor/hora do grupo"
                   >
@@ -317,20 +368,24 @@ function DetalheMoto({
                 )}
               </span>
               <span style={{ color: "var(--text-muted)" }}>
-                Total: <b style={{ color: ACCENT }}>{fmtBRL(total)}</b>
+                Total:{" "}
+                <b style={{ color: ACCENT, fontSize: 18 }}>{fmtBRL(total)}</b>
               </span>
             </div>
           </div>
 
           {/* Resumo de todas as revisões */}
-          <div className="overflow-x-auto rounded-2xl" style={{ background: "var(--card-bg)", border: "1px solid var(--border-line-soft)" }}>
-            <table className="w-full text-[12.5px] border-collapse">
+          <div
+            className="overflow-x-auto rounded-[22px]"
+            style={{ background: "var(--card-bg)", border: "1px solid var(--border-line-soft)" }}
+          >
+            <table className="w-full border-collapse text-[13px]">
               <thead>
                 <tr>
                   {["Revisão", "Km / meses", "Peças", "Mão de obra", "Total", ""].map((h, i) => (
                     <th
                       key={h + i}
-                      className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold"
+                      className="px-3.5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
                       style={{
                         textAlign: i === 0 || i === 1 ? "left" : "right",
                         color: "var(--text-muted)",
@@ -348,25 +403,32 @@ function DetalheMoto({
                   return (
                     <tr
                       key={rev.numero}
-                      style={{ borderBottom: "1px solid var(--border-line-soft)", cursor: "pointer" }}
+                      className="motion-safe:transition-colors"
+                      style={{
+                        borderBottom: "1px solid var(--border-line-soft)",
+                        cursor: "pointer",
+                        background: revisaoIdx === i ? "var(--bg-panel-2)" : "transparent",
+                      }}
                       onClick={() => setRevisaoIdx(i)}
                     >
-                      <td className="px-3 py-2 font-semibold">{rev.numero}ª</td>
-                      <td className="px-3 py-2" style={{ color: "var(--text-muted)" }}>
+                      <td className="px-3.5 py-2.5 font-semibold">{rev.numero}ª</td>
+                      <td className="px-3.5 py-2.5" style={{ color: "var(--text-muted)" }}>
                         {rev.km.toLocaleString("pt-BR")} km{rev.meses ? ` ou ${rev.meses} meses` : ""}
                       </td>
-                      <td className="px-3 py-2 text-right">{fmtBRL(rev.pecas_total)}</td>
-                      <td className="px-3 py-2 text-right">{rev.mao_de_obra_gratis ? "Grátis" : fmtBRL(t.maoDeObra)}</td>
-                      <td className="px-3 py-2 text-right font-bold" style={{ color: ACCENT }}>
+                      <td className="px-3.5 py-2.5 text-right">{fmtBRL(rev.pecas_total)}</td>
+                      <td className="px-3.5 py-2.5 text-right">
+                        {rev.mao_de_obra_gratis ? "Grátis" : fmtBRL(t.maoDeObra)}
+                      </td>
+                      <td className="px-3.5 py-2.5 text-right font-bold" style={{ color: ACCENT }}>
                         {fmtBRL(t.total)}
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td className="px-3.5 py-2.5 text-right">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             abrirOS(rev.numero);
                           }}
-                          className="text-[11px] font-bold px-2.5 py-1 rounded-full cursor-pointer"
+                          className="rounded-full px-2.5 py-1 text-[11px] font-semibold cursor-pointer motion-safe:transition-colors"
                           style={{ background: "transparent", color: ACCENT, border: `1px solid ${ACCENT}66` }}
                         >
                           Abrir OS
@@ -393,6 +455,10 @@ export function MotosView({ data }: { data: RevisoesData }) {
   const [catFiltro, setCatFiltro] = useState<CategoriaId | "todas">("todas");
   const [selecionado, setSelecionado] = useState<Modelo | null>(null);
 
+  useEffect(() => {
+    if (selecionado) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selecionado]);
+
   const grupos = useMemo(() => {
     const text = q.trim().toLowerCase();
     const filtrados = data.modelos.filter((m) => {
@@ -417,22 +483,26 @@ export function MotosView({ data }: { data: RevisoesData }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-6" style={{ fontFamily: FONT }}>
+      <div className="flex flex-wrap items-center gap-2.5">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Encontre a moto… (ex: POP 110, PCX, CB 300)"
-          className="w-full max-w-sm"
+          className="w-full max-w-sm motion-safe:transition-all motion-safe:duration-300 focus:shadow-[0_0_0_4px_rgba(15,122,90,.12)]"
           style={{
             background: "var(--bg-input)",
             border: "1px solid var(--border-line)",
             color: "var(--text-primary)",
-            padding: "10px 14px",
-            borderRadius: 9,
+            padding: "11px 16px",
+            borderRadius: 14,
             fontSize: 13.5,
+            fontFamily: FONT,
+            fontWeight: 500,
             outline: "none",
           }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = ACCENT)}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-line)")}
         />
         <div className="flex flex-wrap gap-1.5">
           {(["todas", ...CATEGORIAS.map((c) => c.id)] as const).map((id) => {
@@ -442,11 +512,12 @@ export function MotosView({ data }: { data: RevisoesData }) {
               <button
                 key={id}
                 onClick={() => setCatFiltro(id as CategoriaId | "todas")}
-                className="px-3 py-1.5 rounded-full text-[12px] font-bold cursor-pointer transition-colors"
+                className="rounded-full px-3.5 py-1.5 text-[12px] font-semibold cursor-pointer motion-safe:transition-all motion-safe:duration-300 hover:-translate-y-0.5"
                 style={{
                   background: ativo ? ACCENT : "transparent",
                   color: ativo ? "#fff" : "var(--text-muted)",
                   border: `1px solid ${ativo ? ACCENT : "var(--border-line-soft)"}`,
+                  boxShadow: ativo ? "0 12px 24px -16px rgba(15,122,90,.9)" : "none",
                 }}
               >
                 {label}
@@ -457,21 +528,20 @@ export function MotosView({ data }: { data: RevisoesData }) {
       </div>
 
       {grupos.length === 0 && (
-        <div className="text-sm" style={{ color: "var(--text-muted)" }}>
+        <div className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
           Nenhuma moto encontrada.
         </div>
       )}
 
       {grupos.map((g) => (
-        <section key={g.categoria.id} className="flex flex-col gap-3">
+        <section key={g.categoria.id} className="flex flex-col gap-4 animate-oficina-fade">
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: "var(--border-line-soft)" }} />
             <h2
               style={{
-                fontFamily: "Rajdhani, sans-serif",
-                fontSize: 16,
-                fontWeight: 700,
-                letterSpacing: 1,
+                fontFamily: FONT,
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.2em",
                 textTransform: "uppercase",
                 color: ACCENT,
                 margin: 0,
@@ -479,11 +549,14 @@ export function MotosView({ data }: { data: RevisoesData }) {
             >
               {g.categoria.nome}
             </h2>
-            <div className="flex-1 h-px" style={{ background: "var(--border-line-soft)" }} />
+            <div className="h-px flex-1" style={{ background: "var(--border-line-soft)" }} />
+            <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+              {g.motos.length}
+            </span>
           </div>
-          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))" }}>
             {g.motos.map((m, mi) => (
-              <MotoCard key={m.modelo + m.periodo + mi} modelo={m} onOpen={() => setSelecionado(m)} />
+              <MotoCard key={m.modelo + m.periodo + mi} modelo={m} index={mi} onOpen={() => setSelecionado(m)} />
             ))}
           </div>
         </section>

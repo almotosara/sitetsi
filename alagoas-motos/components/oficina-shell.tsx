@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { OficinaSidebar } from './oficina-sidebar'
 import { ChatPanel } from './chat-panel'
 import { MotosView } from './oficina/motos-view'
+import { FooterLojas } from './oficina/footer-lojas'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
 interface Servico { servico: string; acao: string }
@@ -171,7 +172,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
+    <div className="oficina-page flex min-h-screen" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       <OficinaSidebar
         view={tab}
         onView={setTab}
@@ -182,13 +183,13 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
 
       {/* Conteúdo */}
       <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
-        <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
+        <h1 style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
           {tab === 'revisao' && 'Motos & Ordem de Serviço'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
-        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-[12.5px] font-medium mb-6" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Escolha a moto para abrir a ordem de serviço no MicroWork ou ver os valores de cada revisão.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
           {tab === 'maodeobra' && 'Valor de referência da mão de obra por hora, por grupo de modelo.'}
@@ -293,6 +294,8 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
             ))}
           </div>
         )}
+
+        <FooterLojas />
       </div>
 
       {/* Botão flutuante de chat com o Consultor */}
