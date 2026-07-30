@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { OficinaSidebar } from './oficina-sidebar'
 import { ChatPanel } from './chat-panel'
+import { MotosView } from './oficina/motos-view'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
 interface Servico { servico: string; acao: string }
@@ -182,13 +183,13 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
       {/* Conteúdo */}
       <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
         <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
-          {tab === 'revisao' && 'Consulta de Revisão'}
+          {tab === 'revisao' && 'Motos & Ordem de Serviço'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-          {tab === 'revisao' && 'Selecione o modelo da moto para ver peças, serviços e TMO de cada revisão.'}
+          {tab === 'revisao' && 'Escolha a moto para abrir a ordem de serviço no MicroWork ou ver os valores de cada revisão.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
           {tab === 'maodeobra' && 'Valor de referência da mão de obra por hora, por grupo de modelo.'}
           {tab === 'manuais' && 'Manuais completos de tabelas de manutenção para consulta.'}
@@ -202,127 +203,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
 
         {!data && !loadError && <Skeleton />}
 
-        {data && tab === 'revisao' && (
-          <div className="flex flex-col gap-4">
-            <input
-              value={q} onChange={(e) => { setQ(e.target.value); setSelectedModelo(null) }}
-              placeholder="Buscar modelo (ex: CB 300, POP 110, ADV 160)…"
-              className="w-full max-w-md"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-line)', color: 'var(--text-primary)', padding: '10px 14px', borderRadius: 9, fontSize: 13.5, outline: 'none' }}
-            />
-
-            {!selectedModelo && (
-              <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-                {modelosFiltrados.map((m) => (
-                  <button key={m.modelo} onClick={() => { setSelectedModelo(m); setRevisaoIdx(0) }}
-                    className="text-left rounded-xl px-4 py-3 cursor-pointer transition-colors"
-                    style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-                    <div className="font-semibold text-[13.5px]" style={{ color: 'var(--text-primary)' }}><Highlight text={m.modelo} term={q} /></div>
-                    <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{m.periodo} · {m.revisoes.length} revisões</div>
-                  </button>
-                ))}
-                {modelosFiltrados.length === 0 && (
-                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum modelo encontrado.</div>
-                )}
-              </div>
-            )}
-
-            {selectedModelo && revisaoAtual && (
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setSelectedModelo(null)} className="self-start text-[12.5px] font-semibold cursor-pointer" style={{ color: '#0f7a5a' }}>
-                  ← Voltar aos modelos
-                </button>
-                <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 19, fontWeight: 700 }}>
-                  <Highlight text={selectedModelo.modelo} term={q} />
-                </h2>
-
-                {/* Abas de revisão (1ª, 2ª, 3ª...) */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
-                  {selectedModelo.revisoes.map((r, i) => (
-                    <button key={r.numero} onClick={() => setRevisaoIdx(i)}
-                      className="flex-shrink-0 px-3.5 py-2 text-[12.5px] font-bold cursor-pointer rounded-t-[9px] transition-colors"
-                      style={{
-                        color: revisaoIdx === i ? '#0f7a5a' : 'var(--text-muted)',
-                        background: revisaoIdx === i ? 'var(--card-bg)' : 'transparent',
-                        borderBottom: revisaoIdx === i ? '2px solid #0f7a5a' : '2px solid transparent',
-                        marginBottom: -1,
-                      }}>
-                      {r.numero}ª · {r.km.toLocaleString('pt-BR')}km
-                    </button>
-                  ))}
-                </div>
-
-                {(() => {
-                  const r = revisaoAtual
-                  const { valor: maoDeObraCalc, estimado } = estimarMaoDeObra(r, selectedModelo.modelo, data.mao_de_obra)
-                  const maoDeObraFinal = r.mao_de_obra_gratis ? null : (r.mao_de_obra_valor ?? maoDeObraCalc)
-                  const totalFinal = r.mao_de_obra_gratis ? r.pecas_total : (r.mao_de_obra_valor != null ? r.total : r.pecas_total + (maoDeObraFinal ?? 0))
-                  return (
-                    <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-                      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                        <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, fontWeight: 700, margin: 0 }}>
-                          {r.numero}ª Revisão — {r.km.toLocaleString('pt-BR')} km{r.meses ? ` ou ${r.meses} meses` : ''}
-                        </h3>
-                        {r.tmo_horas != null && (
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#0f7a5a26', color: '#0f7a5a' }}>
-                            TMO: {r.tmo_horas}h
-                          </span>
-                        )}
-                      </div>
-
-                      {r.servicos.length > 0 && (
-                        <div className="mb-3 flex flex-wrap gap-1.5">
-                          {r.servicos.map((s, i) => (
-                            <span key={i} title={s.acao} className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg-panel-2)', color: 'var(--text-dim)', border: '1px solid var(--border-line-soft)' }}>
-                              {s.servico}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-[12.5px] border-collapse">
-                          <thead>
-                            <tr>
-                              {['Peça', 'Código', 'Valor unit.', 'Qtd.', 'Total'].map((h, i) => (
-                                <th key={h} className="px-2 py-1.5 text-[10px] uppercase tracking-widest font-bold" style={{ textAlign: i === 0 ? 'left' : 'right', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-line-soft)' }}>{h}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {r.pecas.map((p, i) => (
-                              <tr key={i} style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
-                                <td className="px-2 py-1.5">{p.descricao}</td>
-                                <td className="px-2 py-1.5 text-right font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.codigo || '—'}</td>
-                                <td className="px-2 py-1.5 text-right">{fmtBRL(p.valor_unitario)}</td>
-                                <td className="px-2 py-1.5 text-right">{p.quantidade ?? '—'}</td>
-                                <td className="px-2 py-1.5 text-right font-semibold">{fmtBRL(p.total)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="flex justify-end items-center gap-6 mt-3 pt-3 text-[12.5px] flex-wrap" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Peças: <b style={{ color: 'var(--text-primary)' }}>{fmtBRL(r.pecas_total)}</b></span>
-                        <span style={{ color: 'var(--text-muted)' }}>
-                          Mão de obra:{' '}
-                          <b style={{ color: 'var(--text-primary)' }}>{r.mao_de_obra_gratis ? 'Grátis' : fmtBRL(maoDeObraFinal)}</b>
-                          {estimado && (
-                            <span className="ml-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#ffb02e26', color: '#ffb02e' }} title="Calculado a partir do TMO × valor/hora do grupo, planilha não trazia o valor oficial">
-                              estimado
-                            </span>
-                          )}
-                        </span>
-                        <span style={{ color: 'var(--text-muted)' }}>Total: <b style={{ color: '#0f7a5a' }}>{fmtBRL(totalFinal)}</b></span>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-            )}
-          </div>
-        )}
+        {data && tab === 'revisao' && <MotosView data={data as never} />}
 
         {data && tab === 'valores' && (
           <div className="flex flex-col gap-4">
