@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Menu de Revisão + Autofill
 // @namespace    alagoasmotos
-// @version      0.9
+// @version      0.9.1
 // @description  Menu de seleção de moto/revisão + autofill automático + integração com o dashboard da oficina (abre a OS já com a moto/revisão e dispara ao informar placa/chassi)
 // v0.7: seletor de placa/chassi corrigido para o HTML real (kendo-autocomplete
 //   com placeholder="placa"/"chassi", sem <label>). Antes, quando o operador
@@ -20,6 +20,12 @@
 //   scooters (PCX, Elite, ADV, X-ADV, SH150i), que usam o óleo de scooter
 //   082332MB024. Quantidade por modelo também revisada (TRX420 2,7L,
 //   Twister/Sahara/XRE300 1,6L, etc.).
+// v0.9.1: leitura do parâmetro am_tipo (vindo do botão "Serviço avulso >
+//   Troca de óleo" do painel da oficina) agora tolera espaço/maiúsculas
+//   extras. Se o balão ainda aparecer como "1ª revisão" ao clicar em
+//   "Troca de óleo" no painel, é sinal de que este arquivo está
+//   desatualizado no Tampermonkey — reinstale-o (o Tampermonkey NÃO
+//   atualiza sozinho porque este script não tem @updateURL).
 // @match        https://microworkcloud.com.br/cloud/*
 // @grant        none
 // ==/UserScript==
@@ -2347,7 +2353,7 @@
     const modeloParam = p.get('am_modelo');
     if (!modeloParam) return;
 
-    const tipoParam = (p.get('am_tipo') || 'revisao').toLowerCase();
+    const tipoParam = (p.get('am_tipo') || 'revisao').trim().toLowerCase();
     const ehTrocaOleo = tipoParam === 'troca_oleo' || tipoParam === 'oleo';
     const numero = parseInt(p.get('am_rev') || '1', 10) || 1;
     const kmMeses = p.get('am_km') || '';
