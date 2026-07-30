@@ -79,7 +79,7 @@ const REGRAS: Regra[] = [
   { contem: ["NX500"], foto: "nx500", categoria: "big" },
   { contem: ["CB750"], foto: "cb750-hornet", categoria: "big" },
   { contem: ["CB650"], foto: "cb650r", categoria: "big" },
-  { contem: ["CBR650"], foto: "cb650r", categoria: "big" },
+  { contem: ["CBR650"], foto: "cbr650r", categoria: "big" },
   { contem: ["CBR1000"], foto: "cb650r", categoria: "big" },
   { contem: ["NC750"], foto: "nc750x", categoria: "big" },
   { contem: ["XL750"], foto: "xl750-transalp", categoria: "big" },
