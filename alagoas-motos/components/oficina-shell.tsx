@@ -5,6 +5,7 @@ import { OficinaSidebar } from './oficina-sidebar'
 import { ChatPanel } from './chat-panel'
 import { MotosView } from './oficina/motos-view'
 import { FooterLojas } from './oficina/footer-lojas'
+import { createClient as createSupabaseClient } from '@/lib/supabase/client'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
 interface Servico { servico: string; acao: string }
@@ -131,11 +132,29 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
   const [revisaoIdx, setRevisaoIdx] = useState(0)
   const [qValores, setQValores] = useState('')
 
+  // Dados vem do banco (painel administrativo) via endpoint publico /api/revisoes,
+  // com atualizacao em tempo real quando o admin salva algum valor.
   useEffect(() => {
-    fetch('/data/revisoes.json')
-      .then((r) => { if (!r.ok) throw new Error(); return r.json() })
-      .then((json: RevisoesData) => setData(json))
-      .catch(() => setLoadError(true))
+    let ativo = true
+    const carregar = () =>
+      fetch('/api/revisoes', { cache: 'no-store' })
+        .then((r) => { if (!r.ok) throw new Error(); return r.json() })
+        .then((json: RevisoesData) => { if (ativo) setData(json) })
+        .catch(() => { if (ativo) setLoadError(true) })
+
+    carregar()
+
+    const supabase = createSupabaseClient()
+    const channel = supabase.channel('rev-valores')
+    for (const table of [
+      'rev_modelos', 'rev_revisoes', 'rev_mercadorias', 'rev_revisao_itens',
+      'rev_servicos_avulsos', 'rev_servico_itens', 'rev_mao_de_obra',
+    ]) {
+      channel.on('postgres_changes', { event: '*', schema: 'public', table }, () => carregar())
+    }
+    channel.subscribe()
+
+    return () => { ativo = false; supabase.removeChannel(channel) }
   }, [])
 
   // Modelos mais populares na oficina aparecem primeiro quando nao ha busca

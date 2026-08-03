@@ -1,6 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/auth/login', '/api/auth/login']
+const PUBLIC_PATHS = ['/auth/login', '/api/auth/login', '/api/revisoes']
+const ADMIN_EMAIL = 'administrativo@alagoasmotos.com'
+
+// O token de sessão é base64url de "email:segredo" — aqui só precisamos do e-mail.
+function emailFromToken(token: string): string | null {
+  try {
+    const b64 = token.replace(/-/g, '+').replace(/_/g, '/')
+    const decoded = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
+    return decoded.split(':')[0] || null
+  } catch {
+    return null
+  }
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -15,10 +27,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Autenticado na página de login → redireciona para home
+  const email = session ? emailFromToken(session.value) : null
+
+  // Área administrativa: só o usuário admin entra (nem digitando a URL direto)
+  if (pathname.startsWith('/admin') && email !== ADMIN_EMAIL) {
+    const url = request.nextUrl.clone()
+    url.pathname = session ? '/' : '/auth/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Autenticado na página de login → redireciona para a home certa
   if (session && pathname === '/auth/login') {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = email === ADMIN_EMAIL ? '/admin' : '/'
     return NextResponse.redirect(url)
   }
 

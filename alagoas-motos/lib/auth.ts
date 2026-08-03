@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 
-export type Role = 'consultor' | 'oficina'
+export type Role = 'consultor' | 'oficina' | 'admin'
 
 interface Account {
   email: string
@@ -26,7 +26,15 @@ const ACCOUNTS: Account[] = [
     role: 'oficina',
     userId: '00000000-0000-0000-0000-000000000002',
   },
+  {
+    email: 'administrativo@alagoasmotos.com',
+    password: 'AL@Adm01',
+    name: 'Administrativo',
+    role: 'admin',
+    userId: '00000000-0000-0000-0000-000000000003',
+  },
 ]
+
 
 const SESSION_COOKIE = 'am_session'
 const SESSION_SECRET = 'alagoas-motos-secret-2024'

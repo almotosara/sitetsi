@@ -34,6 +34,7 @@ async function loadData() {
 export default async function Page() {
   const session = await getSession()
   if (!session) redirect('/auth/login')
+  if (session.role === 'admin') redirect('/admin')
 
   if (session.role === 'oficina') {
     return (
