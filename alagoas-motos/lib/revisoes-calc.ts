@@ -21,6 +21,7 @@ export interface Revisao {
   pecas_total: number;
   mao_de_obra_gratis: boolean;
   mao_de_obra_valor: number | null;
+  servico_dms_codigo?: string | null;
   total: number;
 }
 export interface Modelo {

@@ -12,6 +12,7 @@ import {
 import {
   fmtBRL,
   totalRevisao,
+  estimarMaoDeObra,
   type Modelo,
   type RevisoesData,
 } from "../../lib/revisoes-calc";
@@ -85,17 +86,36 @@ function DetalheMoto({
   const [revisaoIdx, setRevisaoIdx] = useState(0);
   const [mostrarValores, setMostrarValores] = useState(false);
   const [escolhendoOS, setEscolhendoOS] = useState(false);
+  // "Revisão geral" = cliente fora da garantia: serviço único e mão de obra cobrada.
+  // Só se aplica da 3ª revisão em diante (1ª/2ª são sempre cortesia).
+  const [geral, setGeral] = useState(false);
 
   const r = modelo.revisoes[revisaoIdx];
   const { maoDeObra, total, estimado } = totalRevisao(r, modelo.modelo, data.mao_de_obra);
   const categoriaNome = CATEGORIAS.find((c) => c.id === v.categoria)?.nome ?? "Outros";
 
-  function abrirOS(numero: number) {
+  function abrirOS(numero: number, geralOverride?: boolean) {
     const rev = modelo.revisoes.find((x) => x.numero === numero);
+    // "geral" só existe da 3ª revisão em diante
+    const ehGeral = numero >= 3 && (geralOverride ?? geral);
+    // Mão de obra explícita da revisão (fallback: estimativa por grupo de TMO).
+    // Na revisão geral (fora da garantia) a mão de obra é sempre cobrada.
+    const calc = rev ? totalRevisao(rev, modelo.modelo, data.mao_de_obra) : null;
+    let mo: number | null = calc?.maoDeObra ?? null;
+    if (ehGeral && mo == null && rev) {
+      mo =
+        rev.mao_de_obra_valor ??
+        (rev.tmo_horas != null
+          ? estimarMaoDeObra({ ...rev, mao_de_obra_gratis: false }, modelo.modelo, data.mao_de_obra).valor
+          : null);
+    }
     const url = urlOrdemServico({
       modelo: modelo.modelo,
       revisao: numero,
       kmMeses: rev ? `${rev.km} KM${rev.meses ? ` ou ${rev.meses} meses` : ""}` : undefined,
+      maoDeObra: mo,
+      geral: ehGeral,
+      servicoCodigo: rev?.servico_dms_codigo,
     });
     window.open(url, "_blank", "noopener");
     setEscolhendoOS(false);
@@ -208,12 +228,46 @@ function DetalheMoto({
                     key={rev.numero}
                     onClick={() => abrirOS(rev.numero)}
                     className="rounded-xl px-3 py-1.5 text-[12px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
-                    style={{ background: ACCENT, color: "#fff", border: "none" }}
+                    style={{
+                      background: geral && rev.numero >= 3 ? "transparent" : ACCENT,
+                      color: geral && rev.numero >= 3 ? ACCENT : "#fff",
+                      border: geral && rev.numero >= 3 ? `1px solid ${ACCENT}` : "none",
+                      opacity: geral && rev.numero < 3 ? 0.45 : 1,
+                    }}
                   >
                     {rev.numero}ª · {rev.km.toLocaleString("pt-BR")}km
                   </button>
                 ))}
               </div>
+              {modelo.revisoes.some((rev) => rev.numero >= 3) && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={() => setGeral(false)}
+                    className="rounded-xl px-3 py-1.5 text-[11.5px] font-semibold cursor-pointer"
+                    style={{
+                      background: geral ? "transparent" : `${ACCENT}22`,
+                      color: geral ? "var(--text-muted)" : ACCENT,
+                      border: `1px solid ${geral ? "var(--border-line)" : ACCENT}`,
+                    }}
+                  >
+                    Dentro da garantia
+                  </button>
+                  <button
+                    onClick={() => setGeral(true)}
+                    className="rounded-xl px-3 py-1.5 text-[11.5px] font-semibold cursor-pointer"
+                    style={{
+                      background: geral ? `${ACCENT}22` : "transparent",
+                      color: geral ? ACCENT : "var(--text-muted)",
+                      border: `1px solid ${geral ? ACCENT : "var(--border-line)"}`,
+                    }}
+                  >
+                    Fora da garantia (revisão geral)
+                  </button>
+                  <span className="text-[10.5px]" style={{ color: "var(--text-muted)" }}>
+                    válido da 3ª revisão em diante
+                  </span>
+                </div>
+              )}
               <div
                 className="mt-0.5 pt-2.5"
                 style={{ borderTop: "1px solid var(--border-line-soft)" }}
@@ -301,12 +355,22 @@ function DetalheMoto({
                   </span>
                 )}
                 <button
-                  onClick={() => abrirOS(r.numero)}
+                  onClick={() => abrirOS(r.numero, false)}
                   className="rounded-full px-3.5 py-1.5 text-[11.5px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
                   style={{ background: ACCENT, color: "#fff", border: "none" }}
                 >
                   Abrir OS desta revisão
                 </button>
+                {r.numero >= 3 && (
+                  <button
+                    onClick={() => abrirOS(r.numero, true)}
+                    title="Abrir OS fora da garantia (revisão geral, mão de obra cobrada)"
+                    className="rounded-full px-3 py-1.5 text-[11.5px] font-semibold cursor-pointer motion-safe:transition-transform hover:scale-[1.04]"
+                    style={{ background: "transparent", color: ACCENT, border: `1px solid ${ACCENT}` }}
+                  >
+                    OS geral
+                  </button>
+                )}
               </div>
             </div>
 
@@ -444,16 +508,31 @@ function DetalheMoto({
                         {fmtBRL(t.total)}
                       </td>
                       <td className="px-3.5 py-2.5 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            abrirOS(rev.numero);
-                          }}
-                          className="rounded-full px-2.5 py-1 text-[11px] font-semibold cursor-pointer motion-safe:transition-colors"
-                          style={{ background: "transparent", color: ACCENT, border: `1px solid ${ACCENT}66` }}
-                        >
-                          Abrir OS
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              abrirOS(rev.numero, false);
+                            }}
+                            className="rounded-full px-2.5 py-1 text-[11px] font-semibold cursor-pointer motion-safe:transition-colors"
+                            style={{ background: "transparent", color: ACCENT, border: `1px solid ${ACCENT}66` }}
+                          >
+                            Abrir OS
+                          </button>
+                          {rev.numero >= 3 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                abrirOS(rev.numero, true);
+                              }}
+                              title="Fora da garantia (revisão geral): serviço único, mão de obra cobrada"
+                              className="rounded-full px-2 py-1 text-[11px] font-semibold cursor-pointer motion-safe:transition-colors"
+                              style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border-line)" }}
+                            >
+                              geral
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

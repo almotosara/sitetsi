@@ -26,6 +26,7 @@ export interface DbRevisao {
   mao_de_obra_gratis: boolean
   mao_de_obra_valor: number | null
   servicos: { servico: string; acao: string }[]
+  servico_dms_codigo: string | null
 }
 export interface DbItem {
   id: number
@@ -137,6 +138,7 @@ export async function buildRevisoesPayload() {
           pecas_total: pecasTotal,
           mao_de_obra_gratis: r.mao_de_obra_gratis,
           mao_de_obra_valor: r.mao_de_obra_valor,
+          servico_dms_codigo: r.servico_dms_codigo ?? null,
           total: Number((pecasTotal + mo).toFixed(2)),
         }
       }),

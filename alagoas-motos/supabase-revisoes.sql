@@ -31,6 +31,11 @@ CREATE TABLE rev_revisoes (
   mao_de_obra_gratis BOOLEAN NOT NULL DEFAULT false,
   mao_de_obra_valor  NUMERIC,
   servicos           JSONB NOT NULL DEFAULT '[]'::jsonb,
+  -- Código do cadastro "Serviço" do MicroWork Cloud (DMS da oficina) que
+  -- corresponde a esta revisão pelo km (ex: 1000km = 1784, 6000km = 1842).
+  -- NULL = ainda não informado; o userscript do MicroWork avisa o operador
+  -- em vez de preencher a OS com o serviço errado.
+  servico_dms_codigo TEXT,
   UNIQUE (modelo_id, numero)
 );
 

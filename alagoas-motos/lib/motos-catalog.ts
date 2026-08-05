@@ -144,12 +144,24 @@ export function urlOrdemServico(opts: {
   revisao?: number;
   kmMeses?: string;
   tipo?: "revisao" | "troca_oleo";
+  /** Mão de obra (R$) da revisão escolhida — vira o campo "Valor Hora" na OS. */
+  maoDeObra?: number | null;
+  /** true = revisão geral (fora da garantia): serviço único e pago. */
+  geral?: boolean;
+  /** Código do cadastro "Serviço" do MicroWork Cloud pra esta revisão (vem do admin). */
+  servicoCodigo?: string | null;
 }) {
   const p = new URLSearchParams();
   p.set("am_modelo", opts.modelo);
   if (opts.tipo === "troca_oleo") p.set("am_tipo", "troca_oleo");
   if (opts.revisao) p.set("am_rev", String(opts.revisao));
   if (opts.kmMeses) p.set("am_km", opts.kmMeses);
+  if (opts.servicoCodigo) p.set("am_servico_km", opts.servicoCodigo);
+  if (opts.maoDeObra != null && Number.isFinite(opts.maoDeObra)) {
+    // número puro com ponto decimal; o userscript formata para exibição (185,90)
+    p.set("am_mo", String(opts.maoDeObra));
+  }
+  if (opts.geral) p.set("am_geral", "1");
   p.set("am_auto", "1");
   return `https://microworkcloud.com.br/cloud/?${p.toString()}#/servico/os/inserir`;
 }

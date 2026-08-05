@@ -10,6 +10,7 @@ interface Modelo { id: number; nome: string; periodo: string | null; ordem: numb
 interface Revisao {
   id: number; modelo_id: number; numero: number; km: number | null; meses: number | null
   tmo_horas: number | null; mao_de_obra_gratis: boolean; mao_de_obra_valor: number | null
+  servico_dms_codigo: string | null
 }
 interface Item {
   id: number; revisao_id?: number; servico_id?: number; mercadoria_id: number
@@ -364,7 +365,24 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
                         />
                         Mão de obra gratuita
                       </label>
+                      <label style={{ fontSize: 12 }}>
+                        Código de Serviço (MicroWork)
+                        <input
+                          style={inputStyle}
+                          placeholder="ex: 1784"
+                          defaultValue={revSel.servico_dms_codigo ?? ''}
+                          key={`svc-${revSel.id}`}
+                          onBlur={(e) => salvarRevisao({ servico_dms_codigo: e.target.value.trim() || null })}
+                        />
+                      </label>
                     </div>
+                    {!revSel.servico_dms_codigo && (
+                      <p style={{ fontSize: 12, color: '#b45309', marginTop: -8, marginBottom: 16 }}>
+                        ⚠️ Sem código de serviço cadastrado — o userscript do MicroWork vai avisar o
+                        operador antes de preencher a OS. Abra o cadastro de Serviços no MicroWork
+                        Cloud, procure a revisão pelo km e cole o código aqui.
+                      </p>
+                    )}
 
                     <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
                       <h3 style={{ fontSize: 15, fontWeight: 600 }}>Mercadorias da revisão</h3>

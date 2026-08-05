@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MicroWork Cloud DMS - Menu de Revisão + Autofill
+// @name         MicroWork Cloud DMS - Autofill (painel Alagoas Motos)
 // @namespace    alagoasmotos
-// @version      0.9.1
-// @description  Menu de seleção de moto/revisão + autofill automático + integração com o dashboard da oficina (abre a OS já com a moto/revisão e dispara ao informar placa/chassi)
+// @version      0.12.0
+// @description  Autofill automático da OS, disparado só pelo painel da oficina (via parâmetros am_* na URL). Sem menu manual dentro do MicroWork.
 // v0.7: seletor de placa/chassi corrigido para o HTML real (kendo-autocomplete
 //   com placeholder="placa"/"chassi", sem <label>). Antes, quando o operador
 //   digitava só no campo chassi (placa não identificada), o script continuava
@@ -26,6 +26,31 @@
 //   "Troca de óleo" no painel, é sinal de que este arquivo está
 //   desatualizado no Tampermonkey — reinstale-o (o Tampermonkey NÃO
 //   atualiza sozinho porque este script não tem @updateURL).
+// v0.10: revisões da 3ª em diante: tipo de ordem 5 (REVISÃO PERIÓDICA),
+//   preenchimento do campo "Valor Hora" (mão de obra vinda do painel /api/revisoes),
+//   segundo item de serviço de cortesia (tipo 36 / serviço 2718 = óleo grátis)
+//   quando a revisão está dentro da garantia, vínculo de cada mercadoria ao
+//   serviço certo via "Serviço aplicação" (óleo -> 2718, resto -> serviço de km),
+//   e modo "revisão geral" (fora da garantia: um único serviço pago, óleo como
+//   mercadoria normal) recebido via am_geral/am_mo na URL.
+// v0.11: removido o menu manual (botão flutuante 🔧, overlay de categorias/
+//   modelos/revisões e a leitura de mão de obra direto da API do painel via
+//   fetch). Esse fluxo nunca era usado em produção — o painel sempre abre a
+//   OS com os parâmetros am_modelo/am_rev/am_km/am_mo/am_geral/am_tipo já na
+//   URL, então o script só precisa do listener desses parâmetros + do
+//   balãozinho "Preencher agora". Reduz ~440 linhas (CATEGORIAS, ICONS,
+//   CSS/HTML do menu, render dos 3 painéis, fetch em PAINEL_API_URL) sem
+//   tirar nenhuma funcionalidade usada. Continuam intactos: REVISOES_POR_MODELO
+//   (usado por amAcharChaveModelo pra casar o nome do modelo vindo da URL) e
+//   toda a lógica de configurarCfgParaSelecao.
+// v0.12: código de "Serviço" da 3ª revisão em diante deixou de ser tabela
+//   fixa no script (SERVICO_KM_POR_REVISAO com TODO/null). Agora vem pelo
+//   parâmetro am_servico_km na URL, preenchido pelo painel a partir do campo
+//   "Código de Serviço (MicroWork)" no admin — mesmo lugar de onde já vinha
+//   a mão de obra (am_mo). 1ª e 2ª revisão continuam fixas no script (1784/
+//   1842), porque são o mesmo template em toda moto e não dependem do admin.
+//   Enquanto o campo estiver vazio no admin pra uma revisão, o script segue
+//   avisando com confirm() antes de preencher, exatamente como antes.
 // @match        https://microworkcloud.com.br/cloud/*
 // @grant        none
 // ==/UserScript==
@@ -61,6 +86,15 @@
       { codigo: '90401KRMR20', match: '90401KRMR20', quantidade: '1' },
     ],
     formaPagamento: 'DINHEIRO',
+    // ── novidades v0.10 ──────────────────────────────────────────────
+    // "Valor Hora" (mão de obra) do serviço principal, já em formato BR
+    // ('185,90') ou null quando não se aplica (1ª/2ª revisão = cortesia).
+    valorHora: null,
+    // true = revisão geral (cliente fora da garantia): um serviço só, pago.
+    geral: false,
+    // Segundo item de serviço (cortesia do óleo). null = não adicionar.
+    // { tipoCodigo, tipoMatch, servicoCodigo, servicoMatch, tmo, valor }
+    segundoServico: null,
   };
 
 
@@ -88,6 +122,32 @@
     setValorInput(input, valor);
     input.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
     input.dispatchEvent(new Event('focusout', { bubbles: true }));
+  }
+
+  // Formata um número em reais no padrão que os campos monetários do Kendo
+  // (MicroWork) aceitam: vírgula decimal, sem separador de milhar e sem "R$".
+  // Ex.: 185.9 -> '185,90'  |  0 -> '0,00'
+  function formatarMoedaBR(valor) {
+    const n = Number(valor);
+    if (!Number.isFinite(n)) return null;
+    return n.toFixed(2).replace('.', ',');
+  }
+
+  // Localiza o campo "Valor Hora" do modal de item de serviço. O MicroWork
+  // não usa <label for>, então tentamos pelo texto do rótulo (mesmo padrão do
+  // resto do script) e, como plano B, por aria-label/placeholder.
+  function acharCampoValorHora() {
+    const porLabel =
+      inputPorLabel('Valor Hora') ||
+      inputPorLabel('Valor hora') ||
+      inputPorLabel('Vlr Hora') ||
+      inputPorLabel('Valor da hora');
+    if (porLabel) return porLabel;
+    return (
+      document.querySelector('input[aria-label*="alor" i][aria-label*="ora" i]') ||
+      document.querySelector('input[placeholder*="alor" i][placeholder*="ora" i]') ||
+      null
+    );
   }
 
   // Digita num kendo-dateinput (datepicker/timepicker) dígito por dígito, simulando digitação
@@ -248,34 +308,97 @@
     await digitarMascarado(campoPrevisao, digitos);
   }
 
-  // 3. Aba Serviços → adicionar serviço de cortesia (Troca de Óleo)
+  // 3. Aba Serviços → adicionar o(s) item(ns) de serviço.
+  //    - Serviço 1 ("principal"): tipo de ordem + serviço do km da revisão,
+  //      TMO e, quando a revisão é paga, o campo "Valor Hora" (mão de obra
+  //      vinda do painel / /api/revisoes).
+  //    - Serviço 2 (opcional, CFG.segundoServico): cortesia do óleo
+  //      (tipo 36 / serviço 2718 / TMO 1 / Valor Hora 0), usada nas revisões
+  //      da 3ª em diante quando o cliente está DENTRO da garantia.
   async function passo3_servicoCortesia() {
     clicarAbaPorTexto('Serviços');
     await sleep(500);
     clicarPorTitulo('Inserir item de solicitação/cortesia');
     await sleep(600);
 
+    // ── Serviço 1 ────────────────────────────────────────────────────
+    await preencherItemServico({
+      tipoCodigo: CFG.tipoCortesiaCodigo,
+      tipoMatch: CFG.tipoCortesia,
+      servicoCodigo: CFG.servicoCortesiaCodigo,
+      servicoMatch: CFG.servicoCortesiaMatch,
+      tmo: CFG.tmo,
+      valorHora: CFG.valorHora,
+    });
+
+    const seg = CFG.segundoServico;
+    if (!seg) {
+      await sleep(300);
+      clicarBotaoPorTexto('Salvar e Fechar');
+      await sleep(500);
+      return;
+    }
+
+    // ── Serviço 2 (cortesia do óleo) ─────────────────────────────────
+    // "Salvar" grava a linha e mantém/reabre o formulário para o próximo item
+    // (mesmo comportamento da grid de mercadorias).
+    await sleep(300);
+    clicarBotaoPorTexto('Salvar');
+    await sleep(900);
+
+    // Se o formulário tiver fechado depois do "Salvar", reabre.
+    let tipoInput = inputPorLabel('Tipo de ordem de serviço', { seletorInput: 'input[kendosearchbar]' });
+    if (!tipoInput) {
+      clicarPorTitulo('Inserir item de solicitação/cortesia');
+      await sleep(700);
+    }
+
+    await preencherItemServico({
+      tipoCodigo: seg.tipoCodigo,
+      tipoMatch: seg.tipoMatch,
+      servicoCodigo: seg.servicoCodigo,
+      servicoMatch: seg.servicoMatch,
+      tmo: seg.tmo,
+      valorHora: seg.valor,
+    });
+
+    await sleep(300);
+    clicarBotaoPorTexto('Salvar e Fechar');
+    await sleep(500);
+  }
+
+  // Preenche UM item de serviço no modal já aberto (não salva).
+  async function preencherItemServico({ tipoCodigo, tipoMatch, servicoCodigo, servicoMatch, tmo, valorHora }) {
     // Tipo de ordem de serviço: busca pelo código (evita problema de match por acento)
     const tipoInput = inputPorLabel('Tipo de ordem de serviço', { seletorInput: 'input[kendosearchbar]' });
     if (!tipoInput) throw new Error('Campo "Tipo de ordem de serviço" não encontrado no modal');
-    await preencherComboKendo(tipoInput, CFG.tipoCortesiaCodigo, CFG.tipoCortesia);
+    await preencherComboKendo(tipoInput, tipoCodigo, tipoMatch);
     await sleep(400);
 
     // IMPORTANTE: o Angular recria o <input> de "Serviço" ao habilitar o campo após
     // selecionar o Tipo — por isso reconsultamos pelo label em vez de reusar referência antiga
     const servicoInput = inputPorLabel('Serviço', { seletorInput: 'input[kendosearchbar]' });
     if (!servicoInput) throw new Error('Campo "Serviço" não encontrado no modal');
-    await preencherComboKendo(servicoInput, CFG.servicoCortesiaCodigo, CFG.servicoCortesiaMatch);
+    await preencherComboKendo(servicoInput, servicoCodigo, servicoMatch);
 
-    // TMO = 1
+    // TMO
     const horaInput = document.querySelector('input[aria-placeholder="999:99"]');
     if (horaInput) setValorInputComBlur(horaInput, '001:00');
     const tmoInput = document.querySelector('input[role="spinbutton"][aria-valuemax]');
-    if (tmoInput) setValorInputComBlur(tmoInput, CFG.tmo);
+    if (tmoInput) setValorInputComBlur(tmoInput, tmo);
 
-    await sleep(300);
-    clicarBotaoPorTexto('Salvar e Fechar');
-    await sleep(500);
+    // Valor Hora (mão de obra). Só mexe no campo quando há valor definido —
+    // nas revisões de cortesia (1ª/2ª) o campo continua intocado, como antes.
+    if (valorHora != null && valorHora !== '') {
+      await sleep(200);
+      const valorHoraInput = acharCampoValorHora();
+      if (!valorHoraInput) {
+        console.warn('[autofill] Campo "Valor Hora" não encontrado — preencha manualmente:', valorHora);
+        alert('Não encontrei o campo "Valor Hora" na tela.\nPreencha manualmente: ' + valorHora);
+      } else {
+        setValorInputComBlur(valorHoraInput, String(valorHora));
+      }
+    }
   }
 
   // 4. Aba Mercadorias → adicionar cada item da lista (CFG.mercadorias)
@@ -314,6 +437,24 @@
       const qtdInput = inputPorLabel('Quantidade') || Array.from(document.querySelectorAll('input[role="spinbutton"]')).find((el) => !el.disabled);
       if (!qtdInput) throw new Error(`Campo "Quantidade" não encontrado (item ${i + 1}: ${item.codigo})`);
       setValorInputComBlur(qtdInput, String(item.quantidade));
+
+      // "Serviço aplicação": vincula esta mercadoria a um dos serviços da OS.
+      // Só é preenchido quando o item pede (ex.: óleo -> serviço 2718 de cortesia).
+      // Sem isso, o sistema mantém o vínculo padrão (serviço principal).
+      if (item.servicoAplicacao) {
+        await sleep(250);
+        const aplInput =
+          inputPorLabel('Serviço aplicação', { seletorInput: 'input[kendosearchbar]' }) ||
+          inputPorLabel('Serviço aplicação') ||
+          inputPorLabel('Serviço de aplicação', { seletorInput: 'input[kendosearchbar]' }) ||
+          inputPorLabel('Aplicação', { seletorInput: 'input[kendosearchbar]' });
+        if (!aplInput) {
+          console.warn('[autofill] Campo "Serviço aplicação" não encontrado — vincule manualmente o item', item.codigo, 'ao serviço', item.servicoAplicacao.codigo);
+          alert(`Não encontrei o campo "Serviço aplicação".\nVincule manualmente a mercadoria ${item.codigo} ao serviço ${item.servicoAplicacao.codigo}.`);
+        } else {
+          await preencherComboKendo(aplInput, item.servicoAplicacao.codigo, item.servicoAplicacao.match);
+        }
+      }
 
       await sleep(400);
 
@@ -385,95 +526,6 @@
     }
     alert('Preenchimento aplicado com sucesso! Confira antes de salvar a OS.');
   }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // MENU DE SELEÇÃO — categorias / modelos / revisões
-  // ═══════════════════════════════════════════════════════════════════
-  const CATEGORIAS = [
-    {
-      id: "populares",
-      nome: "Populares",
-      icone: "star",
-      modelos: [
-        "POP110i (2016 ~ 2024)",
-        "POP110i ES (2025)",
-        "BIZ110i (2016 ~ 2024)",
-        "BIZ125 (2018 ~ 2024)",
-        "BIZ 125 EX • BIZ 125 ES (2025)",
-        "CG160 START (2016 ~ 2024)",
-        "CG160 FAN-TITAN 2016 - 2024",
-        "CG 160 TITAN (2025)",
-        "FAN START CARGO 2025",
-        "CB 300F TWISTER (2023 ~ 2024)"
-      ]
-    },
-    {
-      id: "scooter",
-      nome: "Scooter",
-      icone: "scooter",
-      modelos: [
-        "ELITE 125 (2025)",
-        "ELITE 125 (2019 ~ 2024)",
-        "PCX 160 (2023 ~ 2024)",
-        "PCX 150 (2019 ~ 2024)",
-        "ADV (2021 ~ 2024)",
-        "X-ADV (2022 ~ 2024)",
-        "SH 300i (2016 ~ 2021)"
-      ]
-    },
-    {
-      id: "quadriciclo",
-      nome: "Quadriciclo",
-      icone: "quad",
-      modelos: [
-        "TRX420 QUADRICICLO ( 2008-2024)"
-      ]
-    },
-    {
-      id: "baixa",
-      nome: "Baixa Cilindrada",
-      icone: "low",
-      modelos: [
-        "POP110i (2016 ~ 2024)",
-        "POP110i ES (2025)",
-        "BIZ110i (2016 ~ 2024)",
-        "BIZ125 (2018 ~ 2024)",
-        "BIZ 125 EX • BIZ 125 ES (2025)"
-      ]
-    },
-    {
-      id: "media",
-      nome: "Média (até 300)",
-      icone: "mid",
-      modelos: [
-        "NXR160 BROS ESDD (2016 ~ 2024)",
-        "NXR160 CBS_ABS (2025)",
-        "XRE 190 (2016 ~ 2024)",
-        "XRE 190 (2025 )",
-        "CRF 250 2024",
-        "CB 250F TWISTER (2016 ~ 2022)",
-        "CB 300F TWISTER (2023 ~ 2024)",
-        "XRE 300 (2019 ~ 2024)",
-        "XRE 300 Sahara (2025)",
-        "XR 300L Tornado (2025)"
-      ]
-    },
-    {
-      id: "alta",
-      nome: "Alta (acima de 300)",
-      icone: "high",
-      modelos: [
-        "CB 500F (2020 ~ 2024)",
-        "CB 500X ( 2020 - 2024 )",
-        "CB 650R (2020 ~ 2024)",
-        "CBR 650R (2020 ~ 2024)",
-        "NC 750X (2022 ~ 2024)",
-        "CBR 1000 RR-R FIR(2022 ~2024",
-        "X-ADV (2022 ~ 2024)",
-        "SH 300i (2016 ~ 2021)"
-      ]
-    }
-  ];
 
   const REVISOES_POR_MODELO = {
   "POP110i (2016 ~ 2024)": [
@@ -1708,16 +1760,6 @@
     }
   ]
 };
-
-  const ICONS = {
-    star:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.9 6.6L22 9.3l-5 4.8L18.2 22 12 18.3 5.8 22 7 14.1 2 9.3l7.1-.7L12 2z"/></svg>',
-    scooter:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 18h6l3-8h4M9 10h4"/></svg>',
-    quad:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="17" r="2.3"/><circle cx="19" cy="17" r="2.3"/><path d="M7 17h10M9 17V9h6v8M9 9L6 6M15 9l3-3"/></svg>',
-    low:   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="17" r="2.3"/><circle cx="17" cy="17" r="2.3"/><path d="M6 17h5l2-6h4M11 11H8"/></svg>',
-    mid:   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5.5" cy="17" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M5.5 17h6l2.5-7h4.5M11.5 10H9"/></svg>',
-    high:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="17" r="2.5"/><circle cx="19" cy="17" r="2.5"/><path d="M5 17h5l3-8h6M13 9h-3"/><path d="M16 9l3 8"/></svg>'
-  };
-
   // ═══════════════════════════════════════════════════════════════════
   // MAPEAMENTO SERVIÇO/MERCADORIA — códigos internos do MicroWork Cloud.
   // Só "Troca de óleo" está configurado por enquanto (mesmos códigos do
@@ -1768,24 +1810,61 @@
   // "Tipo de ordem de serviço" por número de revisão.
   // 1ª revisão = código 2 ("2 - 1ª REVISÃO GRATUITA EXPRESSO")
   // 2ª revisão = código 4
+  // 3ª em diante (dentro OU fora da garantia) = código 5 ("REVISÃO PERIÓDICA")
   const TIPO_ORDEM_POR_REVISAO = {
     1: { codigo: '2', match: '2 -' },
     2: { codigo: '4', match: '4 -' },
-    // demais revisões ainda não configuradas — usa o mesmo da 1ª como base
+  };
+
+  // A partir da 3ª revisão o tipo é sempre 5 — inclusive na "revisão geral"
+  // (fora de garantia), que não tem tipo de ordem próprio no MicroWork.
+  const TIPO_ORDEM_REVISAO_PERIODICA = { codigo: '5', match: '5 -' };
+
+  function tipoOrdemParaRevisao(numero) {
+    if (numero >= 3) return TIPO_ORDEM_REVISAO_PERIODICA;
+    return TIPO_ORDEM_POR_REVISAO[numero] || null;
+  }
+
+  // Serviço de cortesia do óleo, adicionado como SEGUNDO item de serviço nas
+  // revisões da 3ª em diante quando o cliente está dentro da garantia.
+  // Tipo de ordem 36, serviço 2718, TMO 1, Valor Hora 0 (grátis).
+  const SERVICO_OLEO_CORTESIA = {
+    tipoCodigo: '36',
+    tipoMatch: '36 -',
+    servicoCodigo: '2718',
+    servicoMatch: '(2718)',
+    tmo: '1',
+    valor: '0,00',
   };
 
   // "Serviço" por número de revisão — código específico pelo km da
   // revisão (ex: REVISÃO 1000 KM = código 1784, REVISÃO 6000 KM = 1842...).
   // O TMO é o mesmo (CFG.tmo) pra todas.
-  const SERVICO_KM_POR_REVISAO = {
-    1: { codigo: '1784', match: '(1784)' },  // REVISÃO 1000 KM
-    2: { codigo: '1842', match: '(1842)' },  // REVISÃO 6000 KM
-    // demais revisões ainda não configuradas — usa o código da 1ª como base
+  //
+  // 1ª e 2ª revisão usam o mesmo template de cortesia em toda moto Honda
+  // (confirmado, não muda por modelo/ano), então ficam fixos aqui. Da 3ª em
+  // diante o código depende do que está cadastrado no MicroWork Cloud pra
+  // cada km — em vez de chutar ou deixar hardcoded, ele vem pronto do
+  // painel via URL (parâmetro am_servico_km), que por sua vez lê o campo
+  // "Código de Serviço" cadastrado no admin pra cada revisão (mesmo lugar
+  // de onde já vem a mão de obra em am_mo). Ver amInit mais abaixo.
+  const SERVICO_KM_REVISAO_1_2 = {
+    1: { codigo: '1784', match: '(1784)' },  // REVISÃO 1000 KM — confirmado
+    2: { codigo: '1842', match: '(1842)' },  // REVISÃO 6000 KM — confirmado
   };
 
-  // Troca de óleo avulsa (fora de revisão):
-  // Tipo de ordem de serviço = 7, Serviço = 24, TMO = 1,
-  // e a única mercadoria é o óleo (1002).
+  // codigoDoPainel = valor de am_servico_km, já resolvido pelo admin pra
+  // essa revisão específica. null/undefined = ainda não cadastrado no
+  // admin — nesse caso configuradoCompletamente fica false e o confirm()
+  // avisa o operador antes de preencher a OS.
+  function servicoKmParaRevisao(numero, codigoDoPainel) {
+    const fixo = SERVICO_KM_REVISAO_1_2[numero];
+    if (fixo) return fixo;
+    const codigo = codigoDoPainel ? String(codigoDoPainel).trim() : '';
+    if (!codigo) return null;
+    return { codigo, match: `(${codigo})` };
+  }
+
   const TROCA_OLEO = {
     tipoOrdem: { codigo: '7', match: '7 -' },
     servico: { codigo: '24', match: '(24)' },
@@ -1909,6 +1988,12 @@
   }
 
   function configurarCfgParaSelecao(selecao) {
+    // Estado "limpo" a cada seleção — evita herdar Valor Hora/segundo serviço
+    // de uma seleção anterior (o menu pode ser usado várias vezes na mesma aba).
+    CFG.valorHora = null;
+    CFG.geral = false;
+    CFG.segundoServico = null;
+
     // Mercadorias: por padrão os mesmos 4 itens genéricos da 1ª revisão
     // (usados quando ainda não há uma tabela específica pra esse
     // modelo/revisão em MERCADORIAS_POR_REVISAO). O código e a quantidade
@@ -1930,11 +2015,7 @@
     }
 
     if (selecao.tipo === 'troca_oleo') {
-      // Troca de óleo avulsa:
-      //   Tipo de ordem de serviço = 7
-      //   Serviço                  = 24
-      //   TMO                      = 1
-      //   Mercadoria               = só o óleo, código e qtd conforme o modelo
+      // Troca de óleo avulsa: inalterada (tipo 7 / serviço 24 / TMO 1 / só o óleo)
       CFG.tipoCortesiaCodigo = TROCA_OLEO.tipoOrdem.codigo;
       CFG.tipoCortesia = TROCA_OLEO.tipoOrdem.match;
       CFG.servicoCortesiaCodigo = TROCA_OLEO.servico.codigo;
@@ -1944,16 +2025,17 @@
       return { configuradoCompletamente: true };
     }
 
-
     if (selecao.tipo === 'revisao') {
-      const tipoOrdem = TIPO_ORDEM_POR_REVISAO[selecao.numero];
-      const servicoKm = SERVICO_KM_POR_REVISAO[selecao.numero];
+      const numero = selecao.numero;
+      const tipoOrdem = tipoOrdemParaRevisao(numero);
+      const servicoKm = servicoKmParaRevisao(numero, selecao.servicoKmCodigo);
+      const ehGeral = numero >= 3 && selecao.geral === true;
+      CFG.geral = ehGeral;
 
       if (tipoOrdem) {
         CFG.tipoCortesiaCodigo = tipoOrdem.codigo;
         CFG.tipoCortesia = tipoOrdem.match;
       } else {
-        // Ainda não configurado — usa o código da 1ª revisão como base temporária
         CFG.tipoCortesiaCodigo = TIPO_ORDEM_POR_REVISAO[1].codigo;
         CFG.tipoCortesia = TIPO_ORDEM_POR_REVISAO[1].match;
       }
@@ -1962,285 +2044,64 @@
         CFG.servicoCortesiaCodigo = servicoKm.codigo;
         CFG.servicoCortesiaMatch = servicoKm.match;
       } else {
-        // Ainda não configurado — usa o código da 1ª revisão como base temporária
-        CFG.servicoCortesiaCodigo = SERVICO_KM_POR_REVISAO[1].codigo;
-        CFG.servicoCortesiaMatch = SERVICO_KM_POR_REVISAO[1].match;
+        // Código do km desta revisão ainda não cadastrado no admin (campo
+        // "Código de Serviço" vazio) — usa o da 1ª como base temporária e
+        // devolve configuradoCompletamente=false (o confirm() avisa o
+        // operador antes de qualquer preenchimento).
+        CFG.servicoCortesiaCodigo = SERVICO_KM_REVISAO_1_2[1].codigo;
+        CFG.servicoCortesiaMatch = SERVICO_KM_REVISAO_1_2[1].match;
       }
 
-      if (tipoOrdem && servicoKm && mercadoriasConfiguradas) {
-        // Revisão totalmente configurada: tipo, serviço E mercadorias
-        // específicas do modelo/revisão.
-        return { configuradoCompletamente: true };
+      // 1ª e 2ª revisão: cortesia total — nada de Valor Hora nem 2º serviço.
+      if (numero < 3) {
+        return {
+          configuradoCompletamente: Boolean(tipoOrdem && servicoKm && mercadoriasConfiguradas),
+        };
       }
-      // Falta tipo de ordem, serviço e/ou mercadorias específicas —
-      // o confirm() do banner avisa o operador que vai usar valores base.
-      return { configuradoCompletamente: false };
+
+      // 3ª em diante: mão de obra é cobrada (Valor Hora do painel).
+      const mo = Number(selecao.maoDeObra);
+      const temMaoDeObra = Number.isFinite(mo) && mo > 0;
+      CFG.valorHora = temMaoDeObra ? formatarMoedaBR(mo) : null;
+
+      const servicoPrincipal = servicoKm
+        ? { codigo: servicoKm.codigo, match: servicoKm.match }
+        : null;
+
+      if (ehGeral) {
+        // Fora da garantia: um único serviço (o de km, pago) e o óleo entra
+        // como mercadoria comum, vinculada ao próprio serviço principal.
+        CFG.segundoServico = null;
+        CFG.mercadorias = CFG.mercadorias.map((it) => ({ ...it, servicoAplicacao: undefined }));
+      } else {
+        // Dentro da garantia: serviço de km (pago) + cortesia do óleo (2718),
+        // com o óleo vinculado ao 2718 e o resto ao serviço de km.
+        CFG.segundoServico = SERVICO_OLEO_CORTESIA;
+        const codigosOleo = new Set(['1002', '082332MB024', oleo.codigo]);
+        CFG.mercadorias = CFG.mercadorias.map((it) =>
+          codigosOleo.has(it.codigo)
+            ? {
+                ...it,
+                servicoAplicacao: {
+                  codigo: SERVICO_OLEO_CORTESIA.servicoCodigo,
+                  match: SERVICO_OLEO_CORTESIA.servicoMatch,
+                },
+              }
+            : servicoPrincipal
+              ? { ...it, servicoAplicacao: servicoPrincipal }
+              : { ...it, servicoAplicacao: undefined }
+        );
+      }
+
+      return {
+        configuradoCompletamente: Boolean(
+          tipoOrdem && servicoKm && mercadoriasConfiguradas && temMaoDeObra
+        ),
+      };
     }
 
     return { configuradoCompletamente: false };
   }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // ESTILOS DO MENU
-  // ═══════════════════════════════════════════════════════════════════
-  const css = `
-    #mr-fab {
-      position: fixed; bottom: 24px; right: 24px; z-index: 999998;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: #e8756a; color: #fff; border: none;
-      font-size: 24px; cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-      display:flex; align-items:center; justify-content:center;
-    }
-    #mr-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-      z-index: 999999; display: none;
-      align-items: center; justify-content: center;
-    }
-    #mr-overlay.mr-show { display: flex; }
-    .mr-shell {
-      display:flex; background:#f2f1ee; border-radius:6px;
-      box-shadow:0 20px 50px rgba(0,0,0,0.4); overflow:hidden;
-      max-height: 80vh; font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    }
-    .mr-close {
-      position:absolute; top:-14px; right:-14px;
-      width:32px; height:32px; border-radius:50%;
-      background:#fff; border:none; cursor:pointer;
-      font-size:16px; font-weight:bold; color:#3a3a3a;
-      box-shadow:0 2px 8px rgba(0,0,0,0.3);
-    }
-    .mr-wrap { position: relative; }
-    .mr-col-cat {
-      width:190px; background:#f2f1ee; display:flex; flex-direction:column;
-      border-right:1px solid #dcdad5; overflow-y:auto;
-    }
-    .mr-cat-item {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:16px 20px; cursor:pointer; font-size:14px; color:#3a3a3a;
-      border-bottom:1px solid #dcdad5; position:relative; transition:background .15s;
-    }
-    .mr-cat-item:hover { background:#e5e3df; }
-    .mr-cat-item.active { background:#fff; font-weight:600; }
-    .mr-cat-item.active::before {
-      content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:#e8756a;
-    }
-    .mr-cat-icon { color:#8b8b88; flex-shrink:0; }
-    .mr-cat-item.active .mr-cat-icon { color:#e8756a; }
-
-    .mr-col-mod {
-      width:230px; background:#e9e7e3; display:flex; flex-direction:column;
-      border-right:1px solid #dcdad5; overflow-y:auto;
-    }
-    .mr-mod-item {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px; cursor:pointer; font-size:13.5px; color:#3a3a3a;
-      border-bottom:1px solid #dcdad5; transition:background .15s;
-    }
-    .mr-mod-item:hover { background:#dedcd7; }
-    .mr-mod-item.active { background:#e8756a; color:#fff; font-weight:600; }
-    .mr-mod-item .mr-chev { color:#8b8b88; font-size:12px; }
-    .mr-mod-item.active .mr-chev { color:#fff; }
-    .mr-empty { padding:30px 18px; font-size:13px; color:#8b8b88; text-align:center; }
-
-    .mr-col-serv {
-      width:290px; background:#fff; display:flex; flex-direction:column; overflow-y:auto;
-    }
-    .mr-serv-item {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:15px 20px; cursor:pointer; font-size:13.5px; color:#3a3a3a;
-      border-bottom:1px solid #dcdad5; transition:background .15s;
-    }
-    .mr-serv-item:hover { background:#f7f6f4; }
-    .mr-serv-item.active { background:#e8756a; color:#fff; }
-    .mr-serv-info { display:flex; flex-direction:column; gap:2px; }
-    .mr-serv-nome { font-weight:500; }
-    .mr-serv-sub { font-size:11px; color:#8b8b88; }
-    .mr-serv-item.active .mr-serv-sub { color:#fce8e5; }
-    .mr-serv-item .mr-chev { color:#8b8b88; font-size:12px; }
-    .mr-serv-item.active .mr-chev { color:#fff; }
-    .mr-serv-badge {
-      font-size:10px; padding:2px 6px; border-radius:8px;
-      background:#f0c14b; color:#3a2a00; margin-left:6px; white-space:nowrap;
-    }
-  `;
-
-  const styleTag = document.createElement('style');
-  styleTag.textContent = css;
-  document.head.appendChild(styleTag);
-
-  // ═══════════════════════════════════════════════════════════════════
-  // HTML — botão flutuante + overlay do menu
-  // ═══════════════════════════════════════════════════════════════════
-  const fab = document.createElement('button');
-  fab.id = 'mr-fab';
-  fab.title = 'Abrir menu de revisão';
-  fab.textContent = '🔧';
-  document.body.appendChild(fab);
-
-  const overlay = document.createElement('div');
-  overlay.id = 'mr-overlay';
-  overlay.innerHTML = `
-    <div class="mr-wrap">
-      <button class="mr-close" id="mr-close-btn">✕</button>
-      <div class="mr-shell">
-        <div class="mr-col-cat" id="mr-col-categorias"></div>
-        <div class="mr-col-mod" id="mr-col-modelos"></div>
-        <div class="mr-col-serv" id="mr-col-servicos"></div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  fab.addEventListener('click', () => overlay.classList.add('mr-show'));
-  document.getElementById('mr-close-btn').addEventListener('click', () => overlay.classList.remove('mr-show'));
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('mr-show'); });
-
-  // ═══════════════════════════════════════════════════════════════════
-  // ESTADO E RENDER DO MENU
-  // ═══════════════════════════════════════════════════════════════════
-  let categoriaAtivaId = null;
-  let modeloAtivoNome = null;
-  let servicoAtivoId = null;
-
-  function renderCategorias() {
-    const el = document.getElementById('mr-col-categorias');
-    el.innerHTML = '';
-    CATEGORIAS.forEach(cat => {
-      const div = document.createElement('div');
-      div.className = 'mr-cat-item' + (cat.id === categoriaAtivaId ? ' active' : '');
-      div.innerHTML = `<span>${cat.nome}</span><span class="mr-cat-icon">${ICONS[cat.icone] || ''}</span>`;
-      div.onclick = () => {
-        categoriaAtivaId = cat.id;
-        modeloAtivoNome = null;
-        servicoAtivoId = null;
-        renderCategorias(); renderModelos(); renderServicos();
-      };
-      el.appendChild(div);
-    });
-  }
-
-  function renderModelos() {
-    const el = document.getElementById('mr-col-modelos');
-    el.innerHTML = '';
-    if (!categoriaAtivaId) {
-      el.innerHTML = '<div class="mr-empty">Selecione um tipo de moto</div>';
-      return;
-    }
-    const cat = CATEGORIAS.find(c => c.id === categoriaAtivaId);
-    if (!cat || cat.modelos.length === 0) {
-      el.innerHTML = '<div class="mr-empty">Nenhum modelo cadastrado</div>';
-      return;
-    }
-    cat.modelos.forEach(modeloNome => {
-      const div = document.createElement('div');
-      div.className = 'mr-mod-item' + (modeloNome === modeloAtivoNome ? ' active' : '');
-      div.innerHTML = `<span>${modeloNome}</span><span class="mr-chev">›</span>`;
-      div.onclick = () => {
-        modeloAtivoNome = modeloNome;
-        servicoAtivoId = null;
-        renderModelos(); renderServicos();
-      };
-      el.appendChild(div);
-    });
-  }
-
-  function renderServicos() {
-    const el = document.getElementById('mr-col-servicos');
-    el.innerHTML = '';
-    if (!modeloAtivoNome) {
-      el.innerHTML = '<div class="mr-empty">Selecione um modelo para ver os serviços</div>';
-      return;
-    }
-    const revisoes = REVISOES_POR_MODELO[modeloAtivoNome] || [];
-
-    const trocaOleo = document.createElement('div');
-    trocaOleo.className = 'mr-serv-item' + (servicoAtivoId === 'troca_oleo' ? ' active' : '');
-    trocaOleo.innerHTML = `
-      <div class="mr-serv-info">
-        <span class="mr-serv-nome">Troca de óleo</span>
-        <span class="mr-serv-sub">Serviço avulso</span>
-      </div>
-      <span class="mr-chev">›</span>
-    `;
-    trocaOleo.onclick = () => {
-      servicoAtivoId = 'troca_oleo';
-      renderServicos();
-      onServicoSelecionado({ tipo: 'troca_oleo', modelo: modeloAtivoNome });
-    };
-    el.appendChild(trocaOleo);
-
-    if (revisoes.length === 0) {
-      const vazio = document.createElement('div');
-      vazio.className = 'mr-empty';
-      vazio.textContent = 'Nenhuma revisão cadastrada para este modelo';
-      el.appendChild(vazio);
-      return;
-    }
-
-    revisoes.forEach(rev => {
-      const id = 'rev_' + rev.numero;
-      const div = document.createElement('div');
-      div.className = 'mr-serv-item' + (servicoAtivoId === id ? ' active' : '');
-      const ordinal = rev.numero + 'ª revisão';
-      const sub = rev.km_meses || '';
-      const badge = rev.numero > 1 ? '<span class="mr-serv-badge">config. pendente</span>' : '';
-      div.innerHTML = `
-        <div class="mr-serv-info">
-          <span class="mr-serv-nome">${ordinal}${badge}</span>
-          <span class="mr-serv-sub">${sub}</span>
-        </div>
-        <span class="mr-chev">›</span>
-      `;
-      div.onclick = () => {
-        servicoAtivoId = id;
-        renderServicos();
-        onServicoSelecionado({ tipo: 'revisao', numero: rev.numero, modelo: modeloAtivoNome, km_meses: rev.km_meses });
-      };
-      el.appendChild(div);
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // CALLBACK — ao selecionar um serviço/revisão no menu:
-  // configura o CFG do autofill e roda o fluxo completo automaticamente
-  // ═══════════════════════════════════════════════════════════════════
-  async function onServicoSelecionado(selecao) {
-    console.log('[Menu Revisão] Seleção:', selecao);
-    const resultado = configurarCfgParaSelecao(selecao);
-
-    const rotulo = selecao.tipo === 'troca_oleo'
-      ? `Troca de óleo — ${selecao.modelo}`
-      : `${selecao.numero}ª revisão — ${selecao.modelo} (${selecao.km_meses || ''})`;
-
-    console.log(`[Menu Revisão] Selecionado: ${rotulo}`);
-    overlay.classList.remove('mr-show');
-
-    if (!resultado.configuradoCompletamente) {
-      const seguir = confirm(
-        `Ainda não tenho os códigos de serviço/mercadoria específicos desta revisão ` +
-        `cadastrados no MicroWork (isso depende de você me passar os códigos internos ` +
-        `de cada kit de revisão).\n\nVou usar os mesmos códigos da "Troca de óleo" como ` +
-        `base — você pode ajustar manualmente na aba Serviços/Mercadorias depois.\n\n` +
-        `Quer rodar mesmo assim?`
-      );
-      if (!seguir) return;
-    }
-
-    if (!location.hash.includes('/servico/os/')) {
-      alert('Abra uma Ordem de Serviço antes de rodar o preenchimento automático.');
-      return;
-    }
-
-    await rodarTudo();
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // INIT DO MENU
-  // ═══════════════════════════════════════════════════════════════════
-  renderCategorias();
-  renderModelos();
-  renderServicos();
 
   // ═══════════════════════════════════════════════════════════════════
   // INTEGRAÇÃO COM O PAINEL DA OFICINA (dashboard Alagoas Motos)
@@ -2357,6 +2218,13 @@
     const ehTrocaOleo = tipoParam === 'troca_oleo' || tipoParam === 'oleo';
     const numero = parseInt(p.get('am_rev') || '1', 10) || 1;
     const kmMeses = p.get('am_km') || '';
+    // am_mo = mão de obra (R$) da revisão, am_geral = 1 quando é revisão geral,
+    // am_servico_km = código do cadastro "Serviço" do MicroWork pra essa revisão
+    // (vem do campo "Código de Serviço" do admin — mesma origem da mão de obra).
+    const moParam = parseFloat(p.get('am_mo') || '');
+    const maoDeObra = Number.isFinite(moParam) ? moParam : null;
+    const geral = p.get('am_geral') === '1';
+    const servicoKmCodigo = (p.get('am_servico_km') || '').trim() || null;
     const chave = amAcharChaveModelo(modeloParam);
     const selecao = ehTrocaOleo
       ? { tipo: 'troca_oleo', modelo: chave || modeloParam, km_meses: kmMeses }
@@ -2365,6 +2233,9 @@
           numero,
           modelo: chave || modeloParam,
           km_meses: kmMeses,
+          maoDeObra,
+          geral,
+          servicoKmCodigo,
         };
 
     console.log('[Autofill AM] Seleção recebida do dashboard:', selecao, '(param:', modeloParam, ')');
@@ -2379,9 +2250,12 @@
       const resultado = configurarCfgParaSelecao(selecao);
       if (!resultado.configuradoCompletamente) {
         const seguir = confirm(
-          `Ainda não tenho os códigos específicos da ${numero}ª revisão cadastrados no MicroWork.\n\n` +
-          `Vou usar os códigos da 1ª revisão / troca de óleo como base — confira a aba ` +
-          `Serviços/Mercadorias antes de salvar.\n\nQuer rodar mesmo assim?`
+          `A ${numero}ª revisão ainda não está totalmente configurada.\n\n` +
+          (numero >= 3 && !CFG.valorHora
+            ? `• Sem valor de mão de obra: o campo "Valor Hora" NÃO será preenchido.\n`
+            : '') +
+          `• Códigos de serviço/mercadoria podem estar faltando — uso os da 1ª revisão como base.\n\n` +
+          `Confira as abas Serviços/Mercadorias antes de salvar.\n\nQuer rodar mesmo assim?`
         );
         if (!seguir) { rodou = false; amMostrar('Cancelado. Clique em "Preencher agora" quando quiser.'); return; }
       }
@@ -2405,7 +2279,7 @@
 
     const rotulo = ehTrocaOleo
       ? `Troca de óleo (avulsa) — ${selecao.modelo}`
-      : `${numero}ª revisão — ${selecao.modelo}${kmMeses ? ` (${kmMeses})` : ''}`;
+      : `${numero}ª revisão${geral ? ' (GERAL — fora da garantia)' : ''} — ${selecao.modelo}${kmMeses ? ` (${kmMeses})` : ''}`;
     amMostrar(`${rotulo}. Informe a placa ou o chassi do veículo — o preenchimento começa sozinho.`);
 
     if (!chave) {
