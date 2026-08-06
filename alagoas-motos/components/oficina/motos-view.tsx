@@ -16,6 +16,7 @@ import {
   type Modelo,
   type RevisoesData,
 } from "../../lib/revisoes-calc";
+import { PrazoRevisaoCard } from "./prazo-revisao";
 
 const ACCENT = "#0f7a5a";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
@@ -584,6 +585,8 @@ export function MotosView({ data }: { data: RevisoesData }) {
 
   return (
     <div className="flex flex-col gap-6" style={{ fontFamily: FONT }}>
+      <PrazoRevisaoCard data={data} />
+
       <div className="flex flex-wrap items-center gap-2.5">
         <input
           value={q}

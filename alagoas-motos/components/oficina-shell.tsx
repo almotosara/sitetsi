@@ -5,6 +5,7 @@ import { OficinaSidebar } from './oficina-sidebar'
 import { ChatPanel } from './chat-panel'
 import { MotosView } from './oficina/motos-view'
 import { FooterLojas } from './oficina/footer-lojas'
+import { TmoCalculadora } from './oficina/tmo-calculadora'
 import { createClient as createSupabaseClient } from '@/lib/supabase/client'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
@@ -19,7 +20,7 @@ interface MaoDeObraRow { modelos: string; tmo_hora_valor: number; revisao_geral_
 interface ValorItem { codigo: string; descricao: string; valor: number }
 interface RevisoesData { modelos: Modelo[]; mao_de_obra: MaoDeObraRow[]; valores_mercadoria: ValorItem[] }
 
-type Tab = 'revisao' | 'valores' | 'maodeobra' | 'manuais'
+type Tab = 'revisao' | 'valores' | 'maodeobra' | 'tmo' | 'manuais'
 
 function fmtBRL(v: number | null | undefined) {
   if (v == null) return '—'
@@ -206,12 +207,14 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
           {tab === 'revisao' && 'Motos & Ordem de Serviço'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
+          {tab === 'tmo' && 'Calculadora de TMO'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
         <p className="text-[12.5px] font-medium mb-6" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Escolha a moto para abrir a ordem de serviço no MicroWork ou ver os valores de cada revisão.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
           {tab === 'maodeobra' && 'Valor de referência da mão de obra por hora, por grupo de modelo.'}
+          {tab === 'tmo' && 'Troca de peça avulsa: calcule a mão de obra (valor hora × TMO da peça) e abra a OS já preenchida.'}
           {tab === 'manuais' && 'Manuais completos de tabelas de manutenção para consulta.'}
         </p>
 
@@ -271,6 +274,8 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
             )}
           </div>
         )}
+
+        {data && tab === 'tmo' && <TmoCalculadora data={data as never} />}
 
         {data && tab === 'maodeobra' && (
           <div className="overflow-x-auto rounded-2xl" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>

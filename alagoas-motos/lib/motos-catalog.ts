@@ -165,3 +165,53 @@ export function urlOrdemServico(opts: {
   p.set("am_auto", "1");
   return `https://microworkcloud.com.br/cloud/?${p.toString()}#/servico/os/inserir`;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Troca de peça avulsa (fora de revisão programada)
+//
+// No MicroWork Cloud esse fluxo é aberto assim:
+//   • Tipo de ordem de serviço: 7 - EXTERNO EXPRESSO
+//   • Serviço: TROCA DE PEÇAS (1775) (AÇÃO: TROCAR)  → código fixo 1775
+//   • TMO: sempre 1,0000 (fixo no MicroWork, não é o TMO da nossa calculadora)
+//   • Valor Hora: recebe a mão de obra JÁ calculada aqui (valor_hora × TMO da peça)
+//   • Valor unitário: o preço da peça
+//
+// Parâmetros da URL gerados por esta função (para o userscript
+// userscript/microwork-autofill_final.user.js consumir):
+//   am_tipo=troca_peca   → identifica o fluxo (diferente de "revisao"/"troca_oleo")
+//   am_modelo            → nome do modelo da moto (quando informado)
+//   am_peca_codigo       → código da mercadoria cadastrada (ausente se valor manual)
+//   am_peca_desc         → descrição da peça (para busca/digitação no DMS)
+//   am_peca_valor        → valor unitário da peça, número puro com ponto decimal
+//   am_mo                → mão de obra já calculada (vai no campo "Valor Hora")
+//   am_tipo_os=7         → tipo de ordem de serviço (EXTERNO EXPRESSO)
+//   am_servico=1775      → código do serviço "TROCA DE PEÇAS"
+//   am_tmo=1             → TMO fixo do MicroWork para esse serviço
+//   am_auto=1            → liga o autofill
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const TROCA_PECA_TIPO_OS = "7";
+export const TROCA_PECA_SERVICO_CODIGO = "1775";
+export const TROCA_PECA_TMO_FIXO = "1";
+
+export function urlTrocaPeca(opts: {
+  modelo?: string | null;
+  pecaCodigo?: string | null;
+  pecaDescricao?: string | null;
+  pecaValor: number;
+  /** Mão de obra já calculada (valor hora do grupo × TMO da peça). */
+  maoDeObra: number;
+}) {
+  const p = new URLSearchParams();
+  p.set("am_tipo", "troca_peca");
+  if (opts.modelo) p.set("am_modelo", opts.modelo);
+  if (opts.pecaCodigo) p.set("am_peca_codigo", opts.pecaCodigo);
+  if (opts.pecaDescricao) p.set("am_peca_desc", opts.pecaDescricao);
+  if (Number.isFinite(opts.pecaValor)) p.set("am_peca_valor", String(opts.pecaValor));
+  if (Number.isFinite(opts.maoDeObra)) p.set("am_mo", String(opts.maoDeObra));
+  p.set("am_tipo_os", TROCA_PECA_TIPO_OS);
+  p.set("am_servico", TROCA_PECA_SERVICO_CODIGO);
+  p.set("am_tmo", TROCA_PECA_TMO_FIXO);
+  p.set("am_auto", "1");
+  return `https://microworkcloud.com.br/cloud/?${p.toString()}#/servico/os/inserir`;
+}

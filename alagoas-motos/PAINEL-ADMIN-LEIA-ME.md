@@ -113,3 +113,44 @@ só trocando a URL.
   tinha. As tabelas `rev_*` aceitam escrita com a anon key (mesmo padrão das outras
   tabelas do projeto); se quiser endurecer isso depois, é trocar as políticas por
   autenticação Supabase real.
+
+---
+
+## Novidades desta versão (painel da oficina)
+
+### 1. Card "Prazo de garantia das revisões" (aba Consulta de Revisão)
+No topo da aba, antes da grade de motos. O consultor informa a **data de compra**
+(e opcionalmente o modelo) e vê a linha do tempo das revisões com a data limite
+de cada uma, quais venceram e qual é a **próxima revisão ainda coberta**.
+Os meses vêm do próprio `/api/revisoes` (campo `meses` de cada revisão); sem
+modelo selecionado usa o prazo mais comum da base como referência.
+É só informativo — não grava nada.
+
+### 2. Nova aba "Calculadora de TMO" (troca de peça avulsa)
+Calcula `mão de obra = valor_hora_do_grupo × TMO_da_peça` e o total com a peça.
+A peça pode vir do cadastro (`valores_mercadoria`) ou ser digitada manualmente;
+o valor da hora vem do grupo de mão de obra do modelo (`rev_mao_de_obra`) ou manual.
+
+O botão **"Abrir OS desta troca"** abre o MicroWork com estes parâmetros novos
+(gerados por `urlTrocaPeca()` em `lib/motos-catalog.ts`):
+
+| Parâmetro | Conteúdo |
+|---|---|
+| `am_tipo=troca_peca` | identifica o fluxo (≠ `revisao` / `troca_oleo`) |
+| `am_modelo` | modelo da moto, quando selecionado |
+| `am_peca_codigo` | código da mercadoria (ausente se valor manual) |
+| `am_peca_desc` | descrição da peça |
+| `am_peca_valor` | valor unitário da peça (número puro, ponto decimal) |
+| `am_mo` | mão de obra já calculada → campo **Valor Hora** |
+| `am_tipo_os=7` | tipo de OS: `7 - EXTERNO EXPRESSO` |
+| `am_servico=1775` | serviço `TROCA DE PEÇAS (1775)` |
+| `am_tmo=1` | TMO fixo do MicroWork para esse serviço |
+| `am_auto=1` | liga o autofill |
+
+O userscript `userscript/microwork-autofill_final.user.js` **ainda não trata**
+`am_tipo=troca_peca` — esse é o próximo passo.
+
+### 3. Sidebar redesenhada
+Sem GSAP, transições mais suaves, grupos ("Oficina" / "Ferramentas"), indicador
+de item ativo e tooltip quando recolhida. Mantém colapsar, avatar/conta,
+toggle de tema e sair.
