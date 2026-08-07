@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Rajdhani, Inter, Poppins, JetBrains_Mono } from 'next/font/google'
+import { Rajdhani, Inter, Poppins, JetBrains_Mono, Manrope } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -12,6 +12,11 @@ const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-poppins',
+})
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope-google',
 })
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -40,7 +45,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${poppins.variable} ${jetbrainsMono.variable}`} data-theme="light" suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${poppins.variable} ${jetbrainsMono.variable} ${manrope.variable}`} data-theme="light" suppressHydrationWarning>
       <body className="antialiased font-sans" style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
         {children}
       </body>
