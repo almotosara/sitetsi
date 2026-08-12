@@ -59,8 +59,8 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="w-full max-w-[560px] rounded-2xl modal-anim"
-        style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)', boxShadow: '0 10px 30px -12px var(--shadow-heavy)' }}
+        className="w-full max-w-[560px] rounded-2xl modal-anim glass-effect"
+        style={{ border: '1px solid var(--border-line-soft)', boxShadow: '0 10px 30px -12px var(--shadow-heavy)' }}
       >
         {/* Head */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>

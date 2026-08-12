@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Rajdhani, Inter, Poppins, JetBrains_Mono, Manrope } from 'next/font/google'
 import './globals.css'
+import { AppleLoading } from '@/components/ui/apple-loading'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const rajdhani = Rajdhani({
@@ -47,6 +48,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${rajdhani.variable} ${poppins.variable} ${jetbrainsMono.variable} ${manrope.variable}`} data-theme="light" suppressHydrationWarning>
       <body className="antialiased font-sans" style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
+        <AppleLoading />
         {children}
       </body>
     </html>

@@ -177,10 +177,10 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
         onClick={onClose}
       />
       <div
-        className="fixed z-50 flex flex-col overflow-hidden"
+        className="fixed z-50 flex flex-col overflow-hidden glass-effect"
         style={{
           top: 76, right: 24, width: 360, height: 480,
-          background: 'var(--bg-panel)', border: '1px solid var(--border-line)',
+          border: '1px solid var(--border-line)',
           borderRadius: 16, boxShadow: '0 20px 50px -12px rgba(0,0,0,0.5)',
         }}
       >

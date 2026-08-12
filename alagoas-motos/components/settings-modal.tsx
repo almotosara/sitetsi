@@ -80,10 +80,10 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
       style={{ background: 'var(--overlay-bg)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', padding: '4vh 16px' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div
-        className="w-full max-w-[680px] rounded-2xl modal-anim overflow-hidden"
-        style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)', boxShadow: '0 20px 50px -12px var(--shadow-heavy)' }}
-      >
+        <div
+          className="w-full max-w-[680px] rounded-2xl modal-anim overflow-hidden glass-effect"
+          style={{ border: '1px solid var(--border-line-soft)', boxShadow: '0 20px 50px -12px var(--shadow-heavy)' }}
+        >
         {/* Head */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
           <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>

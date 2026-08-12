@@ -571,7 +571,7 @@ export function AppShell({
 
           {(view === 'tsi' || view === 'tsilist') && (
             <button onClick={handleTsiImport}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
               style={{
                 background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
                 borderColor: '#0f7a5a',
@@ -585,7 +585,7 @@ export function AppShell({
 
           {view === 'tsiresend' && (
             <button onClick={handleTsiResendImport}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
               style={{
                 background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
                 borderColor: '#0f7a5a',
@@ -600,7 +600,7 @@ export function AppShell({
           {(view === 'dash' || view === 'leads') && (
             <>
               <button onClick={() => mwFileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
                 style={{
                   background: 'var(--bg-panel-2)',
                   borderColor: 'var(--border-line)',
@@ -611,7 +611,7 @@ export function AppShell({
                 Importar XLSX do MicroWork
               </button>
               <button onClick={() => { setEditing(null); setModalOpen(true) }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
                 style={{
                   background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
                   borderColor: '#0f7a5a',
@@ -628,14 +628,14 @@ export function AppShell({
           <div className="flex items-center gap-2.5 pl-3 ml-1" style={{ borderLeft: '1px solid var(--border-line-soft)' }}>
             <button
               onClick={() => setChatOpen((v) => !v)}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
+              className="w-9 h-9 rounded-full flex items-center justify-center liquid-spread hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
               title="Chat com a Oficina"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
             </button>
             <button
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
+              className="w-9 h-9 rounded-full flex items-center justify-center liquid-spread hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
               title="Notificações"
             >
@@ -679,7 +679,7 @@ export function AppShell({
           {view === 'report' && <ReportView leads={leads} />}
           {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}
           {view === 'tsilist' && <TsiListView tsiData={tsiData} onImport={handleTsiImport} />}
-          {view === 'tsiresend' && <TsiResendView data={tsiResend} onImport={handleTsiResendImport} onMarkSent={handleMarkTsiResendSent} />}
+          {view === 'tsiresend' && <TsiResendView data={tsiResend} tsiData={tsiData} fieis={fieis} onImport={handleTsiResendImport} onMarkSent={handleMarkTsiResendSent} />}
           {view === 'fieis' && (
             <FieisView fieis={fieis} onAdd={handleAddFiel} onEdit={handleEditFiel} onDelete={handleDeleteFiel} />
           )}

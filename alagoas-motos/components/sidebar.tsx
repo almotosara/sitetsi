@@ -149,11 +149,11 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
   return (
     <aside
       ref={sidebarRef}
-      className="flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200"
+      className="flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect"
       style={{
         width: w,
         minWidth: w,
-        background: 'var(--sidebar-bg)',
+        background: 'transparent',
         padding: collapsed ? '18px 10px' : '18px 12px',
         borderRight: '1px solid var(--border-line-soft)',
       }}
@@ -204,7 +204,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
             <div key={group.id}>
               <button
                 ref={(el) => { pillRefs.current[gi] = el }}
-                className={`pill-nav-item ${groupActive ? 'is-active' : ''}`}
+                className={`pill-nav-item liquid-spread ${groupActive ? 'is-active' : ''}`}
                 onClick={() => {
                   if (!collapsed && group.children) toggleGroup(group.id)
                   onView(group.id)
@@ -250,7 +250,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
                   {group.children.map((child) => (
                     <button
                       key={child.id}
-                      className={`pill-nav-sub ${isActive(child.id) ? 'is-active' : ''}`}
+                      className={`pill-nav-sub liquid-spread ${isActive(child.id) ? 'is-active' : ''}`}
                       onClick={() => onView(child.id)}
                     >
                       {child.icon}
@@ -272,7 +272,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
           </span>
         )}
         <button
-          className="pill-nav-item"
+          className="pill-nav-item liquid-spread"
           onClick={() => { setSettingsTab('perfil'); setSettingsOpen(true) }}
           title={collapsed ? 'Configurações' : undefined}
           style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
@@ -281,7 +281,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
           {!collapsed && <span className="label-stack"><span className="pill-label">Configurações</span></span>}
         </button>
         <button
-          className="pill-nav-item"
+          className="pill-nav-item liquid-spread"
           onClick={() => { setSettingsTab('meta'); setSettingsOpen(true) }}
           title={collapsed ? 'Metas' : undefined}
           style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
@@ -290,7 +290,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
           {!collapsed && <span className="label-stack"><span className="pill-label">Metas</span></span>}
         </button>
         <button
-          className="pill-nav-item"
+          className="pill-nav-item liquid-spread"
           onClick={onSignOut}
           title={collapsed ? 'Sair' : undefined}
           style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}

@@ -74,7 +74,7 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
+      <div className="rounded-2xl overflow-hidden glass-effect" style={{ border: '1px solid var(--border-line-soft)' }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>

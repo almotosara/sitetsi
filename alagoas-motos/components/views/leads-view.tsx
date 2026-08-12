@@ -156,7 +156,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
   return (
     <div className="view-enter flex flex-col gap-4">
       {/* Filters */}
-      <div className="flex flex-wrap gap-2.5 items-end">
+      <div className="flex flex-wrap gap-2.5 items-end glass-effect p-4 rounded-2xl">
         <div className="relative flex-1 min-w-[220px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, telefone, OS, NF, email ou CPF..."
@@ -239,7 +239,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
       </div>
 
       {/* Table — igual ao HTML de referência */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
+      <div className="rounded-2xl overflow-hidden glass-effect" style={{ border: '1px solid var(--border-line-soft)' }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M4 6h16M4 12h16M4 18h10"/></svg>

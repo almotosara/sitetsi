@@ -55,6 +55,13 @@ export interface TsiResendRow {
   importado_em: string
 }
 
+export interface ReenvioRow extends TsiResendRow {
+  contatado: boolean
+  contatado_em: string | null
+  contatado_canal: string | null
+  isFiel: boolean
+}
+
 export interface UserSettings {
   user_id: string
   goal: number

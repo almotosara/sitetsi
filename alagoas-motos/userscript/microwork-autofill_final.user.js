@@ -2005,12 +2005,18 @@
       { codigo: '1007', match: '1007', quantidade: '1' },
       { codigo: '90401KRMR20', match: '90401KRMR20', quantidade: '1' },
     ];
-    let mercadoriasConfiguradas = false;
+    let mercadoriasConfiguradas = true; // Por padrão true, generic 4-item list é válido
     if (selecao.tipo === 'revisao') {
-      const especificas = mercadoriasEspecificasParaModeloRevisao(selecao.modelo, selecao.numero);
-      if (especificas) {
-        CFG.mercadorias = especificas;
-        mercadoriasConfiguradas = true;
+      const regrasDaRevisao = MERCADORIAS_POR_REVISAO[selecao.numero];
+      if (regrasDaRevisao) {
+        const especificas = mercadoriasEspecificasParaModeloRevisao(selecao.modelo, selecao.numero);
+        if (especificas) {
+          CFG.mercadorias = especificas;
+          mercadoriasConfiguradas = true;
+        } else {
+          // Existe tabela para essa revisão, mas modelo não deu match
+          mercadoriasConfiguradas = false;
+        }
       }
     }
 
@@ -2022,6 +2028,29 @@
       CFG.servicoCortesiaMatch = TROCA_OLEO.servico.match;
       CFG.tmo = TROCA_OLEO.tmo;
       CFG.mercadorias = [{ codigo: oleo.codigo, match: oleo.codigo, quantidade: oleo.quantidade }];
+      return { configuradoCompletamente: true };
+    }
+
+    if (selecao.tipo === 'troca_peca') {
+      // Fluxo "troca de peça avulsa" (v0.13)
+      CFG.tipoCortesiaCodigo = (selecao.tipoOs || '7');
+      CFG.tipoCortesia = CFG.tipoCortesiaCodigo + ' -';
+      CFG.servicoCortesiaCodigo = (selecao.servicoCodigo || '1775');
+      CFG.servicoCortesiaMatch = `(${CFG.servicoCortesiaCodigo})`;
+      CFG.tmo = (selecao.tmo || '1');
+      const mo = Number(selecao.maoDeObra);
+      CFG.valorHora = (Number.isFinite(mo) && mo > 0) ? formatarMoedaBR(mo) : null;
+      
+      if (selecao.pecaCodigo) {
+        CFG.mercadorias = [{ 
+          codigo: selecao.pecaCodigo, 
+          match: selecao.pecaCodigo, 
+          quantidade: '1',
+          valor: selecao.pecaValor ? formatarMoedaBR(selecao.pecaValor) : undefined
+        }];
+      } else {
+        CFG.mercadorias = [];
+      }
       return { configuradoCompletamente: true };
     }
 
@@ -2226,17 +2255,33 @@
     const geral = p.get('am_geral') === '1';
     const servicoKmCodigo = (p.get('am_servico_km') || '').trim() || null;
     const chave = amAcharChaveModelo(modeloParam);
-    const selecao = ehTrocaOleo
-      ? { tipo: 'troca_oleo', modelo: chave || modeloParam, km_meses: kmMeses }
-      : {
-          tipo: 'revisao',
-          numero,
-          modelo: chave || modeloParam,
-          km_meses: kmMeses,
-          maoDeObra,
-          geral,
-          servicoKmCodigo,
-        };
+    
+    let selecao;
+    if (tipoParam === 'troca_peca' || tipoParam === 'peca') {
+      selecao = {
+        tipo: 'troca_peca',
+        modelo: chave || modeloParam,
+        tipoOs: p.get('am_tipo_os') || '7',
+        servicoCodigo: p.get('am_servico') || '1775',
+        tmo: p.get('am_tmo') || '1',
+        maoDeObra: parseFloat(p.get('am_mo') || '0'),
+        pecaCodigo: p.get('am_peca_codigo'),
+        pecaDesc: p.get('am_peca_desc'),
+        pecaValor: parseFloat(p.get('am_peca_valor') || '0')
+      };
+    } else if (ehTrocaOleo) {
+      selecao = { tipo: 'troca_oleo', modelo: chave || modeloParam, km_meses: kmMeses };
+    } else {
+      selecao = {
+        tipo: 'revisao',
+        numero,
+        modelo: chave || modeloParam,
+        km_meses: kmMeses,
+        maoDeObra,
+        geral,
+        servicoKmCodigo,
+      };
+    }
 
     console.log('[Autofill AM] Seleção recebida do dashboard:', selecao, '(param:', modeloParam, ')');
 
@@ -2277,7 +2322,9 @@
     document.getElementById('am-banner-run').onclick = executar;
     document.getElementById('am-banner-close').onclick = () => { cancelado = true; amEsconder(); };
 
-    const rotulo = ehTrocaOleo
+    const rotulo = selecao.tipo === 'troca_peca'
+      ? `Troca de peça — ${selecao.pecaDesc || selecao.modelo}`
+      : ehTrocaOleo
       ? `Troca de óleo (avulsa) — ${selecao.modelo}`
       : `${numero}ª revisão${geral ? ' (GERAL — fora da garantia)' : ''} — ${selecao.modelo}${kmMeses ? ` (${kmMeses})` : ''}`;
     amMostrar(`${rotulo}. Informe a placa ou o chassi do veículo — o preenchimento começa sozinho.`);

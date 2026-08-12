@@ -37,7 +37,7 @@ const IconStop = () => (
 // ── Card auxiliar ───────────────────────────────────────────────────
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border ${className}`} style={{ background: 'var(--card-bg)', borderColor: 'var(--border-line-soft)' }}>
+    <div className={`rounded-2xl border glass-effect liquid-spread ${className}`} style={{ borderColor: 'var(--border-line-soft)' }}>
       {children}
     </div>
   )
@@ -69,7 +69,7 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
 // ── Stat card destacado (verde escuro) ──────────────────────────────
 function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-6" style={{ background: '#0f7a5a', color: '#ffffff' }}>
+    <div className="rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#0f7a5a', color: '#ffffff', border: 'none' }}>
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
         <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#0f7a5a' }}>

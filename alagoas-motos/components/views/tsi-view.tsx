@@ -205,7 +205,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
           </div>
 
           {/* Alertas */}
-          <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)', borderLeft: '3px solid #ffc400' }}>
+          <div className="rounded-2xl p-5 glass-effect" style={{ border: '1px solid var(--border-line-soft)', borderLeft: '3px solid #ffc400' }}>
             <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)', borderLeft: '3px solid #ffc400', paddingLeft: 10 }}>
               Monitoramento de Alertas <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>| Top2Box abaixo de 100</span>
             </h3>
@@ -230,7 +230,7 @@ export function TsiView({ tsiData, tsiUpdatedAt, onImport }: TsiViewProps) {
           </div>
 
           {/* Feedbacks */}
-          <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
+          <div className="rounded-2xl p-5 glass-effect" style={{ border: '1px solid var(--border-line-soft)' }}>
             <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)', borderLeft: '3px solid #0f7a5a', paddingLeft: 10 }}>
               Mural de Feedbacks e Elogios
             </h3>
