@@ -147,6 +147,12 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
 
     carregar()
 
+    // O conteúdo local continua disponível em previews sem Supabase; o canal
+    // realtime só é criado quando as duas variáveis públicas estão presentes.
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return () => { ativo = false }
+    }
+
     const supabase = createSupabaseClient()
     const channel = supabase.channel('rev-valores')
     for (const table of [

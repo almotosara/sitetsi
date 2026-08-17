@@ -11,7 +11,7 @@ import {
   GlassCardHeader,
   GlassCardTitle,
 } from '@/components/ui/glass-card'
-import { LiquidButton } from '@/components/ui/liquid-glass-button'
+import { ShinyButton } from '@/components/ui/shiny-button'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -127,9 +127,9 @@ export default function LoginPage() {
 
               {error && <p className="text-center text-sm text-red-400">{error}</p>}
 
-              <LiquidButton
+              <ShinyButton
                 type="submit"
-                size="xl"
+                size="wide"
                 disabled={loading}
                 className="login-primary-button mt-1 w-full text-[15px] font-semibold text-on-media disabled:cursor-not-allowed"
               >
@@ -141,7 +141,7 @@ export default function LoginPage() {
                     Entrar
                   </>
                 )}
-              </LiquidButton>
+              </ShinyButton>
             </form>
           </GlassCardContent>
 

@@ -180,9 +180,9 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
           email: email || null,
           celular: celular || null,
           veiculo: veiculo || null,
-          dataEnvioEmail: fmtDateVal(dataEnvioEmail) || null,
-          dataEnvioSms: fmtDateVal(dataEnvioSms) || null,
-          dataReenvio: fmtDateVal(dataReenvio) || null,
+          data_envio_email: fmtDateVal(dataEnvioEmail) || null,
+          data_envio_sms: fmtDateVal(dataEnvioSms) || null,
+          data_reenvio: fmtDateVal(dataReenvio) || null,
           loja: loja || null,
           isFiel: cliente ? isFielName(cliente) : false,
         }
@@ -192,7 +192,6 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
 
       await onImport(mapped)
       setFileName(file.name)
-      setSelected(new Set())
     } catch (err) {
       console.error('[Reenvio] import error:', err)
       setError(err instanceof Error ? err.message : 'Erro ao importar planilha.')
@@ -356,8 +355,8 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
                           <td className="px-3.5 py-2.5 max-w-[190px] truncate" style={{ color: 'var(--text-dim)' }}>{r.email || '—'}</td>
                           <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>{fmtPhone(r.celular) || '—'}</td>
                           <td className="px-3.5 py-2.5 max-w-[160px] truncate" style={{ color: 'var(--text-muted)' }}>{r.veiculo || '—'}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioEmail || '—'}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.dataEnvioSms || '—'}</td>
+                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.data_envio_email || '—'}</td>
+                          <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.data_envio_sms || '—'}</td>
                           <td className="px-3.5 py-2.5">
                             <div className="flex gap-1.5 items-center">
                               {r.email && (

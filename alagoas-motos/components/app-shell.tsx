@@ -14,6 +14,7 @@ import { TsiListView } from './views/tsi-list-view'
 import { TsiResendView } from './views/tsi-resend-view'
 import { FieisView } from './views/fieis-view'
 import { useToast } from './toast'
+import { ShinyButton } from './ui/shiny-button'
 import {
   createLead, updateLead, deleteLead, getLeads, dedupeLeadsByOs,
   replaceTsiData, upsertSettings, updateProfile,
@@ -27,7 +28,7 @@ const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   dash:      { title: 'Painel de Leads', sub: 'Visão geral do mês' },
   leads:     { title: 'Leads', sub: 'Todos os registros' },
   report:    { title: 'Relatórios', sub: 'Análise por período' },
-  tsi:       { title: 'TSI — Top2Box', sub: 'Metas e indicadores' },
+  tsi:       { title: 'TSI — Inteligência de Leads', sub: 'Satisfação, desempenho e oportunidades' },
   tsilist:   { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
   tsiresend: { title: 'Reenvio de Pesquisas', sub: 'Controle de reenvio TSI' },
   fieis:     { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
@@ -330,15 +331,16 @@ export function AppShell({
   }, [toast])
 
   const handleMarkTsiResendSent = useCallback(async (id: string, data_reenvio: string | null) => {
+    const anterior = tsiResend.find((row) => row.id === id)?.data_reenvio ?? null
     setTsiResend((prev) => prev.map((r) => r.id === id ? { ...r, data_reenvio } : r))
     try {
       await markTsiResendSent(id, data_reenvio)
       toast(data_reenvio ? 'Reenvio marcado.' : 'Reenvio desfeito.')
     } catch {
-      setTsiResend((prev) => prev.map((r) => r.id === id ? { ...r, data_reenvio: r.data_reenvio } : r))
+      setTsiResend((prev) => prev.map((r) => r.id === id ? { ...r, data_reenvio: anterior } : r))
       toast('Erro ao atualizar reenvio.', true)
     }
-  }, [toast])
+  }, [toast, tsiResend])
 
   // ─── Clientes Fiéis ──────────────────────────────────────────────────────────
 
@@ -583,32 +585,18 @@ export function AppShell({
           </div>
 
           <div className="app-topbar-actions">
-          {(view === 'tsi' || view === 'tsilist') && (
-            <button onClick={handleTsiImport}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
-              style={{
-                background: 'linear-gradient(135deg, #d71920, #a90f16)',
-                borderColor: '#d71920',
-                boxShadow: '0 6px 16px -6px #d7192070',
-              }}
-            >
+          {view === 'tsilist' && (
+            <ShinyButton onClick={handleTsiImport} size="compact">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
               Anexar planilha TSI
-            </button>
+            </ShinyButton>
           )}
 
           {view === 'tsiresend' && (
-            <button onClick={handleTsiResendImport}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
-              style={{
-                background: 'linear-gradient(135deg, #d71920, #a90f16)',
-                borderColor: '#d71920',
-                boxShadow: '0 6px 16px -6px #d7192070',
-              }}
-            >
+            <ShinyButton onClick={handleTsiResendImport} size="compact">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
               Anexar planilha de reenvio
-            </button>
+            </ShinyButton>
           )}
 
           {(view === 'dash' || view === 'leads') && (
@@ -624,34 +612,32 @@ export function AppShell({
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M3 9h18M3 15h18"/></svg>
                 Importar XLSX do MicroWork
               </button>
-              <button onClick={() => { setEditing(null); setModalOpen(true) }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
-                style={{
-                  background: 'linear-gradient(135deg, #d71920, #a90f16)',
-                  borderColor: '#d71920',
-                  boxShadow: '0 6px 16px -6px #d7192070',
-                }}
-              >
+              <ShinyButton onClick={() => { setEditing(null); setModalOpen(true) }} size="compact">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                 Novo lead
-              </button>
+              </ShinyButton>
             </>
           )}
 
           {/* Account cluster (mail / notificações / avatar) */}
           <div className="flex items-center gap-2.5 pl-3 ml-1" style={{ borderLeft: '1px solid var(--border-line-soft)' }}>
             <button
+              type="button"
               onClick={() => setChatOpen((v) => !v)}
               className="w-9 h-9 rounded-full flex items-center justify-center liquid-spread hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
               title="Chat com a Oficina"
+              aria-label={chatOpen ? 'Fechar chat com a Oficina' : 'Abrir chat com a Oficina'}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
             </button>
             <button
+              type="button"
+              onClick={() => toast('Nenhuma notificação nova no momento.')}
               className="w-9 h-9 rounded-full flex items-center justify-center liquid-spread hover:bg-[var(--sidebar-hover)]"
               style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}
               title="Notificações"
+              aria-label="Ver notificações"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>

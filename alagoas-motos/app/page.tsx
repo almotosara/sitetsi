@@ -4,6 +4,7 @@ import { AppShell } from '@/components/app-shell'
 import { OficinaShell } from '@/components/oficina-shell'
 import { ToastProvider } from '@/components/toast'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SiteBackground } from '@/components/ui/site-background'
 
 // Tenta carregar dados do Supabase se disponível
 async function loadData() {
@@ -39,9 +40,11 @@ export default async function Page() {
   if (session.role === 'oficina') {
     return (
       <ThemeProvider>
-        <ToastProvider>
-          <OficinaShell userName={session.name} userEmail={session.email} userId={session.id} />
-        </ToastProvider>
+        <SiteBackground>
+          <ToastProvider>
+            <OficinaShell userName={session.name} userEmail={session.email} userId={session.id} />
+          </ToastProvider>
+        </SiteBackground>
       </ThemeProvider>
     )
   }
@@ -50,21 +53,23 @@ export default async function Page() {
 
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <AppShell
-          userName={session.name}
-          userEmail={session.email}
-          userId={session.id}
-          initialLeads={leads}
-          initialTsi={tsiData}
-          initialTsiResend={tsiResend}
-          initialFieis={fieis}
-          initialGoal={goal}
-          initialTsiUpdatedAt={tsiUpdatedAt}
-          initialDisplayName={displayName}
-          initialAvatarUrl={avatarUrl}
-        />
-      </ToastProvider>
+      <SiteBackground>
+        <ToastProvider>
+          <AppShell
+            userName={session.name}
+            userEmail={session.email}
+            userId={session.id}
+            initialLeads={leads}
+            initialTsi={tsiData}
+            initialTsiResend={tsiResend}
+            initialFieis={fieis}
+            initialGoal={goal}
+            initialTsiUpdatedAt={tsiUpdatedAt}
+            initialDisplayName={displayName}
+            initialAvatarUrl={avatarUrl}
+          />
+        </ToastProvider>
+      </SiteBackground>
     </ThemeProvider>
   )
 }

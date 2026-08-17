@@ -17,6 +17,7 @@ import {
   type RevisoesData,
 } from "../../lib/revisoes-calc";
 import { PrazoRevisaoCard } from "./prazo-revisao";
+import { ShinyButton } from "@/components/ui/shiny-button";
 
 const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
@@ -28,7 +29,7 @@ function MotoCard({ modelo, onOpen, index }: { modelo: Modelo; onOpen: () => voi
   return (
     <button
       onClick={onOpen}
-      className="group relative flex flex-col items-center overflow-hidden rounded-[22px] p-5 text-center cursor-pointer animate-oficina-rise motion-safe:transition-all motion-safe:duration-[420ms] hover:-translate-y-1.5"
+      className="moto-card group relative flex flex-col items-center overflow-hidden rounded-[22px] p-5 text-center cursor-pointer animate-oficina-rise motion-safe:transition-all motion-safe:duration-[420ms] hover:-translate-y-1.5"
       style={{
         background: "var(--card-bg)",
         border: "1px solid var(--border-line-soft)",
@@ -203,18 +204,13 @@ function DetalheMoto({
           </div>
 
           {!escolhendoOS ? (
-            <button
+            <ShinyButton
               onClick={() => setEscolhendoOS(true)}
-              className="w-full rounded-2xl px-4 py-3.5 text-[14px] font-semibold cursor-pointer motion-safe:transition-all motion-safe:duration-300 hover:-translate-y-0.5 active:translate-y-0"
-              style={{
-                background: ACCENT,
-                color: "#fff",
-                border: "none",
-                boxShadow: "0 16px 30px -18px rgba(215,25,32,.9)",
-              }}
+              size="wide"
+              className="w-full"
             >
               Abrir ordem de serviço
-            </button>
+            </ShinyButton>
           ) : (
             <div
               className="flex flex-col gap-2.5 rounded-2xl p-4 animate-oficina-rise"

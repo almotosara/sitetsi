@@ -70,7 +70,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
     return init
   })
 
-  const w = collapsed ? 58 : 230
+  const w = collapsed ? 68 : 248
   const pillRefs = useRef<(HTMLButtonElement | null)[]>([])
   const circleRefs = useRef<(HTMLSpanElement | null)[]>([])
   const tlRefs = useRef<gsap.core.Timeline[]>([])
@@ -180,7 +180,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
     />
     <aside
       ref={sidebarRef}
-      className={`responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
+      className={`app-sidebar responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-visible transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,
@@ -191,21 +191,21 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
     >
       {/* Logo */}
       <div
-        className="flex items-center pb-5"
+        className="sidebar-brand flex items-center pb-4"
         style={{
-          justifyContent: collapsed ? 'flex-start' : 'center',
-          padding: collapsed ? '0 0 0 2px' : '0 8px',
+          justifyContent: 'center',
+          padding: collapsed ? '0 0 4px' : '0 8px 4px',
           transition: 'all 0.2s ease',
         }}
       >
         <span className="sr-only">Alternar largura do menu</span>
         <Image
-          src="/alagoas-motos-logo.png"
+          src={collapsed ? '/alagoas-motos-symbol.png' : '/alagoas-motos-logo.png'}
           alt="Alagoas Motos"
-          width={collapsed ? 32 : 148}
-          height={collapsed ? 32 : 44}
+          width={collapsed ? 38 : 188}
+          height={collapsed ? 38 : 75}
           className="object-contain"
-          style={{ transition: 'all 0.2s ease' }}
+          style={{ width: collapsed ? 38 : 188, height: collapsed ? 38 : 75, transition: 'all 0.2s ease' }}
           unoptimized
         />
       </div>
@@ -234,7 +234,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
       </button>
 
       {/* ─── PillNav Navigation ─────────────────────────────────── */}
-      <nav className="flex flex-col gap-1 mt-1.5 flex-1">
+      <nav className="sidebar-nav flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden mt-1.5">
         {NAV_ITEMS.map((group, gi) => {
           const groupActive = isGroupActive(group)
           return (
@@ -258,7 +258,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
                   className="hover-circle"
                   aria-hidden="true"
                 />
-                <span className="pill-icon" style={{ color: groupActive ? 'var(--pill-nav-pill)' : 'inherit' }}>
+                <span className="pill-icon">
                   {group.icon}
                 </span>
                 {!collapsed && (
@@ -303,7 +303,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
       </nav>
 
       {/* ─── GERAL ──────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
+      <div className="sidebar-utility flex flex-none flex-col gap-1 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         {!collapsed && (
           <span className="px-2.5 pb-1 text-[10.5px] font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>
             GERAL
@@ -338,7 +338,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         </button>
       </div>
       {/* ─── Footer: Theme ──────────────────────────────────────── */}
-      <div className="flex flex-col gap-2 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
+      <div className="sidebar-footer flex flex-none flex-col gap-2 pt-3 mt-1 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         <button
           className="theme-toggle"
           onClick={toggle}

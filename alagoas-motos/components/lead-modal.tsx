@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { Lead, LeadOrigem, LeadStatus } from '@/lib/types'
 import { todayISO, STATUS_OPTIONS } from '@/lib/constants'
+import { ShinyButton } from '@/components/ui/shiny-button'
 
 interface LeadModalProps {
   open: boolean
@@ -165,9 +166,9 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
         {/* Footer */}
         <div className="px-5 py-4 flex justify-end gap-2.5" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
           <button onClick={onClose} className="btn-ghost-sm">Cancelar</button>
-          <button onClick={handleSave} disabled={saving || !form.nome.trim()} className="btn-primary-sm">
+          <ShinyButton onClick={handleSave} disabled={saving || !form.nome.trim()} size="compact">
             {saving ? 'Salvando…' : 'Salvar lead'}
-          </button>
+          </ShinyButton>
         </div>
       </div>
 
@@ -186,20 +187,11 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           cursor: pointer; transition: 0.12s; font-family: inherit;
         }
         .btn-ghost-sm:hover { background: var(--bg-elevated); }
-        .btn-primary-sm {
-          display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 14px; border-radius: 9px; border: 1px solid #d71920;
-          background: linear-gradient(135deg, #d71920, #a90f16); color: #fff;
-          font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #d7192070; font-family: inherit;
-        }
-        .btn-primary-sm:hover:not(:disabled) { filter: brightness(1.08); }
-        .btn-primary-sm:disabled { opacity: 0.45; cursor: not-allowed; }
         @media (max-width: 560px) {
           .lead-modal { border-radius: 14px; }
           .lead-form-grid { grid-template-columns: minmax(0, 1fr); }
           .inp { min-height: 48px; font-size: 16px; }
-          .btn-ghost-sm, .btn-primary-sm { min-height: 48px; justify-content: center; flex: 1; }
+          .btn-ghost-sm { min-height: 48px; justify-content: center; flex: 1; }
         }
         @media (max-width: 380px) {
           .lead-origin-grid { flex-direction: column; }

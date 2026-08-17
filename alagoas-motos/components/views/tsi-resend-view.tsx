@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { TsiResendRow, TsiRow, ClienteFiel } from '@/lib/types'
+import { ShinyButton } from '@/components/ui/shiny-button'
 
 interface TsiResendViewProps {
   data: TsiResendRow[]
@@ -67,11 +68,10 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Reenvio de Pesquisas</h2>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{filtered.length} de {data.length} registros · {pendentes} pendente{pendentes !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={onImport} className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #d71920, #a90f16)', border: '1px solid #d71920', boxShadow: '0 6px 16px -6px #d7192070' }}>
+        <ShinyButton onClick={onImport} size="compact">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
           Importar planilha
-        </button>
+        </ShinyButton>
       </div>
 
       {/* Filters */}

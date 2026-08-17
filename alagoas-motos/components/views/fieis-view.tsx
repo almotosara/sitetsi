@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { ClienteFiel } from '@/lib/types'
+import { ShinyButton } from '@/components/ui/shiny-button'
 
 interface FieisViewProps {
   fieis: ClienteFiel[]
@@ -19,13 +20,6 @@ const GHOST_BTN: React.CSSProperties = {
   border: '1px solid var(--border-line)', background: 'transparent', color: 'var(--text-primary)',
   fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
 }
-const PRIMARY_BTN: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 9,
-  border: '1px solid #d71920', background: 'linear-gradient(135deg, #d71920, #a90f16)', color: '#fff',
-  fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-  boxShadow: '0 6px 16px -6px #d7192070',
-}
-
 export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
   const [q, setQ] = useState('')
   const [modal, setModal] = useState<{ open: boolean; id: string | null; nome: string; wa: string }>({
@@ -71,11 +65,10 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Clientes Fiéis</h2>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{fieis.length} clientes cadastrados</p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #d71920, #a90f16)', border: '1px solid #d71920', boxShadow: '0 6px 16px -6px #d7192070' }}>
+        <ShinyButton onClick={openAdd} size="compact">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           Adicionar cliente
-        </button>
+        </ShinyButton>
       </div>
 
       {/* Search */}
@@ -164,9 +157,9 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
             </div>
             <div className="px-5 py-4 flex justify-end gap-2.5" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
               <button onClick={closeModal} style={GHOST_BTN}>Cancelar</button>
-              <button onClick={handleSave} disabled={saving || !modal.nome.trim()} style={PRIMARY_BTN}>
+              <ShinyButton onClick={handleSave} disabled={saving || !modal.nome.trim()} size="compact">
                 {saving ? 'Salvando…' : 'Salvar'}
-              </button>
+              </ShinyButton>
             </div>
           </div>
         </div>

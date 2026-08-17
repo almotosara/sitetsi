@@ -17,7 +17,6 @@ import {
   Download,
   Trash2,
 } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
 import { parseOSFile } from "@/lib/os-parser";
 import type { OSLinha } from "@/lib/os-types";
 
@@ -282,10 +281,10 @@ export function OSDashboard({ userName, userEmail, renderManual }: { userName?: 
                   className="pl-9 pr-3 h-9 rounded-full bg-white/5 border border-white/10 text-xs text-slate-200 placeholder:text-slate-500 w-56 focus:outline-none focus:border-violet-500/50"
                 />
               </div>
-              <button className="h-9 w-9 rounded-full bg-white/5 border border-white/10 grid place-items-center text-slate-400 hover:text-white">
+              <button type="button" onClick={() => window.alert('Nenhuma notificação nova no momento.')} aria-label="Ver notificações" className="h-9 w-9 rounded-full bg-white/5 border border-white/10 grid place-items-center text-slate-400 hover:text-white">
                 <Bell className="h-4 w-4" />
               </button>
-              <button className="h-9 px-3 rounded-full bg-white/5 border border-white/10 grid place-items-center text-slate-400 hover:text-white inline-flex items-center gap-1.5 text-xs">
+              <button type="button" onClick={() => window.alert('As configurações deste painel ficam disponíveis no menu principal.')} className="h-9 px-3 rounded-full bg-white/5 border border-white/10 grid place-items-center text-slate-400 hover:text-white inline-flex items-center gap-1.5 text-xs">
                 <SettingsIcon className="h-3.5 w-3.5" /> Settings
               </button>
             </div>
@@ -589,7 +588,7 @@ function OverviewTab(props: {
             >
               <Upload className="h-3.5 w-3.5" /> Importar nova planilha
             </button>
-            <button className="w-full h-10 rounded-full bg-transparent border border-white/40 text-white text-xs font-medium inline-flex items-center justify-center gap-2">
+            <button type="button" onClick={() => document.getElementById('os-ranking')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="w-full h-10 rounded-full bg-transparent border border-white/40 text-white text-xs font-medium inline-flex items-center justify-center gap-2">
               Ver detalhes <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -598,6 +597,7 @@ function OverviewTab(props: {
 
       {/* Ranking */}
       <div
+        id="os-ranking"
         className="rounded-2xl border border-white/5 p-6"
         style={{ background: "#14141c" }}
       >
@@ -663,7 +663,7 @@ function MetricCard({
             <div className="text-xs text-slate-300 font-medium">{card.label}</div>
           </div>
         </div>
-        <button className="text-slate-500 hover:text-white">
+        <button type="button" onClick={() => document.getElementById('os-ranking')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} aria-label={`Abrir detalhes de ${card.label}`} className="text-slate-500 hover:text-white">
           <ArrowUpRight className="h-4 w-4" />
         </button>
       </div>
@@ -674,24 +674,45 @@ function MetricCard({
         {fmtBRL(delta)}
       </div>
       <div className="h-16 mt-3 -mx-1">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={spark}>
-            <defs>
-              <linearGradient id={`g${idx}`} x1="0" x2="1">
-                <stop offset="0%" stopColor={card.color} stopOpacity="0.9" />
-                <stop offset="100%" stopColor={card.color} stopOpacity="0.3" />
-              </linearGradient>
-            </defs>
-            <Tooltip
-              contentStyle={{ background: "#0d0d14", border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, fontSize: 11 }}
-              labelStyle={{ color: "#94a3b8" }}
-              formatter={(v: any) => fmtBRL(Number(v))}
-            />
-            <Line type="monotone" dataKey="v" stroke={`url(#g${idx})`} strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        <Sparkline data={spark} color={card.color} id={`g${idx}`} />
       </div>
     </div>
+  );
+}
+
+function Sparkline({ data, color, id }: { data: { d: string; v: number }[]; color: string; id: string }) {
+  if (!data.length) return <div className="h-full" aria-hidden="true" />;
+
+  const width = 260;
+  const height = 64;
+  const pad = 4;
+  const values = data.map((item) => item.v);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const points = data.map((item, index) => ({
+    ...item,
+    x: pad + (data.length === 1 ? (width - pad * 2) / 2 : (index / (data.length - 1)) * (width - pad * 2)),
+    y: pad + (1 - (item.v - min) / range) * (height - pad * 2),
+  }));
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const area = `M ${points[0].x} ${height - pad} L ${line.replaceAll(" ", " L ")} L ${points[points.length - 1].x} ${height - pad} Z`;
+  const last = points[points.length - 1];
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-full w-full" role="img" aria-label="Evolução do indicador">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity=".28" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${id})`} />
+      <polyline points={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <circle cx={last.x} cy={last.y} r="2.5" fill={color}>
+        <title>{last.d}: {fmtBRL(last.v)}</title>
+      </circle>
+    </svg>
   );
 }
 

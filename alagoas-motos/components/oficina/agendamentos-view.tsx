@@ -57,9 +57,8 @@ export function AgendamentosView() {
           </p>
         </div>
         <a href="/tv/agendamentos" target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-white text-[13px] font-semibold no-underline"
-          style={{ background: 'linear-gradient(135deg, #e22127, #b60f14)', boxShadow: '0 10px 22px -12px #d7181dcc' }}>
-          <IconTv /> Abrir modo TV
+          className="shiny-cta shiny-cta-compact no-underline">
+          <span className="shiny-cta-content"><IconTv /> Abrir modo TV</span>
         </a>
       </section>
 

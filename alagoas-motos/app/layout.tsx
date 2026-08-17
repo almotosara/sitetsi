@@ -29,12 +29,8 @@ export const metadata: Metadata = {
   title: 'Leads · Alagoas Motos',
   description: 'Painel de cadastro e relatório de leads — Alagoas Motos',
   icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-light-32x32.png', sizes: '32x32', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', sizes: '32x32', media: '(prefers-color-scheme: dark)' },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/alagoas-motos-symbol.png',
+    apple: '/alagoas-motos-symbol.png',
   },
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { getChatMessages, sendChatMessage, markChatRead, deleteChatMessageForMe, deleteChatMessageForEveryone, type ChatMessage } from '@/app/actions'
 
 const CONSULTOR_ID = '00000000-0000-0000-0000-000000000001'
@@ -28,6 +28,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
+  const supabaseConfigured = isSupabaseConfigured()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -48,6 +49,10 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
   // Carrega histórico + marca como lido ao abrir
   useEffect(() => {
     if (!open) return
+    if (!supabaseConfigured) {
+      setLoading(false)
+      return
+    }
     let cancelled = false
     setLoading(true)
     getChatMessages(myUserId)
@@ -60,11 +65,11 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
       .catch(() => setLoading(false))
     markChatRead(otherUserId).catch(() => {})
     return () => { cancelled = true }
-  }, [open, otherUserId, myUserId, scrollToBottom])
+  }, [open, otherUserId, myUserId, scrollToBottom, supabaseConfigured])
 
   // Realtime: escuta novas mensagens de qualquer um dos dois lados
   useEffect(() => {
-    if (!open) return
+    if (!open || !supabaseConfigured) return
     const supabase = createClient()
     const channel = supabase
       .channel('chat_messages_realtime')
@@ -93,9 +98,10 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
       )
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [open, otherUserId, myUserId, scrollToBottom])
+  }, [open, otherUserId, myUserId, scrollToBottom, supabaseConfigured])
 
   const handleSend = useCallback(async () => {
+    if (!supabaseConfigured) return
     const trimmed = text.trim()
     if (!trimmed || sending) return
     setSending(true)
@@ -120,7 +126,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
     } finally {
       setSending(false)
     }
-  }, [text, sending, myUserId, scrollToBottom])
+  }, [text, sending, myUserId, scrollToBottom, supabaseConfigured])
 
   const handleDeleteForMe = useCallback(async (id: string) => {
     setMenuFor(null)
@@ -202,9 +208,11 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--sidebar-hover)]"
             style={{ color: 'var(--text-muted)' }}
+            aria-label="Fechar chat"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"/>
@@ -219,7 +227,9 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
           )}
           {!loading && messages.length === 0 && (
             <div className="text-xs text-center mt-4" style={{ color: 'var(--text-muted)' }}>
-              Nenhuma mensagem ainda. Diga oi para {otherName}!
+              {supabaseConfigured
+                ? `Nenhuma mensagem ainda. Diga oi para ${otherName}!`
+                : 'Chat indisponível neste ambiente: configure as variáveis públicas do Supabase.'}
             </div>
           )}
           {groupedByDay.map((group) => (
@@ -271,6 +281,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
                           }}
                         >
                           <button
+                            type="button"
                             onClick={() => handleDeleteForMe(m.id)}
                             className="w-full text-left px-3.5 py-2.5 text-[12.5px] font-medium hover:bg-[var(--sidebar-hover)] transition-colors"
                             style={{ color: 'var(--text-primary)' }}
@@ -279,6 +290,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
                           </button>
                           {mine && (
                             <button
+                              type="button"
                               onClick={() => handleDeleteForEveryone(m.id)}
                               className="w-full text-left px-3.5 py-2.5 text-[12.5px] font-medium hover:bg-[var(--sidebar-hover)] transition-colors"
                               style={{ color: '#ff5a5f', borderTop: '1px solid var(--border-line-soft)' }}
@@ -303,14 +315,15 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
         >
           {emojiOpen && (
             <div
-              className="absolute z-10 bottom-full mb-2 left-3 grid grid-cols-5 gap-1 p-2 rounded-xl shadow-lg"
+              className="chat-emoji-picker absolute z-10 bottom-full mb-2 left-3 grid grid-cols-5 gap-1 p-2 rounded-xl shadow-lg"
               style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-line)', width: 210 }}
             >
               {EMOJIS.map((em) => (
                 <button
+                  type="button"
                   key={em}
                   onClick={() => handleEmojiPick(em)}
-                  className="text-lg w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--sidebar-hover)] transition-colors"
+                  className="chat-emoji-button text-lg w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--sidebar-hover)] transition-colors"
                 >
                   {em}
                 </button>
@@ -318,10 +331,13 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
             </div>
           )}
           <button
+            type="button"
             onClick={() => setEmojiOpen((v) => !v)}
+            disabled={!supabaseConfigured}
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors hover:bg-[var(--sidebar-hover)]"
             style={{ color: 'var(--text-muted)' }}
             title="Emojis"
+            aria-label="Abrir seletor de emojis"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
@@ -329,19 +345,22 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
           </button>
           <input
             ref={inputRef}
+            disabled={!supabaseConfigured}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onFocus={() => setEmojiOpen(false)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-            placeholder="Escreva uma mensagem…"
+            placeholder={supabaseConfigured ? 'Escreva uma mensagem…' : 'Chat indisponível neste ambiente'}
             className="flex-1 px-3 py-2 rounded-full text-[13px] outline-none"
             style={{ background: 'var(--bg-input)', border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}
           />
           <button
+            type="button"
             onClick={handleSend}
-            disabled={!text.trim() || sending}
+            disabled={!supabaseConfigured || !text.trim() || sending}
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-transform disabled:opacity-40"
             style={{ background: '#d71920', color: '#fff' }}
+            aria-label="Enviar mensagem"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>

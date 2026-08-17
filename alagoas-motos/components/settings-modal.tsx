@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from './theme-provider'
 import { TSI_META, TSI_META_PESQ } from '@/lib/constants'
+import { ShinyButton } from '@/components/ui/shiny-button'
 
 interface SettingsModalProps {
   open: boolean
@@ -175,9 +176,9 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                 </p>
 
                 <div className="flex items-center gap-3">
-                  <button onClick={saveProfile} className="settings-btn-primary">
+                  <ShinyButton onClick={saveProfile} size="compact">
                     {profileSaved ? 'Perfil salvo ✓' : 'Salvar perfil'}
-                  </button>
+                  </ShinyButton>
                   {(avatarDraft || nameDraft !== userName) && (
                     <button
                       type="button"
@@ -220,9 +221,9 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                   />
                   <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>leads convertidos / mês</span>
                 </div>
-                <button onClick={saveGoal} className="settings-btn-primary self-start">
+                <ShinyButton onClick={saveGoal} size="compact" className="self-start">
                   {saved ? 'Meta salva ✓' : 'Salvar meta'}
-                </button>
+                </ShinyButton>
 
                 <div className="pt-4 mt-1" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
                   <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)' }}>
@@ -301,14 +302,6 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           font-family: inherit; transition: border-color 0.12s, box-shadow 0.12s;
         }
         .settings-inp:focus { border-color: #d71920; box-shadow: 0 0 0 3px #d7192033; }
-        .settings-btn-primary {
-          display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 16px; border-radius: 9px; border: 1px solid #d71920;
-          background: linear-gradient(135deg, #d71920, #a90f16); color: #fff;
-          font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #d7192070; font-family: inherit;
-        }
-        .settings-btn-primary:hover { filter: brightness(1.08); }
         @media (max-width: 640px) {
           .settings-modal { max-height: calc(100dvh - 1rem); overflow-y: auto; border-radius: 14px; }
           .settings-modal-layout { min-height: 0 !important; flex-direction: column; }
@@ -318,7 +311,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           }
           .settings-modal-tabs button { flex: 0 0 auto; min-height: 48px; }
           .settings-modal-panel { padding: 16px; overflow: visible; }
-          .settings-inp, .settings-btn-primary { min-height: 48px; font-size: 16px; }
+          .settings-inp { min-height: 48px; font-size: 16px; }
         }
       `}</style>
     </div>

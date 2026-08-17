@@ -137,7 +137,7 @@ export default function BorderGlow({
       setTimeout(() => requestAnimationFrame(tick), delay)
     }
 
-    animateValue({ duration: 500, onUpdate: v => card.style.setProperty('--edge-proximity', `${v}`) })
+    animateValue({ end: 100, duration: 500, onUpdate: v => card.style.setProperty('--edge-proximity', `${v}`) })
     animateValue({ ease: easeInCubic, duration: 1500, end: 50, onUpdate: v => {
       card.style.setProperty('--cursor-angle', `${(angleEnd - angleStart) * (v / 100) + angleStart}deg`)
     }})

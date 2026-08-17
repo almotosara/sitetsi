@@ -27,6 +27,12 @@ TV_ACCESS_TOKEN=outro_token_aleatorio_forte
 - Use valores diferentes, com pelo menos 24 caracteres.
 - `SUPABASE_SERVICE_ROLE_KEY` e os tokens **não podem** começar com `NEXT_PUBLIC_`.
 - Não coloque a service role dentro do userscript.
+- No formulário do Netlify, preencha os campos separadamente:
+  - **Key:** `AGENDAMENTOS_SYNC_TOKEN`
+  - **Value:** somente o token secreto que você gerou (sem `AGENDAMENTOS_SYNC_TOKEN=` e sem espaços extras)
+  - ative **Contains secret values** para proteger o valor.
+- Não escreva `AGENDAMENTOS_SYNC_TOKEN=valor` inteiro dentro do campo **Key**.
+- Depois de salvar ou alterar uma variável no Netlify, publique um **novo deploy** para que a função receba o valor.
 
 O arquivo `.env.example` contém o modelo completo.
 
@@ -46,6 +52,8 @@ Depois de instalar:
 2. No script, clique em **Configurar sincronização de agendamentos**.
 3. Informe `https://SEU-SITE/api/agendamentos/sync`.
 4. Informe exatamente o mesmo valor de `AGENDAMENTOS_SYNC_TOKEN` configurado na hospedagem.
+
+Se aparecer **“Não autorizado / 401”**, confira os campos **Key** e **Value** acima, faça o novo deploy e abra novamente o comando **Configurar sincronização de agendamentos** no Tampermonkey. Cole apenas o valor do token; nunca a `SUPABASE_SERVICE_ROLE_KEY`.
 
 Na tela de listagem do MicroWork aparecerá um botão no canto inferior direito. A sincronização ocorre automaticamente quando a tabela muda e também pode ser forçada clicando nesse botão.
 

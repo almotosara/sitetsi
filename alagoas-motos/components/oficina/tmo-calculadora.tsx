@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import { urlTrocaPeca } from "../../lib/motos-catalog";
 import { nomeCurto } from "../../lib/motos-catalog";
 import { fmtBRL, findGrupoMaoDeObra, type RevisoesData, type ValorItem } from "../../lib/revisoes-calc";
+import { ShinyButton } from "@/components/ui/shiny-button";
 
 const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
@@ -304,20 +305,14 @@ export function TmoCalculadora({ data }: { data: RevisoesData }) {
           </div>
         </div>
 
-        <button
+        <ShinyButton
           onClick={abrirOS}
           disabled={!podeAbrir}
-          className="mt-1 w-full rounded-2xl px-4 py-3.5 text-[13.5px] font-semibold motion-safe:transition-all motion-safe:duration-300"
-          style={{
-            background: podeAbrir ? ACCENT : "var(--bg-panel-2)",
-            color: podeAbrir ? "#fff" : "var(--text-muted)",
-            border: podeAbrir ? "none" : "1px solid var(--border-line)",
-            cursor: podeAbrir ? "pointer" : "not-allowed",
-            boxShadow: podeAbrir ? "0 16px 30px -18px rgba(215,25,32,.9)" : "none",
-          }}
+          size="wide"
+          className="mt-1 w-full"
         >
           Abrir OS desta troca
-        </button>
+        </ShinyButton>
 
         <p className="text-[11px] font-medium leading-snug" style={{ color: "var(--text-muted)" }}>
           Abre o MicroWork em <b>Tipo 7 — Externo Expresso</b>, serviço <b>TROCA DE PEÇAS (1775)</b>, TMO 1,0000 e

@@ -38,12 +38,10 @@ const ACCENT = '#d71920'
 export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut, mobileOpen = false, onMobileClose }: OficinaSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [avatarHover, setAvatarHover] = useState(false)
   const { theme, toggle } = useTheme()
-  const avatarExpanded = !collapsed && (avatarHover || accountOpen)
   const sidebarRef = useRef<HTMLElement>(null)
 
-  const w = collapsed ? 62 : 238
+  const w = collapsed ? 68 : 258
 
   useEffect(() => {
     if (mobileOpen) setCollapsed(false)
@@ -131,20 +129,20 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
 
       {/* Logo */}
       <div
-        className="flex items-center pb-4"
+        className="sidebar-brand flex items-center pb-4"
         style={{
-          justifyContent: collapsed ? 'flex-start' : 'center',
-          padding: collapsed ? '0 0 12px 2px' : '0 8px 12px',
+          justifyContent: 'center',
+          padding: collapsed ? '0 0 8px' : '0 8px 8px',
           transition: 'all .25s ease',
         }}
       >
         <Image
-          src="/alagoas-motos-logo.png"
+          src={collapsed ? '/alagoas-motos-symbol.png' : '/alagoas-motos-logo.png'}
           alt="Alagoas Motos"
-          width={collapsed ? 34 : 148}
-          height={collapsed ? 34 : 44}
+          width={collapsed ? 38 : 188}
+          height={collapsed ? 38 : 75}
           className="object-contain"
-          style={{ transition: 'all .25s ease' }}
+          style={{ width: collapsed ? 38 : 188, height: collapsed ? 38 : 75, transition: 'all .25s ease' }}
           unoptimized
         />
       </div>
@@ -173,7 +171,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
       </button>
 
       {/* Navegação */}
-      <nav className="flex flex-col gap-1 mt-1 flex-1 overflow-y-auto overflow-x-visible">
+      <nav className="sidebar-nav flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overflow-x-visible mt-1">
         {NAV_ITEMS.map((item) => {
           const active = view === item.id
           const novoGrupo = item.grupo !== grupoAtual
@@ -201,7 +199,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
       </nav>
 
       {/* Footer: tema + conta */}
-      <div className="flex flex-col gap-2 pt-3 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
+      <div className="sidebar-footer flex flex-none flex-col gap-2 pt-3 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         <button
           className="theme-toggle"
           onClick={toggle}
@@ -229,21 +227,17 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
           )}
         </button>
 
-        <div
-          className="account-wrap relative"
-          onMouseEnter={() => setAvatarHover(true)}
-          onMouseLeave={() => setAvatarHover(false)}
-        >
+        <div className="account-wrap relative">
           <button
             className="account-trigger"
             onClick={() => (collapsed ? onSignOut() : setAccountOpen(!accountOpen))}
             title={collapsed ? 'Sair da conta' : userName}
             style={{
-              justifyContent: collapsed || !avatarExpanded ? 'center' : 'flex-start',
-              gap: collapsed || !avatarExpanded ? 0 : 10,
-              padding: collapsed ? '10px' : avatarExpanded ? '10px 12px' : '7px',
-              width: collapsed ? '100%' : avatarExpanded ? '100%' : 'fit-content',
-              margin: collapsed || avatarExpanded ? 0 : '0 auto',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: collapsed ? 0 : 10,
+              padding: collapsed ? '10px' : '8px 10px',
+              width: '100%',
+              margin: 0,
             }}
           >
             <div
@@ -252,7 +246,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
             >
               {!avatarUrl && userName.charAt(0).toUpperCase()}
             </div>
-            {!collapsed && avatarExpanded && (
+            {!collapsed && (
               <>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{userName}</div>

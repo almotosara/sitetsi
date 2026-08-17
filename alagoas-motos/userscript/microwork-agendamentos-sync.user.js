@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Sincronizar Agendamentos (Alagoas Motos)
 // @namespace    alagoasmotos
-// @version      1.0.0
+// @version      1.1.0
 // @description  Lê a listagem de agendamentos do MicroWork e envia ao painel da Alagoas Motos.
 // @match        https://microworkcloud.com.br/cloud/*
 // @run-at       document-idle
@@ -97,14 +97,15 @@
       window.alert('Informe uma URL HTTPS terminando em /api/agendamentos/sync.');
       return false;
     }
-    const token = window.prompt('Token AGENDAMENTOS_SYNC_TOKEN configurado no site:', atual.token);
-    if (token === null) return false;
-    if (token.trim().length < 16) {
+    const tokenInformado = window.prompt('Cole somente o VALOR de AGENDAMENTOS_SYNC_TOKEN (sem o nome da variável e sem =):', atual.token);
+    if (tokenInformado === null) return false;
+    const token = tokenInformado.trim().replace(/^AGENDAMENTOS_SYNC_TOKEN\s*=\s*/i, '');
+    if (token.length < 16) {
       window.alert('O token parece curto demais. Use o mesmo valor forte configurado no servidor.');
       return false;
     }
     GM_setValue(CHAVE_ENDPOINT, endpoint.trim());
-    GM_setValue(CHAVE_TOKEN, token.trim());
+    GM_setValue(CHAVE_TOKEN, token);
     atualizarBotao('idle', 'Pronto para sincronizar');
     agendarSincronizacao(true);
     return true;
@@ -125,6 +126,7 @@
           let json = null;
           try { json = JSON.parse(res.responseText || '{}'); } catch {}
           if (res.status >= 200 && res.status < 300) resolve(json || {});
+          else if (res.status === 401) reject(new Error('Token não autorizado (401). No Netlify, use AGENDAMENTOS_SYNC_TOKEN somente no campo Key, o token somente no campo Value e publique um novo deploy'));
           else reject(new Error((json && json.error) || `HTTP ${res.status}`));
         },
         onerror: () => reject(new Error('Falha de rede')),

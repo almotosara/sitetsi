@@ -44,12 +44,12 @@ function Panel({ children, className = '' }: { children: React.ReactNode; classN
 }
 
 // ── Stat card branco ────────────────────────────────────────────────
-function StatCard({ label, value, sub }: { label: string; value: number; sub: string }) {
+function StatCard({ label, value, sub, onOpen }: { label: string; value: number; sub: string; onOpen: () => void }) {
   return (
     <Panel className="p-5 flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>{label}</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
+        <button type="button" onClick={onOpen} aria-label={`Abrir leads: ${label}`} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
           <IconArrow />
         </button>
       </div>
@@ -67,12 +67,12 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
 }
 
 // ── Stat card destacado (verde escuro) ──────────────────────────────
-function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
+function StatCardHighlight({ label, value, sub, onOpen }: { label: string; value: number; sub: string; onOpen: () => void }) {
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#d71920', color: '#ffffff', border: 'none' }}>
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#d71920' }}>
+        <button type="button" onClick={onOpen} aria-label={`Abrir leads: ${label}`} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#d71920' }}>
           <IconArrow />
         </button>
       </div>
@@ -519,14 +519,14 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
     <div className="view-enter flex flex-col gap-5">
       {/* Stats row */}
       <div className="responsive-grid responsive-grid-4 grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" />
+        <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" onOpen={() => onView('leads')} />
         <StatCard label="Convertidos" value={convertidos} sub={
           convertidosCompSemana === 0
             ? 'Igual à semana passada'
             : `${Math.abs(convertidosCompSemana)} a ${convertidosCompSemana > 0 ? 'mais' : 'menos'} que semana passada`
-        } />
-        <StatCard label="Em andamento" value={emAndamento} sub="Seguradoras e proteções veiculares" />
-        <StatCard label="Novos" value={novos} sub="Aguardando conversão no myHonda" />
+        } onOpen={() => onView('leads')} />
+        <StatCard label="Em andamento" value={emAndamento} sub="Seguradoras e proteções veiculares" onOpen={() => onView('leads')} />
+        <StatCard label="Novos" value={novos} sub="Aguardando conversão no myHonda" onOpen={() => onView('leads')} />
       </div>
 
       {/* Middle row */}

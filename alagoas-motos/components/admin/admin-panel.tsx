@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 
 const VERDE = '#d71920'
 
@@ -56,6 +56,39 @@ const btnGhost: React.CSSProperties = {
 type Aba = 'revisoes' | 'avulsos' | 'catalogo'
 
 export function AdminPanel({ userEmail }: { userEmail: string }) {
+  if (!isSupabaseConfigured()) {
+    return <AdminConfigurationMissing userEmail={userEmail} />
+  }
+
+  return <ConfiguredAdminPanel userEmail={userEmail} />
+}
+
+function AdminConfigurationMissing({ userEmail }: { userEmail: string }) {
+  return (
+    <main className="admin-panel flex min-h-screen items-center justify-center p-4">
+      <section style={{ ...card, width: 'min(560px, 100%)', padding: 28, textAlign: 'center' }}>
+        <div aria-hidden="true" style={{ width: 48, height: 48, margin: '0 auto 14px', display: 'grid', placeItems: 'center', borderRadius: 14, color: '#fff', background: VERDE, fontWeight: 800 }}>!</div>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Supabase ainda não configurado</h1>
+        <p style={{ margin: '10px auto 18px', maxWidth: 460, fontSize: 13, lineHeight: 1.6, opacity: .72 }}>
+          Para administrar valores e mercadorias, configure <code>NEXT_PUBLIC_SUPABASE_URL</code> e <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> no ambiente da hospedagem e publique um novo deploy.
+        </p>
+        <p style={{ marginBottom: 18, fontSize: 12, opacity: .58 }}>{userEmail}</p>
+        <button
+          type="button"
+          style={btnGhost}
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' })
+            window.location.href = '/auth/login'
+          }}
+        >
+          Sair com segurança
+        </button>
+      </section>
+    </main>
+  )
+}
+
+function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
   const supabase = useMemo(() => createClient(), [])
   const [aba, setAba] = useState<Aba>('revisoes')
   const [msg, setMsg] = useState<string | null>(null)

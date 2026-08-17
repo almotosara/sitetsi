@@ -22,7 +22,7 @@
 
 .brand, .headerRight, .heroTimeRow, .agendaTitle, .cardHeading, .syncFooter { display: flex; align-items: center; }
 .brand { gap: 28px; }
-.brand img { width: clamp(180px, 12vw, 223px); height: auto; }
+.brand img { width: clamp(150px, 10vw, 190px); max-height: 68px; object-fit: contain; }
 .brandText { display: flex; flex-direction: column; gap: 3px; padding-left: 28px; border-left: 1px solid #dedfdd; }
 .brandText strong { font-size: 17px; letter-spacing: -.01em; }
 .brandText span { color: #737982; font-size: 12px; text-transform: capitalize; }
