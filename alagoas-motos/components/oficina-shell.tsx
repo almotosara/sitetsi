@@ -6,6 +6,7 @@ import { ChatPanel } from './chat-panel'
 import { MotosView } from './oficina/motos-view'
 import { FooterLojas } from './oficina/footer-lojas'
 import { TmoCalculadora } from './oficina/tmo-calculadora'
+import { AgendamentosView } from './oficina/agendamentos-view'
 import { createClient as createSupabaseClient } from '@/lib/supabase/client'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
@@ -20,7 +21,7 @@ interface MaoDeObraRow { modelos: string; tmo_hora_valor: number; revisao_geral_
 interface ValorItem { codigo: string; descricao: string; valor: number }
 interface RevisoesData { modelos: Modelo[]; mao_de_obra: MaoDeObraRow[]; valores_mercadoria: ValorItem[] }
 
-type Tab = 'revisao' | 'valores' | 'maodeobra' | 'tmo' | 'manuais'
+type Tab = 'revisao' | 'agendamentos' | 'valores' | 'maodeobra' | 'tmo' | 'manuais'
 
 function fmtBRL(v: number | null | undefined) {
   if (v == null) return '—'
@@ -205,6 +206,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
       <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
         <h1 style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
           {tab === 'revisao' && 'Motos & Ordem de Serviço'}
+          {tab === 'agendamentos' && 'Agendamentos da Oficina'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
           {tab === 'tmo' && 'Calculadora de TMO'}
@@ -212,19 +214,22 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
         </h1>
         <p className="text-[12.5px] font-medium mb-6" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Escolha a moto para abrir a ordem de serviço no MicroWork ou ver os valores de cada revisão.'}
+          {tab === 'agendamentos' && 'Confira os horários sincronizados e abra o painel da TV da recepção.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
           {tab === 'maodeobra' && 'Valor de referência da mão de obra por hora, por grupo de modelo.'}
           {tab === 'tmo' && 'Troca de peça avulsa: calcule a mão de obra (valor hora × TMO da peça) e abra a OS já preenchida.'}
           {tab === 'manuais' && 'Manuais completos de tabelas de manutenção para consulta.'}
         </p>
 
-        {loadError && (
+        {tab !== 'agendamentos' && loadError && (
           <div className="rounded-xl p-4 text-sm" style={{ background: '#ff5a5f1a', border: '1px solid #ff5a5f40', color: '#ff5a5f' }}>
             Não foi possível carregar os dados de revisão. Recarregue a página.
           </div>
         )}
 
-        {!data && !loadError && <Skeleton />}
+        {tab !== 'agendamentos' && !data && !loadError && <Skeleton />}
+
+        {tab === 'agendamentos' && <AgendamentosView />}
 
         {data && tab === 'revisao' && <MotosView data={data as never} />}
 

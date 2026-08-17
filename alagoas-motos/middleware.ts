@@ -1,6 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/auth/login', '/api/auth/login', '/api/revisoes']
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/api/auth/login',
+  '/api/revisoes',
+  '/api/agendamentos/sync',
+  '/api/agendamentos/tv',
+  '/tv/agendamentos',
+]
 const ADMIN_EMAIL = 'administrativo@alagoasmotos.com'
 
 // O token de sessão é base64url de "email:segredo" — aqui só precisamos do e-mail.

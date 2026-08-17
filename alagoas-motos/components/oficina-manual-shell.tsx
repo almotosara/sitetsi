@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { OficinaSidebar } from './oficina-sidebar'
+import { AgendamentosView } from './oficina/agendamentos-view'
 
 interface Peca { descricao: string; codigo: string | null; valor_unitario: number | null; quantidade: number | null; total: number | null }
 interface Servico { servico: string; acao: string }
@@ -15,7 +16,7 @@ interface MaoDeObraRow { modelos: string; tmo_hora_valor: number }
 interface ValorItem { codigo: string; descricao: string; valor: number }
 interface RevisoesData { modelos: Modelo[]; mao_de_obra: MaoDeObraRow[]; valores_mercadoria: ValorItem[] }
 
-type Tab = 'revisao' | 'valores' | 'maodeobra' | 'manuais'
+type Tab = 'revisao' | 'agendamentos' | 'valores' | 'maodeobra' | 'manuais'
 
 function fmtBRL(v: number | null | undefined) {
   if (v == null) return '—'
@@ -161,7 +162,7 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
     <div className="flex min-h-screen" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       <OficinaSidebar
         view={tab}
-        onView={setTab}
+        onView={(view) => { if (view !== 'tmo') setTab(view) }}
         userName={userName}
         userEmail={userEmail}
         onSignOut={handleSignOut}
@@ -171,24 +172,28 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
       <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
         <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
           {tab === 'revisao' && 'Consulta de Revisão'}
+          {tab === 'agendamentos' && 'Agendamentos da Oficina'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Selecione o modelo da moto para ver peças, serviços e TMO de cada revisão.'}
+          {tab === 'agendamentos' && 'Confira os horários sincronizados e abra o painel da TV da recepção.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
           {tab === 'maodeobra' && 'Valor de referência da mão de obra por hora, por grupo de modelo.'}
           {tab === 'manuais' && 'Manuais completos de tabelas de manutenção para consulta.'}
         </p>
 
-        {loadError && (
+        {tab !== 'agendamentos' && loadError && (
           <div className="rounded-xl p-4 text-sm" style={{ background: '#ff5a5f1a', border: '1px solid #ff5a5f40', color: '#ff5a5f' }}>
             Não foi possível carregar os dados de revisão. Recarregue a página.
           </div>
         )}
 
-        {!data && !loadError && <Skeleton />}
+        {tab !== 'agendamentos' && !data && !loadError && <Skeleton />}
+
+        {tab === 'agendamentos' && <AgendamentosView />}
 
         {data && tab === 'revisao' && (
           <div className="flex flex-col gap-4">
