@@ -59,7 +59,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="w-full max-w-[560px] rounded-2xl modal-anim glass-effect"
+        className="lead-modal w-full max-w-[560px] rounded-2xl modal-anim glass-effect"
         style={{ border: '1px solid var(--border-line-soft)', boxShadow: '0 10px 30px -12px var(--shadow-heavy)' }}
       >
         {/* Head */}
@@ -78,7 +78,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           {/* Origem */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: 'var(--text-muted)' }}>Origem do lead *</label>
-            <div className="flex gap-2">
+            <div className="lead-origin-grid flex gap-2">
               {(['Bot WhatsApp', 'Website'] as LeadOrigem[]).map((o) => {
                 const sel = form.origem === o
                 return (
@@ -107,7 +107,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           </Field>
 
           {/* Telefone + Data */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="lead-form-grid grid grid-cols-2 gap-3">
             <Field label="Telefone">
               <input value={form.telefone ?? ''} onChange={(e) => set('telefone', e.target.value)}
                 placeholder="(82) 9....-..." className="inp" type="tel" />
@@ -118,7 +118,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           </div>
 
           {/* OS + NF */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="lead-form-grid grid grid-cols-2 gap-3">
             <Field label="Nº O.S.">
               <input value={form.os ?? ''} onChange={(e) => set('os', e.target.value)}
                 placeholder="Ex: 93222" className="inp mono" />
@@ -130,7 +130,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           </div>
 
           {/* Modelo + CPF */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="lead-form-grid grid grid-cols-2 gap-3">
             <Field label="Modelo da moto">
               <input value={form.modelo ?? ''} onChange={(e) => set('modelo', e.target.value)}
                 placeholder="Ex: Honda CG 160 Titan" className="inp" />
@@ -177,7 +177,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           padding: 10px 12px; border-radius: 9px; font-size: 14px; outline: none; width: 100%;
           transition: border-color 0.12s, box-shadow 0.12s; font-family: inherit;
         }
-        .inp:focus { border-color: #0f7a5a; box-shadow: 0 0 0 3px #0f7a5a33; }
+        .inp:focus { border-color: #d71920; box-shadow: 0 0 0 3px #d7192033; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .btn-ghost-sm {
           display: inline-flex; align-items: center; gap: 7px;
@@ -188,13 +188,22 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
         .btn-ghost-sm:hover { background: var(--bg-elevated); }
         .btn-primary-sm {
           display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 14px; border-radius: 9px; border: 1px solid #0f7a5a;
-          background: linear-gradient(135deg, #0f7a5a, #065f46); color: #fff;
+          padding: 8px 14px; border-radius: 9px; border: 1px solid #d71920;
+          background: linear-gradient(135deg, #d71920, #a90f16); color: #fff;
           font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #0f7a5a70; font-family: inherit;
+          box-shadow: 0 6px 16px -6px #d7192070; font-family: inherit;
         }
         .btn-primary-sm:hover:not(:disabled) { filter: brightness(1.08); }
         .btn-primary-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+        @media (max-width: 560px) {
+          .lead-modal { border-radius: 14px; }
+          .lead-form-grid { grid-template-columns: minmax(0, 1fr); }
+          .inp { min-height: 48px; font-size: 16px; }
+          .btn-ghost-sm, .btn-primary-sm { min-height: 48px; justify-content: center; flex: 1; }
+        }
+        @media (max-width: 380px) {
+          .lead-origin-grid { flex-direction: column; }
+        }
       `}</style>
     </div>
   )

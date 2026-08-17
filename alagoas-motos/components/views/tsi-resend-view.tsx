@@ -68,15 +68,15 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{filtered.length} de {data.length} registros · {pendentes} pendente{pendentes !== 1 ? 's' : ''}</p>
         </div>
         <button onClick={onImport} className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #0f7a5a, #065f46)', border: '1px solid #0f7a5a', boxShadow: '0 6px 16px -6px #0f7a5a70' }}>
+          style={{ background: 'linear-gradient(135deg, #d71920, #a90f16)', border: '1px solid #d71920', boxShadow: '0 6px 16px -6px #d7192070' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
           Importar planilha
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2.5">
-        <div className="relative flex-1 min-w-[220px]">
+      <div className="responsive-filter-row flex flex-wrap gap-2.5">
+        <div className="responsive-search relative flex-1 min-w-[220px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar OS, cliente, veículo…" className="w-full" style={{ ...INP, paddingLeft: 36 }} />
         </div>
@@ -98,7 +98,7 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
             <p className="text-sm">{data.length === 0 ? 'Nenhuma planilha de reenvio importada' : 'Nenhum resultado encontrado'}</p>
             {data.length === 0 && (
-              <button onClick={onImport} className="mt-3 text-xs text-[#0f7a5a] hover:underline cursor-pointer">
+              <button onClick={onImport} className="mt-3 text-xs text-[#d71920] hover:underline cursor-pointer">
                 Importar planilha de reenvio
               </button>
             )}
@@ -151,7 +151,7 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
                     <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.data_envio_sms || '—'}</td>
                     <td className="px-3.5 py-2.5 whitespace-nowrap">
                       {r.data_reenvio ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: '#0f7a5a26', color: '#0f7a5a' }}>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: '#d7192026', color: '#d71920' }}>
                           {r.data_reenvio}
                         </span>
                       ) : (
@@ -165,7 +165,7 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
                         <button
                           onClick={() => onMarkSent(r.id, new Date().toLocaleDateString('pt-BR'))}
                           className="text-xs font-semibold px-2.5 py-1 rounded-full cursor-pointer transition-colors hover:brightness-110"
-                          style={{ background: '#0f7a5a', color: '#fff' }}
+                          style={{ background: '#d71920', color: '#fff' }}
                         >
                           Marcar reenviado
                         </button>

@@ -101,7 +101,7 @@ function Highlight({ text, term }: { text: string; term: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: '#0f7a5a3a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
+      <mark style={{ background: '#d719203a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
         {text.slice(idx, idx + t.length)}
       </mark>
       {text.slice(idx + t.length)}
@@ -114,7 +114,7 @@ function Skeleton() {
   return (
     <div className="flex flex-col gap-4">
       <style>{`@keyframes oficina-pulse{0%,100%{opacity:.55}50%{opacity:1}}`}</style>
-      <div style={{ ...pulse, height: 38, width: 320 }} />
+      <div style={{ ...pulse, height: 38, width: 'min(320px, 100%)' }} />
       <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} style={{ ...pulse, height: 62, animationDelay: `${i * 0.06}s` }} />
@@ -126,6 +126,7 @@ function Skeleton() {
 
 export function OficinaShell({ userName, userEmail, userId }: { userName: string; userEmail: string; userId: string }) {
   const [tab, setTab] = useState<Tab>('revisao')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [data, setData] = useState<RevisoesData | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -197,14 +198,22 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
       <OficinaSidebar
         view={tab}
         onView={setTab}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
         userName={userName}
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
 
       {/* Conteúdo */}
-      <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
-        <h1 style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
+      <div className="oficina-content flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
+        <div className="oficina-mobile-header">
+          <button type="button" className="mobile-menu-button" onClick={() => setMobileNavOpen(true)} aria-label="Abrir menu da oficina" aria-expanded={mobileNavOpen}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <span>Alagoas Motos · Oficina</span>
+        </div>
+        <h1 className="oficina-page-title" style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
           {tab === 'revisao' && 'Motos & Ordem de Serviço'}
           {tab === 'agendamentos' && 'Agendamentos da Oficina'}
           {tab === 'valores' && 'Consulta de Valores'}
@@ -212,7 +221,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
           {tab === 'tmo' && 'Calculadora de TMO'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
-        <p className="text-[12.5px] font-medium mb-6" style={{ color: 'var(--text-muted)' }}>
+        <p className="oficina-page-subtitle text-[12.5px] font-medium mb-6" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Escolha a moto para abrir a ordem de serviço no MicroWork ou ver os valores de cada revisão.'}
           {tab === 'agendamentos' && 'Confira os horários sincronizados e abra o painel da TV da recepção.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
@@ -332,7 +341,7 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
         onClick={() => setChatOpen(true)}
         title="Chat com o Consultor"
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center transition-transform hover:scale-105 z-30"
-        style={{ background: '#0f7a5a', color: '#fff', boxShadow: '0 10px 30px -8px #0f7a5a99' }}
+        style={{ background: '#d71920', color: '#fff', boxShadow: '0 10px 30px -8px #d7192099' }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -344,4 +353,4 @@ export function OficinaShell({ userName, userEmail, userId }: { userName: string
   )
 }
 
-function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f7a5a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }
+function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d71920" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }

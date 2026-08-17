@@ -63,7 +63,7 @@ export function ReportView({ leads }: ReportViewProps) {
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Relatórios</h2>
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{total} leads no período selecionado</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="responsive-filter-row flex items-center gap-2 flex-wrap">
           <input type="date" value={range.de} onChange={(e) => setRange((r) => ({ ...r, de: e.target.value }))} style={INP} />
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>até</span>
           <input type="date" value={range.ate} onChange={(e) => setRange((r) => ({ ...r, ate: e.target.value }))} style={INP} />
@@ -74,15 +74,15 @@ export function ReportView({ leads }: ReportViewProps) {
       </div>
 
       {/* KPI cards */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <KPICard label="Total" value={total} color="#0f7a5a" />
+      <div className="responsive-grid responsive-grid-4 grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <KPICard label="Total" value={total} color="#d71920" />
         <KPICard label="Convertidos" value={conv} color="#2fd675" sub={`${convRate}% taxa`} />
         <KPICard label="Bot WhatsApp" value={byOrigem['Bot WhatsApp'] || 0} color="#b083ff" />
         <KPICard label="Website" value={byOrigem['Website'] || 0} color="#4c8dff" />
       </div>
 
       {/* Charts row */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '2fr 1fr' }}>
+      <div className="responsive-grid responsive-grid-2 grid gap-4" style={{ gridTemplateColumns: '2fr 1fr' }}>
         {/* By day bar chart */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
           <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, margin: '0 0 16px 0', borderLeft: '3px solid #2fd675', paddingLeft: 10, color: 'var(--text-primary)' }}>
@@ -111,7 +111,7 @@ export function ReportView({ leads }: ReportViewProps) {
 
         {/* Status breakdown */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, margin: '0 0 16px 0', borderLeft: '3px solid #0f7a5a', paddingLeft: 10, color: 'var(--text-primary)' }}>
+          <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, margin: '0 0 16px 0', borderLeft: '3px solid #d71920', paddingLeft: 10, color: 'var(--text-primary)' }}>
             Por status
           </h3>
           <div className="flex flex-col gap-3">

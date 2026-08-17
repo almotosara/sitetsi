@@ -18,6 +18,8 @@ interface SidebarProps {
   goal: number
   onGoalChange: (g: number) => void
   onProfileChange: (name: string, avatar: string) => void
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
 interface NavItemDef {
@@ -54,7 +56,7 @@ const NAV_ITEMS: NavItemDef[] = [
   },
 ]
 
-export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut, goal, onGoalChange, onProfileChange }: SidebarProps) {
+export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut, goal, onGoalChange, onProfileChange, mobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState<'perfil' | 'meta' | 'aparencia' | 'sobre'>('perfil')
@@ -74,6 +76,27 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
   const tlRefs = useRef<gsap.core.Timeline[]>([])
   const activeTweenRefs = useRef<gsap.core.Tween[]>([])
   const sidebarRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (mobileOpen) setCollapsed(false)
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onMobileClose?.() }
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [mobileOpen, onMobileClose])
+
+  const selectView = (nextView: View) => {
+    onView(nextView)
+    onMobileClose?.()
+  }
 
   // Layout dos pills (GSAP) — calcula o círculo de hover
   const layoutPills = useCallback(() => {
@@ -147,9 +170,17 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
     group.id === view || group.children?.some((c) => c.id === view)
 
   return (
+    <>
+    <button
+      type="button"
+      className={`sidebar-overlay ${mobileOpen ? 'is-visible' : ''}`}
+      onClick={onMobileClose}
+      aria-label="Fechar menu"
+      tabIndex={mobileOpen ? 0 : -1}
+    />
     <aside
       ref={sidebarRef}
-      className="flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect"
+      className={`responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,
@@ -167,8 +198,9 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
           transition: 'all 0.2s ease',
         }}
       >
+        <span className="sr-only">Alternar largura do menu</span>
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/alagoas-motos-removebg-preview-iffjRi9U1BJ8xt500mZrqPuJrzBzos.png"
+          src="/alagoas-motos-logo.png"
           alt="Alagoas Motos"
           width={collapsed ? 32 : 148}
           height={collapsed ? 32 : 44}
@@ -178,10 +210,15 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         />
       </div>
 
+      <button type="button" className="sidebar-mobile-close" onClick={onMobileClose} aria-label="Fechar menu principal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        Fechar menu
+      </button>
+
       {/* Collapse button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg border-0 bg-transparent text-xs font-semibold cursor-pointer transition-colors mb-2"
+        className="sidebar-collapse-button flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg border-0 bg-transparent text-xs font-semibold cursor-pointer transition-colors mb-2"
         style={{ color: 'var(--text-muted)' }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-hover)' }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
@@ -207,7 +244,8 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
                 className={`pill-nav-item liquid-spread ${groupActive ? 'is-active' : ''}`}
                 onClick={() => {
                   if (!collapsed && group.children) toggleGroup(group.id)
-                  onView(group.id)
+                  if (mobileOpen && group.children) onView(group.id)
+                  else selectView(group.id)
                 }}
                 onMouseEnter={() => handlePillEnter(gi)}
                 onMouseLeave={() => handlePillLeave(gi)}
@@ -251,7 +289,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
                     <button
                       key={child.id}
                       className={`pill-nav-sub liquid-spread ${isActive(child.id) ? 'is-active' : ''}`}
-                      onClick={() => onView(child.id)}
+                      onClick={() => selectView(child.id)}
                     >
                       {child.icon}
                       <span>{child.label}</span>
@@ -273,7 +311,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         )}
         <button
           className="pill-nav-item liquid-spread"
-          onClick={() => { setSettingsTab('perfil'); setSettingsOpen(true) }}
+          onClick={() => { setSettingsTab('perfil'); setSettingsOpen(true); onMobileClose?.() }}
           title={collapsed ? 'Configurações' : undefined}
           style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
         >
@@ -282,7 +320,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         </button>
         <button
           className="pill-nav-item liquid-spread"
-          onClick={() => { setSettingsTab('meta'); setSettingsOpen(true) }}
+          onClick={() => { setSettingsTab('meta'); setSettingsOpen(true); onMobileClose?.() }}
           title={collapsed ? 'Metas' : undefined}
           style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
         >
@@ -342,6 +380,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
         initialTab={settingsTab}
       />
     </aside>
+    </>
   )
 }
 

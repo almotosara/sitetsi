@@ -12,7 +12,7 @@ import { urlTrocaPeca } from "../../lib/motos-catalog";
 import { nomeCurto } from "../../lib/motos-catalog";
 import { fmtBRL, findGrupoMaoDeObra, type RevisoesData, type ValorItem } from "../../lib/revisoes-calc";
 
-const ACCENT = "#0f7a5a";
+const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
 
 function parseNum(s: string): number | null {
@@ -134,7 +134,7 @@ export function TmoCalculadora({ data }: { data: RevisoesData }) {
   }
 
   return (
-    <div className="grid gap-5" style={{ fontFamily: FONT, gridTemplateColumns: "minmax(300px, 1.3fr) minmax(260px, 1fr)" }}>
+    <div className="tmo-grid responsive-grid grid gap-5" style={{ fontFamily: FONT, gridTemplateColumns: "minmax(300px, 1.3fr) minmax(260px, 1fr)" }}>
       {/* ─── Formulário ─── */}
       <div
         className="flex flex-col gap-5 rounded-[22px] p-6"
@@ -313,7 +313,7 @@ export function TmoCalculadora({ data }: { data: RevisoesData }) {
             color: podeAbrir ? "#fff" : "var(--text-muted)",
             border: podeAbrir ? "none" : "1px solid var(--border-line)",
             cursor: podeAbrir ? "pointer" : "not-allowed",
-            boxShadow: podeAbrir ? "0 16px 30px -18px rgba(15,122,90,.9)" : "none",
+            boxShadow: podeAbrir ? "0 16px 30px -18px rgba(215,25,32,.9)" : "none",
           }}
         >
           Abrir OS desta troca

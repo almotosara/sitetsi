@@ -177,7 +177,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
         onClick={onClose}
       />
       <div
-        className="fixed z-50 flex flex-col overflow-hidden glass-effect"
+        className="chat-panel fixed z-50 flex flex-col overflow-hidden glass-effect"
         style={{
           top: 76, right: 24, width: 360, height: 480,
           border: '1px solid var(--border-line)',
@@ -192,7 +192,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
           <div className="flex items-center gap-2.5">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #0f7a5a, #16a34a)' }}
+              style={{ background: 'linear-gradient(135deg, #d71920, #ef3a43)' }}
             >
               {otherName.charAt(0)}
             </div>
@@ -243,7 +243,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
                         style={apagada
                           ? { background: 'var(--bg-elevated)', color: 'var(--text-muted)', fontStyle: 'italic', borderBottomRightRadius: mine ? 4 : 16, borderBottomLeftRadius: mine ? 16 : 4 }
                           : mine
-                            ? { background: '#0f7a5a', color: '#fff', borderBottomRightRadius: 4 }
+                            ? { background: '#d71920', color: '#fff', borderBottomRightRadius: 4 }
                             : { background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottomLeftRadius: 4 }}
                         onClick={() => !apagada && setMenuFor(menuFor === m.id ? null : m.id)}
                       >
@@ -341,7 +341,7 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
             onClick={handleSend}
             disabled={!text.trim() || sending}
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-transform disabled:opacity-40"
-            style={{ background: '#0f7a5a', color: '#fff' }}
+            style={{ background: '#d71920', color: '#fff' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>

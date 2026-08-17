@@ -13,6 +13,8 @@ interface OficinaSidebarProps {
   userEmail: string
   avatarUrl?: string
   onSignOut: () => void
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
 interface NavItemDef {
@@ -31,9 +33,9 @@ const NAV_ITEMS: NavItemDef[] = [
   { id: 'manuais', label: 'Manuais Honda', grupo: 'Ferramentas', icon: <IconBook /> },
 ]
 
-const ACCENT = '#0f7a5a'
+const ACCENT = '#d71920'
 
-export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut }: OficinaSidebarProps) {
+export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, onSignOut, mobileOpen = false, onMobileClose }: OficinaSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [avatarHover, setAvatarHover] = useState(false)
@@ -42,6 +44,27 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
   const sidebarRef = useRef<HTMLElement>(null)
 
   const w = collapsed ? 62 : 238
+
+  useEffect(() => {
+    if (mobileOpen) setCollapsed(false)
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onMobileClose?.() }
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', handler)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handler)
+    }
+  }, [mobileOpen, onMobileClose])
+
+  const selectView = (nextView: View) => {
+    onView(nextView)
+    onMobileClose?.()
+  }
 
   // Fecha o menu ao clicar fora
   useEffect(() => {
@@ -64,9 +87,17 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
   let grupoAtual = ''
 
   return (
+    <>
+    <button
+      type="button"
+      className={`sidebar-overlay ${mobileOpen ? 'is-visible' : ''}`}
+      onClick={onMobileClose}
+      aria-label="Fechar menu da oficina"
+      tabIndex={mobileOpen ? 0 : -1}
+    />
     <aside
       ref={sidebarRef}
-      className="am-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-visible"
+      className={`am-sidebar responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-visible ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,
@@ -83,7 +114,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
         .am-nav-item:hover{background:var(--sidebar-hover);color:var(--text-primary);transform:translateX(2px)}
         .am-nav-item .am-ico{display:flex;flex:none;align-items:center;justify-content:center;transition:color .18s,transform .25s cubic-bezier(.22,1,.36,1)}
         .am-nav-item:hover .am-ico{transform:scale(1.08)}
-        .am-nav-item.is-active{background:${ACCENT};color:#fff;box-shadow:0 14px 26px -18px rgba(15,122,90,.95)}
+        .am-nav-item.is-active{background:${ACCENT};color:#fff;box-shadow:0 14px 26px -18px rgba(215,25,32,.95)}
         .am-nav-item.is-active .am-ico{color:#fff}
         .am-nav-item .am-label{white-space:nowrap;overflow:hidden}
         .am-nav-item .am-mark{position:absolute;left:-14px;top:50%;width:3px;height:0;border-radius:0 3px 3px 0;
@@ -108,7 +139,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
         }}
       >
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/alagoas-motos-removebg-preview-iffjRi9U1BJ8xt500mZrqPuJrzBzos.png"
+          src="/alagoas-motos-logo.png"
           alt="Alagoas Motos"
           width={collapsed ? 34 : 148}
           height={collapsed ? 34 : 44}
@@ -118,10 +149,15 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
         />
       </div>
 
+      <button type="button" className="sidebar-mobile-close" onClick={onMobileClose} aria-label="Fechar menu da oficina">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        Fechar menu
+      </button>
+
       {/* Collapse */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full rounded-xl border-0 bg-transparent text-[11.5px] font-semibold cursor-pointer"
+        className="sidebar-collapse-button flex items-center gap-2 w-full rounded-xl border-0 bg-transparent text-[11.5px] font-semibold cursor-pointer"
         style={{ color: 'var(--text-muted)', padding: '7px 11px', transition: 'background .18s' }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-hover)' }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
@@ -150,7 +186,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
               )}
               <button
                 className={`am-nav-item ${active ? 'is-active' : ''}`}
-                onClick={() => onView(item.id)}
+                onClick={() => selectView(item.id)}
                 aria-current={active ? 'page' : undefined}
                 style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
               >
@@ -282,6 +318,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
         </div>
       </div>
     </aside>
+    </>
   )
 }
 

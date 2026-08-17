@@ -96,7 +96,7 @@ function Highlight({ text, term }: { text: string; term: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: '#0f7a5a3a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
+      <mark style={{ background: '#d719203a', color: 'inherit', borderRadius: 3, padding: '0 2px' }}>
         {text.slice(idx, idx + t.length)}
       </mark>
       {text.slice(idx + t.length)}
@@ -109,7 +109,7 @@ function Skeleton() {
   return (
     <div className="flex flex-col gap-4">
       <style>{`@keyframes oficina-pulse{0%,100%{opacity:.55}50%{opacity:1}}`}</style>
-      <div style={{ ...pulse, height: 38, width: 320 }} />
+      <div style={{ ...pulse, height: 38, width: 'min(320px, 100%)' }} />
       <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} style={{ ...pulse, height: 62, animationDelay: `${i * 0.06}s` }} />
@@ -121,6 +121,7 @@ function Skeleton() {
 
 export function OficinaManualShell({ userName, userEmail }: { userName: string; userEmail: string }) {
   const [tab, setTab] = useState<Tab>('revisao')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [data, setData] = useState<RevisoesData | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [q, setQ] = useState('')
@@ -159,25 +160,33 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
+    <div className="oficina-page flex min-h-screen" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       <OficinaSidebar
         view={tab}
         onView={(view) => { if (view !== 'tmo') setTab(view) }}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
         userName={userName}
         userEmail={userEmail}
         onSignOut={handleSignOut}
       />
 
       {/* Conteúdo */}
-      <div className="flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
-        <h1 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
+      <div className="oficina-content flex-1 min-w-0 p-6 pb-16 max-w-[1200px] w-full mx-auto">
+        <div className="oficina-mobile-header">
+          <button type="button" className="mobile-menu-button" onClick={() => setMobileNavOpen(true)} aria-label="Abrir menu da oficina" aria-expanded={mobileNavOpen}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <span>Alagoas Motos · Oficina</span>
+        </div>
+        <h1 className="oficina-page-title" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
           {tab === 'revisao' && 'Consulta de Revisão'}
           {tab === 'agendamentos' && 'Agendamentos da Oficina'}
           {tab === 'valores' && 'Consulta de Valores'}
           {tab === 'maodeobra' && 'Tabela de Mão de Obra'}
           {tab === 'manuais' && 'Manuais Honda'}
         </h1>
-        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
+        <p className="oficina-page-subtitle text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
           {tab === 'revisao' && 'Selecione o modelo da moto para ver peças, serviços e TMO de cada revisão.'}
           {tab === 'agendamentos' && 'Confira os horários sincronizados e abra o painel da TV da recepção.'}
           {tab === 'valores' && 'Busque uma peça ou kit por código ou descrição na tabela de mercadoria.'}
@@ -222,7 +231,7 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
 
             {selectedModelo && revisaoAtual && (
               <div className="flex flex-col gap-4">
-                <button onClick={() => setSelectedModelo(null)} className="self-start text-[12.5px] font-semibold cursor-pointer" style={{ color: '#0f7a5a' }}>
+                <button onClick={() => setSelectedModelo(null)} className="self-start text-[12.5px] font-semibold cursor-pointer" style={{ color: '#d71920' }}>
                   ← Voltar aos modelos
                 </button>
                 <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 19, fontWeight: 700 }}>
@@ -235,9 +244,9 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
                     <button key={r.numero} onClick={() => setRevisaoIdx(i)}
                       className="flex-shrink-0 px-3.5 py-2 text-[12.5px] font-bold cursor-pointer rounded-t-[9px] transition-colors"
                       style={{
-                        color: revisaoIdx === i ? '#0f7a5a' : 'var(--text-muted)',
+                        color: revisaoIdx === i ? '#d71920' : 'var(--text-muted)',
                         background: revisaoIdx === i ? 'var(--card-bg)' : 'transparent',
-                        borderBottom: revisaoIdx === i ? '2px solid #0f7a5a' : '2px solid transparent',
+                        borderBottom: revisaoIdx === i ? '2px solid #d71920' : '2px solid transparent',
                         marginBottom: -1,
                       }}>
                       {r.numero}ª · {r.km.toLocaleString('pt-BR')}km
@@ -257,7 +266,7 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
                           {r.numero}ª Revisão — {r.km.toLocaleString('pt-BR')} km{r.meses ? ` ou ${r.meses} meses` : ''}
                         </h3>
                         {r.tmo_horas != null && (
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#0f7a5a26', color: '#0f7a5a' }}>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#d7192026', color: '#d71920' }}>
                             TMO: {r.tmo_horas}h
                           </span>
                         )}
@@ -307,7 +316,7 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
                             </span>
                           )}
                         </span>
-                        <span style={{ color: 'var(--text-muted)' }}>Total: <b style={{ color: '#0f7a5a' }}>{fmtBRL(totalFinal)}</b></span>
+                        <span style={{ color: 'var(--text-muted)' }}>Total: <b style={{ color: '#d71920' }}>{fmtBRL(totalFinal)}</b></span>
                       </div>
                     </div>
                   )
@@ -408,4 +417,4 @@ export function OficinaManualShell({ userName, userEmail }: { userName: string; 
   )
 }
 
-function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f7a5a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }
+function IconPdf() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d71920" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> }

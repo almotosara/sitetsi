@@ -49,15 +49,15 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
           <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{filtered.length} de {tsiData.length} registros</p>
         </div>
         <button onClick={onImport} className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all"
-          style={{ background: 'linear-gradient(135deg, #0f7a5a, #065f46)', border: '1px solid #0f7a5a', boxShadow: '0 6px 16px -6px #0f7a5a70' }}>
+          style={{ background: 'linear-gradient(135deg, #d71920, #a90f16)', border: '1px solid #d71920', boxShadow: '0 6px 16px -6px #d7192070' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
           Importar TSI
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2.5">
-        <div className="relative flex-1 min-w-[220px]">
+      <div className="responsive-filter-row flex flex-wrap gap-2.5">
+        <div className="responsive-search relative flex-1 min-w-[220px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar OS, comentário…" className="w-full" style={{ ...INP, paddingLeft: 36 }} />
         </div>
@@ -80,7 +80,7 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2.5 opacity-35"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
             <p className="text-sm">{tsiData.length === 0 ? 'Nenhuma planilha TSI importada' : 'Nenhum resultado encontrado'}</p>
             {tsiData.length === 0 && (
-              <button onClick={onImport} className="mt-3 text-xs text-[#0f7a5a] hover:underline cursor-pointer">
+              <button onClick={onImport} className="mt-3 text-xs text-[#d71920] hover:underline cursor-pointer">
                 Importar planilha TSI
               </button>
             )}

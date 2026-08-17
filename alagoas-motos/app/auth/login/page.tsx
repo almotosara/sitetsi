@@ -47,7 +47,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-[#0b0f12] font-manrope">
+    <main className="login-shell relative min-h-screen w-full overflow-hidden bg-[#0b0f12] font-manrope">
       {/* preenchimento de fundo desfocado (não corta a arte principal) */}
       <img
         src="/sahara-hero.webp"
@@ -67,16 +67,21 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-black/35 md:bg-transparent" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10 md:justify-end md:px-10 lg:px-16">
-        <GlassCard className="w-full max-w-md">
+        <GlassCard className="login-card w-full max-w-md">
           <GlassCardHeader className="text-center">
+            <img
+              src="/alagoas-motos-logo.png"
+              alt="Alagoas Motos"
+              className="login-brand-logo"
+            />
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-on-media-muted">
-              Alagoas Motos
+              Analytics · Oficina · TSI
             </p>
-            <GlassCardTitle className="mt-2 text-2xl text-on-media">
-              Leads · Alagoas Motos
+            <GlassCardTitle className="mt-2 text-[clamp(1.55rem,5vw,2rem)] font-semibold tracking-[-0.04em] text-on-media">
+              Bem-vindo de volta
             </GlassCardTitle>
             <GlassCardDescription className="mt-1 text-on-media-muted">
-              Painel de cadastro e relatório de leads.
+              Acesse o painel operacional da Alagoas Motos.
             </GlassCardDescription>
           </GlassCardHeader>
 
@@ -126,7 +131,7 @@ export default function LoginPage() {
                 type="submit"
                 size="xl"
                 disabled={loading}
-                className="mt-1 w-full rounded-xl text-[15px] font-semibold text-on-media disabled:cursor-not-allowed"
+                className="login-primary-button mt-1 w-full text-[15px] font-semibold text-on-media disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

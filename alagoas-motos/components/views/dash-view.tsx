@@ -56,7 +56,7 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
       <div className="flex flex-col gap-3">
         <span className="text-4xl font-bold leading-none" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{value}</span>
         <span className="text-[11.5px] flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-          <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#0f7a5a1a', color: '#0f7a5a' }}>
+          <span className="w-4 h-4 rounded-sm inline-flex items-center justify-center" style={{ background: '#d719201a', color: '#d71920' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </span>
           {sub}
@@ -69,10 +69,10 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub: st
 // ── Stat card destacado (verde escuro) ──────────────────────────────
 function StatCardHighlight({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#0f7a5a', color: '#ffffff', border: 'none' }}>
+    <div className="rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#d71920', color: '#ffffff', border: 'none' }}>
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#0f7a5a' }}>
+        <button className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#d71920' }}>
           <IconArrow />
         </button>
       </div>
@@ -113,7 +113,7 @@ function TimeTracker() {
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 30% 20%, #0f7a5a 0%, transparent 55%), radial-gradient(circle at 80% 90%, #22c55e33 0%, transparent 60%)',
+            'radial-gradient(circle at 30% 20%, #d71920 0%, transparent 55%), radial-gradient(circle at 80% 90%, #22c55e33 0%, transparent 60%)',
         }}
         aria-hidden
       />
@@ -199,7 +199,7 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
               <span
                 className="absolute -top-1 text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
                 style={isMax
-                  ? { background: '#0f7a5a', color: '#fff' }
+                  ? { background: '#d71920', color: '#fff' }
                   : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
               >
                 {pct}%
@@ -210,7 +210,7 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
                   height: h,
                   maxWidth: 42,
                   background: isMax
-                    ? 'linear-gradient(180deg, #22c55e 0%, #0f7a5a 100%)'
+                    ? 'linear-gradient(180deg, #22c55e 0%, #d71920 100%)'
                     : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
                 }}
               />
@@ -279,7 +279,7 @@ function Reminders() {
         <button
           onClick={() => setAdding((a) => !a)}
           className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105"
-          style={{ background: '#0f7a5a', color: '#ffffff' }}
+          style={{ background: '#d71920', color: '#ffffff' }}
           title="Adicionar lembrete"
         >
           <IconPlus />
@@ -297,7 +297,7 @@ function Reminders() {
             className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
             style={{ background: 'var(--bg-input)', border: '1px solid var(--border-line)', color: 'var(--text-primary)' }}
           />
-          <button onClick={addReminder} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: '#0f7a5a', color: '#fff' }}>
+          <button onClick={addReminder} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: '#d71920', color: '#fff' }}>
             Adicionar
           </button>
         </div>
@@ -312,7 +312,7 @@ function Reminders() {
             <button
               onClick={() => toggle(it.id)}
               className="w-[18px] h-[18px] rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
-              style={{ border: it.done ? 'none' : '1.5px solid var(--border-line)', background: it.done ? '#0f7a5a' : 'transparent' }}
+              style={{ border: it.done ? 'none' : '1.5px solid var(--border-line)', background: it.done ? '#d71920' : 'transparent' }}
               aria-label={it.done ? 'Marcar como pendente' : 'Marcar como concluído'}
             >
               {it.done && (
@@ -343,7 +343,7 @@ function Reminders() {
 // ── Project list ────────────────────────────────────────────────────
 function ProjectsList({ leads, onView }: { leads: Lead[]; onView: (v: string) => void }) {
   const recent = leads.slice(0, 5)
-  const colors = ['#0f7a5a', '#4f7ac7', '#d9a441', '#8a6bc4', '#d0524d']
+  const colors = ['#d71920', '#4f7ac7', '#d9a441', '#8a6bc4', '#d0524d']
   return (
     <Panel className="p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -437,7 +437,7 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
           <defs>
             <linearGradient id="gauge" x1="0" x2="1">
               <stop offset="0%" stopColor="#22c55e" />
-              <stop offset="100%" stopColor="#0f7a5a" />
+              <stop offset="100%" stopColor="#d71920" />
             </linearGradient>
             <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="4" height="8" fill="#eef0ea" />
@@ -455,7 +455,7 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
       </div>
       <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         <div className="flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#0f7a5a' }} />Convertidos {done}</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#d71920' }} />Convertidos {done}</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#eef0ea' }} />Restante {Math.max(0, goal - done)}</span>
         </div>
         <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
@@ -518,7 +518,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
   return (
     <div className="view-enter flex flex-col gap-5">
       {/* Stats row */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <div className="responsive-grid responsive-grid-4 grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" />
         <StatCard label="Convertidos" value={convertidos} sub={
           convertidosCompSemana === 0
@@ -530,14 +530,14 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
       </div>
 
       {/* Middle row */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
+      <div className="responsive-grid responsive-grid-3 grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
         <ProjectAnalytics leads={leads} />
         <Reminders />
         <ProjectsList leads={leads} onView={onView} />
       </div>
 
       {/* Bottom row */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
+      <div className="responsive-grid responsive-grid-3 grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
         <StatusBreakdown leads={leads} onView={onView} />
         <ProgressGauge pct={pct} goal={goal} done={convertidos} onGoalChange={onGoalChange} />
         <TimeTracker />

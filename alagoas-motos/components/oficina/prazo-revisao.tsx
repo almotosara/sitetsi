@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import { nomeCurto } from "../../lib/motos-catalog";
 import type { RevisoesData } from "../../lib/revisoes-calc";
 
-const ACCENT = "#0f7a5a";
+const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
 
 /** Fallback só usado se os dados não trouxerem `meses` para alguma revisão. */

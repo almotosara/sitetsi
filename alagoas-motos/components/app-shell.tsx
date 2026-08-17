@@ -101,6 +101,7 @@ export function AppShell({
   initialDisplayName, initialAvatarUrl,
 }: AppShellProps) {
   const [view, setView] = useState<View>('dash')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [tsiData, setTsiData] = useState<TsiRow[]>(initialTsi)
@@ -529,10 +530,12 @@ export function AppShell({
   }, [])
 
   return (
-    <div className="flex min-h-screen">
+    <div className="app-layout flex min-h-screen">
       <Sidebar
         view={view}
         onView={(v) => setView(v as View)}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
         userName={effectiveName || userName}
         userEmail={userEmail}
         avatarUrl={avatarUrl}
@@ -545,14 +548,24 @@ export function AppShell({
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
         <div
-          className="sticky top-0 z-20 flex items-center gap-3.5 px-6 py-4"
+          className="app-topbar sticky top-0 z-20 flex items-center gap-3.5 px-6 py-4"
           style={{
             background: 'var(--topbar-bg)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid var(--border-line-soft)',
           }}
         >
-          <div className="flex-1">
+          <button
+            type="button"
+            className="mobile-menu-button"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Abrir menu principal"
+            aria-expanded={mobileNavOpen}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+
+          <div className="app-topbar-title flex-1 min-w-0">
             <h1
               className="transition-colors duration-300"
               style={{
@@ -569,13 +582,14 @@ export function AppShell({
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>
           </div>
 
+          <div className="app-topbar-actions">
           {(view === 'tsi' || view === 'tsilist') && (
             <button onClick={handleTsiImport}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
               style={{
-                background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
-                borderColor: '#0f7a5a',
-                boxShadow: '0 6px 16px -6px #0f7a5a70',
+                background: 'linear-gradient(135deg, #d71920, #a90f16)',
+                borderColor: '#d71920',
+                boxShadow: '0 6px 16px -6px #d7192070',
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -587,9 +601,9 @@ export function AppShell({
             <button onClick={handleTsiResendImport}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
               style={{
-                background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
-                borderColor: '#0f7a5a',
-                boxShadow: '0 6px 16px -6px #0f7a5a70',
+                background: 'linear-gradient(135deg, #d71920, #a90f16)',
+                borderColor: '#d71920',
+                boxShadow: '0 6px 16px -6px #d7192070',
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -613,9 +627,9 @@ export function AppShell({
               <button onClick={() => { setEditing(null); setModalOpen(true) }}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] border text-white font-semibold text-[13.5px] cursor-pointer liquid-spread hover:brightness-110"
                 style={{
-                  background: 'linear-gradient(135deg, #0f7a5a, #065f46)',
-                  borderColor: '#0f7a5a',
-                  boxShadow: '0 6px 16px -6px #0f7a5a70',
+                  background: 'linear-gradient(135deg, #d71920, #a90f16)',
+                  borderColor: '#d71920',
+                  boxShadow: '0 6px 16px -6px #d7192070',
                 }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -648,7 +662,7 @@ export function AppShell({
                   color: '#fff',
                   ...(avatarUrl
                     ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                    : { background: 'linear-gradient(135deg, #0f7a5a, #16a34a)' }),
+                    : { background: 'linear-gradient(135deg, #d71920, #ef3a43)' }),
                 }}
               >
                 {!avatarUrl && (effectiveName || userName).charAt(0).toUpperCase()}
@@ -659,10 +673,11 @@ export function AppShell({
               </div>
             </div>
           </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 pb-16 max-w-[1320px] w-full mx-auto">
+        <div className="app-content flex-1 p-6 pb-16 max-w-[1320px] w-full mx-auto">
           {view === 'dash' && (
             <DashView leads={leads} goal={goal} onGoalChange={handleGoalChange}
               onView={(v) => setView(v as View)}

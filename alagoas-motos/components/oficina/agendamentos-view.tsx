@@ -43,14 +43,14 @@ export function AgendamentosView() {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+      <section className="responsive-grid responsive-grid-auto grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
         <InfoCard label="Agendamentos hoje" value={String(dados?.agendamentos.length ?? 0)} detail="Registros ativos" />
         <InfoCard label="Motocicletas recebidas" value={String(recebidas)} detail="Com OS ou recepcionadas" />
         <InfoCard label="Última sincronização" value={dados?.sincronizado_em ? new Date(dados.sincronizado_em).toLocaleTimeString('pt-BR', { timeZone: 'America/Maceio', hour: '2-digit', minute: '2-digit' }) : '—'} detail={dataHora(dados?.sincronizado_em ?? null)} />
       </section>
 
       <section className="rounded-2xl p-5 flex flex-wrap items-center gap-4" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-        <div className="flex-1 min-w-[240px]">
+        <div className="responsive-search flex-1 min-w-[240px]">
           <h2 className="text-base font-semibold m-0">Painel da TV da recepção</h2>
           <p className="text-xs mt-1 mb-0" style={{ color: 'var(--text-muted)' }}>
             A visualização abre em tela cheia, atualiza automaticamente e oculta parte do nome e da placa dos clientes.
@@ -70,12 +70,12 @@ export function AgendamentosView() {
       )}
 
       <section className="overflow-hidden rounded-2xl" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-line-soft)' }}>
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
+        <div className="agenda-table-header px-5 py-4 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--border-line-soft)' }}>
           <div><h2 className="text-sm font-semibold m-0">Agenda sincronizada</h2><p className="text-[11px] mt-1 mb-0" style={{ color: 'var(--text-muted)' }}>Os dados abaixo vêm da listagem do MicroWork Cloud DMS.</p></div>
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#0f7a5a' }}>Atualização automática</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#d71920' }}>Atualização automática</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-[12px]">
+          <table className="w-full min-w-[760px] border-collapse text-[12px]">
             <thead><tr style={{ background: 'var(--bg-panel-2)', color: 'var(--text-muted)' }}>
               {['Horário', 'Cliente', 'Motocicleta', 'Placa', 'Serviço', 'Consultor', 'Situação'].map((c) => <th key={c} className="px-4 py-2.5 text-left text-[9px] uppercase tracking-wider">{c}</th>)}
             </tr></thead>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const VERDE = '#0f7a5a'
+const VERDE = '#d71920'
 
 interface Mercadoria { id: number; codigo: string; descricao: string; valor_unitario: number | null }
 interface Modelo { id: number; nome: string; periodo: string | null; ordem: number }
@@ -234,13 +234,13 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
     }, 0)
 
   return (
-    <div style={{ minHeight: '100vh', padding: '24px clamp(12px, 4vw, 40px)' }}>
+    <div className="admin-panel" style={{ minHeight: '100vh', padding: '24px clamp(12px, 4vw, 40px)' }}>
       <header className="flex flex-wrap items-center justify-between gap-3" style={{ marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700 }}>Painel administrativo — Valores e Mercadorias</h1>
           <p style={{ fontSize: 13, opacity: 0.7 }}>{userEmail}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="admin-header-actions flex items-center gap-2">
           <a href="/api/revisoes" target="_blank" rel="noreferrer" style={btnGhost}>Ver JSON público</a>
           <button
             style={btnGhost}
@@ -254,7 +254,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
         </div>
       </header>
 
-      <nav className="flex gap-2" style={{ marginBottom: 16 }}>
+      <nav className="admin-tabs flex gap-2" style={{ marginBottom: 16 }}>
         {([['revisoes', 'Revisões'], ['avulsos', 'Serviços avulsos'], ['catalogo', 'Catálogo de mercadorias']] as [Aba, string][]).map(
           ([k, label]) => (
             <button
@@ -279,7 +279,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
       )}
 
       {aba === 'revisoes' && (
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
+        <div className="admin-split-grid responsive-grid grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
           <aside style={{ ...card, padding: 12, maxHeight: '75vh', overflow: 'auto' }}>
             <input
               style={{ ...inputStyle, marginBottom: 8 }}
@@ -384,7 +384,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+                    <div className="admin-section-heading flex flex-wrap items-center justify-between gap-2" style={{ marginBottom: 8 }}>
                       <h3 style={{ fontSize: 15, fontWeight: 600 }}>Mercadorias da revisão</h3>
                       <button style={btn} onClick={() => setAddAberto(true)}>+ Adicionar mercadoria</button>
                     </div>
@@ -408,7 +408,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
       )}
 
       {aba === 'avulsos' && (
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
+        <div className="admin-split-grid responsive-grid grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
           <aside style={{ ...card, padding: 12 }}>
             {avulsos.map((s) => (
               <button
@@ -462,7 +462,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
                   <button style={btnGhost} onClick={() => removerServico(avulsoSel)}>Excluir serviço</button>
                 </div>
 
-                <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+                <div className="admin-section-heading flex flex-wrap items-center justify-between gap-2" style={{ marginBottom: 8 }}>
                   <h3 style={{ fontSize: 15, fontWeight: 600 }}>Mercadorias do serviço</h3>
                   <button style={btn} onClick={() => setAddAberto(true)}>+ Adicionar mercadoria</button>
                 </div>
@@ -508,7 +508,8 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
             </button>
           </div>
           {catBusca.trim().length < 2 && <p style={{ fontSize: 13, opacity: 0.7 }}>Digite pelo menos 2 caracteres para buscar.</p>}
-          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+          <div className="responsive-table-wrap">
+          <table style={{ width: '100%', minWidth: 560, fontSize: 13, borderCollapse: 'collapse' }}>
             <tbody>
               {catResultados.map((m) => (
                 <tr key={m.id} style={{ borderTop: '1px solid rgba(127,127,127,.2)' }}>
@@ -527,6 +528,7 @@ export function AdminPanel({ userEmail }: { userEmail: string }) {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
       )}
 

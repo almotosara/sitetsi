@@ -2,24 +2,24 @@
 
 @theme inline {
   --font-sans: var(--font-inter), 'Inter', sans-serif;
-  --font-display: var(--font-rajdhani), 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-display: var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-mono: var(--font-mono), 'JetBrains Mono', monospace;
 
-  --color-background: #f5f6f2;
+  --color-background: #f5f5f7;
   --color-panel: #ffffff;
-  --color-panel-2: #f2f3ef;
-  --color-elevated: #eef0ea;
-  --color-line: #e6e7e1;
-  --color-line-soft: #eef0ea;
-  --color-foreground: #16181a;
-  --color-dim: #4a4f55;
-  --color-muted: #8a919a;
-  --color-brand: #0f7a5a;
-  --color-brand-dim: #0f7a5a1a;
+  --color-panel-2: #f1f1f3;
+  --color-elevated: #ececef;
+  --color-line: #dedee3;
+  --color-line-soft: #e9e9ec;
+  --color-foreground: #1d1d1f;
+  --color-dim: #515157;
+  --color-muted: #7b7b83;
+  --color-brand: #d71920;
+  --color-brand-dim: #d7192014;
   --color-yellow: #d9a441;
   --color-yellow-dim: #d9a4411f;
-  --color-green: #0f7a5a;
-  --color-green-dim: #0f7a5a1a;
+  --color-green: #16855f;
+  --color-green-dim: #16855f1a;
   --color-red: #d0524d;
   --color-red-dim: #d0524d1f;
   --color-blue: #4f7ac7;
@@ -27,44 +27,53 @@
   --color-purple: #8a6bc4;
   --color-purple-dim: #8a6bc41f;
 
-  --radius: 1rem;
+  --radius: 1.5rem;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   TEMA CLARO (padrão — Donezo)
+   TEMA CLARO — Alagoas Motos Editorial Analytics
    ═══════════════════════════════════════════════════════════════════ */
 :root,
 [data-theme='light'] {
-  --bg-main: #f5f6f2;
+  --bg-main: #f5f5f7;
   --bg-panel: #ffffff;
-  --bg-panel-2: #f7f8f4;
-  --bg-elevated: #eef0ea;
-  --bg-input: #f7f8f4;
-  --border-line: #e6e7e1;
-  --border-line-soft: #eef0ea;
-  --text-primary: #16181a;
-  --text-dim: #4a4f55;
-  --text-muted: #8a919a;
+  --bg-panel-2: #f1f1f3;
+  --bg-elevated: #ececef;
+  --bg-input: #f7f7f8;
+  --border-line: #dedee3;
+  --border-line-soft: #e9e9ec;
+  --text-primary: #1d1d1f;
+  --text-dim: #515157;
+  --text-muted: #7b7b83;
   --sidebar-bg: #ffffff;
-  --sidebar-hover: #f2f3ef;
-  --topbar-bg: #f5f6f2ee;
+  --sidebar-hover: #f1f1f3;
+  --topbar-bg: #f5f5f7e8;
   --card-bg: #ffffff;
   --toast-bg: #ffffff;
-  --scrollbar-thumb: #d5d8d0;
-  --selection-bg: #0f7a5a;
+  --scrollbar-thumb: #cfd0d5;
+  --selection-bg: #d71920;
   --selection-text: #ffffff;
   --pill-nav-base: #ffffff;
-  --pill-nav-pill: #0f7a5a;
-  --pill-nav-pill-soft: #e6f2ec;
-  --pill-nav-text: #16181a;
+  --pill-nav-pill: #d71920;
+  --pill-nav-pill-soft: #fdecee;
+  --pill-nav-text: #1d1d1f;
   --pill-nav-hover-text: #ffffff;
   --account-menu-bg: #ffffff;
-  --account-menu-border: #e6e7e1;
-  --shadow-heavy: rgba(20, 30, 25, .10);
-  --shadow-medium: rgba(20, 30, 25, .06);
-  --overlay-bg: rgba(20, 30, 25, .25);
-  --gradient-1: transparent;
-  --gradient-2: transparent;
+  --account-menu-border: #dedee3;
+  --shadow-heavy: rgba(29, 29, 31, .13);
+  --shadow-medium: rgba(29, 29, 31, .07);
+  --overlay-bg: rgba(20, 20, 24, .32);
+  --gradient-1: rgba(215, 25, 32, .055);
+  --gradient-2: rgba(251, 225, 209, .42);
+  --brand-primary: #d71920;
+  --brand-primary-deep: #a90f16;
+  --brand-soft: #fdecee;
+  --brand-glow: rgba(215, 25, 32, .12);
+  --surface-warm: #fbf0ea;
+  --table-row-hover: #faf4f4;
+  --focus-ring: rgba(215, 25, 32, .18);
+  --card-radius: 24px;
+  --control-radius: 999px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -87,11 +96,11 @@
   --card-bg: #1b1e23;
   --toast-bg: #23262c;
   --scrollbar-thumb: #3a3f47;
-  --selection-bg: #0f7a5a;
+  --selection-bg: #ff3b43;
   --selection-text: #ffffff;
   --pill-nav-base: #1b1e23;
-  --pill-nav-pill: #0f7a5a;
-  --pill-nav-pill-soft: #0f7a5a26;
+  --pill-nav-pill: #e72b33;
+  --pill-nav-pill-soft: #e72b3324;
   --pill-nav-text: #f2f3f1;
   --pill-nav-hover-text: #ffffff;
   --account-menu-bg: #1b1e23;
@@ -101,18 +110,41 @@
   --overlay-bg: rgba(0, 0, 0, .55);
   --gradient-1: transparent;
   --gradient-2: transparent;
+  --brand-primary: #e72b33;
+  --brand-primary-deep: #b4151b;
+  --brand-soft: #2d1c20;
+  --brand-glow: rgba(231, 43, 51, .16);
+  --surface-warm: #241c1d;
+  --table-row-hover: #221c20;
+  --focus-ring: rgba(231, 43, 51, .24);
+  --card-radius: 24px;
+  --control-radius: 999px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; }
+
+html {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
-  background: var(--bg-main);
+  background:
+    radial-gradient(circle at 92% -8%, var(--gradient-1) 0, transparent min(42rem, 52vw)),
+    radial-gradient(circle at 20% 112%, var(--gradient-2) 0, transparent min(38rem, 48vw)),
+    var(--bg-main);
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   font-family: var(--font-sans);
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
 }
+
+img:not(.max-w-none), video, canvas { max-width: 100%; height: auto; }
+button, a, input, select, textarea { touch-action: manipulation; }
 
 .theme-switching, .theme-switching *,
 .theme-switching *::before, .theme-switching *::after {
@@ -122,10 +154,10 @@ body {
 
 /* Glass Finish */
 .glass-effect {
-  backdrop-filter: blur(12px) saturate(160%);
-  background: color-mix(in srgb, var(--bg-panel) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(135%);
+  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
   border: 1px solid var(--border-line-soft);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 10px 30px -10px var(--shadow-medium);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .65), 0 18px 45px -34px var(--shadow-heavy);
 }
 
 [data-theme='dark'] .glass-effect {
@@ -180,9 +212,9 @@ body {
   align-items: center;
   gap: 12px;
   width: 100%;
-  height: 44px;
-  padding: 0 14px;
-  border-radius: 12px;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
   background: transparent;
   color: var(--text-dim);
   font-weight: 500;
@@ -205,7 +237,7 @@ body {
 .pill-nav-item .pill-label-hover { display: none; }
 
 .pill-nav-item.is-active {
-  background: var(--pill-nav-pill);
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-deep));
   color: #ffffff;
   font-weight: 600;
 }
@@ -218,9 +250,9 @@ body {
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 38px;
+  min-height: 40px;
   padding: 0 14px 0 46px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: transparent;
   color: var(--text-dim);
   font-weight: 400;
@@ -251,7 +283,7 @@ body {
 
 .account-avatar {
   width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, #0f7a5a, #16a34a);
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-deep));
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0;
   font-family: var(--font-sans);
@@ -278,6 +310,13 @@ body {
 
 /* Cards & inputs helpers */
 input, select, textarea, button { font-family: inherit; }
+
+:where(input, select, textarea):focus-visible,
+:where(button, a[href]):focus-visible {
+  outline: none;
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 4px var(--focus-ring) !important;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    OFICINA — tipografia Poppins + animações fluidas
@@ -371,8 +410,8 @@ input, select, textarea, button { font-family: inherit; }
 
   &:focus {
     outline: none;
-    border-color: rgba(15, 122, 90, 0.8);
-    box-shadow: 0 0 0 3px rgba(15, 122, 90, 0.3);
+    border-color: rgba(215, 25, 32, 0.88);
+    box-shadow: 0 0 0 4px rgba(215, 25, 32, 0.24);
   }
 }
 
@@ -424,4 +463,610 @@ input, select, textarea, button { font-family: inherit; }
 .oficina-glass-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE GLOBAL — desktop preservado, adaptação progressiva
+   ═══════════════════════════════════════════════════════════════════ */
+.app-layout,
+.app-content,
+.oficina-content,
+.admin-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  min-width: 0;
+}
+
+.mobile-menu-button,
+.oficina-mobile-header,
+.sidebar-mobile-close,
+.sidebar-overlay {
+  display: none;
+}
+
+.responsive-table-wrap,
+.app-content .overflow-x-auto,
+.oficina-content .overflow-x-auto {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+
+.responsive-table-wrap { overflow-x: auto; }
+
+@media (max-width: 1180px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .responsive-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .moto-detail-grid,
+  .tmo-grid,
+  .admin-split-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-layout,
+  .oficina-page {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    z-index: 70 !important;
+    width: min(86vw, 18rem) !important;
+    min-width: min(86vw, 18rem) !important;
+    height: 100dvh !important;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background: var(--sidebar-bg) !important;
+    transform: translateX(-110%);
+    box-shadow: 1.25rem 0 3rem rgba(0, 0, 0, .22);
+    transition: transform .24s cubic-bezier(.22, 1, .36, 1) !important;
+  }
+
+  .responsive-sidebar.is-mobile-open { transform: translateX(0); }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh;
+    border: 0;
+    padding: 0;
+    background: var(--overlay-bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+
+  .sidebar-overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .responsive-sidebar .pill-nav-item,
+  .responsive-sidebar .pill-nav-sub,
+  .responsive-sidebar .am-nav-item,
+  .responsive-sidebar .theme-toggle,
+  .responsive-sidebar .account-trigger {
+    min-height: 48px;
+  }
+
+  .sidebar-mobile-close {
+    display: flex;
+    min-height: 48px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    border: 1px solid var(--border-line);
+    border-radius: .75rem;
+    background: var(--bg-panel-2);
+    color: var(--text-dim);
+    font-size: .8125rem;
+    font-weight: 700;
+  }
+
+  .sidebar-collapse-button { display: none !important; }
+
+  .mobile-menu-button {
+    display: inline-flex;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-line);
+    border-radius: .75rem;
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .app-topbar {
+    flex-wrap: wrap;
+    gap: .625rem !important;
+    padding: max(.625rem, env(safe-area-inset-top)) .75rem .75rem !important;
+  }
+
+  .app-topbar-title h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(1.05rem, 5vw, 1.3rem) !important;
+    line-height: 1.15;
+  }
+
+  .app-topbar-title p {
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .app-topbar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .app-topbar-actions > button {
+    flex: 1 1 12rem;
+    min-width: 0;
+    min-height: 48px;
+    justify-content: center;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .app-topbar-actions > div:last-child {
+    min-height: 48px;
+    margin-left: auto !important;
+    padding-left: .5rem !important;
+  }
+
+  .app-topbar-actions > div:last-child > button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .app-content,
+  .oficina-content {
+    width: 100%;
+    padding: 1rem 1rem max(4.5rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .oficina-mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: -1rem -1rem 1rem;
+    padding: max(.625rem, env(safe-area-inset-top)) 1rem .625rem;
+    background: var(--topbar-bg);
+    border-bottom: 1px solid var(--border-line-soft);
+    backdrop-filter: blur(12px);
+    color: var(--text-dim);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .oficina-page-title {
+    font-size: clamp(1.25rem, 6vw, 1.625rem) !important;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .oficina-page-subtitle {
+    font-size: .8125rem !important;
+    line-height: 1.55;
+  }
+
+  .responsive-grid-3,
+  .responsive-grid-2,
+  .moto-detail-grid,
+  .tmo-grid,
+  .admin-split-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .moto-detail-grid {
+    gap: 1.25rem !important;
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .tmo-grid > * { padding: 1rem !important; }
+
+  .chat-panel {
+    inset: .5rem !important;
+    width: auto !important;
+    height: calc(100dvh - 1rem) !important;
+    max-width: none !important;
+    border-radius: 1rem !important;
+  }
+
+  .admin-panel {
+    padding: 1rem !important;
+    overflow-x: hidden;
+  }
+
+  .admin-panel header > div:first-child,
+  .admin-header-actions,
+  .admin-tabs {
+    width: 100%;
+  }
+
+  .admin-panel h1 {
+    font-size: clamp(1.25rem, 6vw, 1.5rem) !important;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-header-actions > *,
+  .admin-tabs > * {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    text-align: center;
+  }
+
+  .admin-tabs {
+    overflow-x: auto;
+    padding-bottom: .25rem;
+  }
+
+  .admin-tabs > * { flex: 0 0 auto; }
+
+  .admin-section-heading > * { min-width: 0; }
+  .admin-section-heading > button { width: 100%; }
+
+  .responsive-filter-row > *,
+  .responsive-filter-row select,
+  .responsive-filter-row input,
+  .responsive-filter-row button,
+  .responsive-search {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    min-height: 48px;
+    font-size: 16px !important;
+  }
+
+  .app-content button,
+  .oficina-content button,
+  .admin-panel button,
+  .app-content a[href],
+  .oficina-content a[href] {
+    min-height: 48px;
+  }
+
+  .app-content button,
+  .oficina-content button,
+  .admin-panel button { min-width: 48px; }
+
+  .toast-stack {
+    right: .75rem !important;
+    bottom: max(.75rem, env(safe-area-inset-bottom)) !important;
+    left: .75rem;
+  }
+
+  .toast-item {
+    width: 100%;
+    min-width: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .agenda-table-header { align-items: flex-start; flex-direction: column; }
+
+  .settings-modal-panel,
+  .lead-modal,
+  .admin-panel,
+  .app-content,
+  .oficina-content { overflow-wrap: anywhere; }
+
+  .app-content .overflow-x-auto > table,
+  .oficina-content .overflow-x-auto > table {
+    min-width: 640px;
+  }
+}
+
+@media (max-width: 620px) {
+  .responsive-grid-4,
+  .responsive-grid-3,
+  .responsive-grid-2,
+  .responsive-grid-auto {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .app-content,
+  .oficina-content { padding-inline: .75rem !important; }
+
+  .oficina-mobile-header { margin-inline: -.75rem; padding-inline: .75rem; }
+
+  .app-topbar-actions > div:last-child {
+    width: 100%;
+    justify-content: flex-end;
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   POLIMENTO VISUAL — Steep × Apple × identidade Alagoas Motos
+   Camada estritamente visual: não altera fluxos, dados ou estados.
+   ═══════════════════════════════════════════════════════════════════ */
+.app-layout,
+.oficina-page {
+  background: transparent !important;
+}
+
+.app-topbar {
+  min-height: 82px;
+  padding-inline: clamp(1rem, 2.4vw, 2.25rem) !important;
+  background: var(--topbar-bg) !important;
+  border-color: color-mix(in srgb, var(--border-line-soft) 78%, transparent) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+}
+
+.app-topbar-title::before {
+  content: 'ALAGOAS MOTOS · ANALYTICS';
+  display: block;
+  margin-bottom: .24rem;
+  color: var(--brand-primary);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.app-topbar-title h1,
+.oficina-page-title,
+.app-content :where(h1, h2, h3),
+.oficina-content :where(h1, h2, h3),
+.admin-panel :where(h1, h2, h3) {
+  font-family: var(--font-sans) !important;
+  letter-spacing: -.035em !important;
+}
+
+.app-topbar-title h1 {
+  font-size: clamp(1.25rem, 2vw, 1.55rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.05 !important;
+}
+
+.app-topbar-title p,
+.oficina-page-subtitle {
+  font-size: .78rem !important;
+  letter-spacing: -.005em;
+}
+
+.app-content {
+  max-width: 1440px !important;
+  padding: clamp(1.15rem, 2.2vw, 2rem) clamp(1rem, 2.4vw, 2.25rem) 4rem !important;
+}
+
+.oficina-content {
+  max-width: 1320px !important;
+  padding: clamp(1.15rem, 2.2vw, 2rem) clamp(1rem, 2.4vw, 2.25rem) 4rem !important;
+}
+
+.admin-panel {
+  background:
+    radial-gradient(circle at 88% 0, var(--brand-glow), transparent 34rem),
+    var(--bg-main);
+}
+
+.glass-effect,
+.oficina-glass,
+.oficina-glass-strong {
+  border-color: var(--border-line-soft) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.7), 0 22px 50px -40px var(--shadow-heavy) !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) :where(div, section, article).rounded-2xl,
+:where(.app-content, .oficina-content, .admin-panel) :where(div, section, article)[class*='rounded-[22px]'] {
+  border-radius: var(--card-radius) !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) :where(div, section, article).rounded-xl {
+  border-radius: 16px !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) :where(input, select, textarea) {
+  border-radius: 16px !important;
+  border-color: var(--border-line) !important;
+  background: color-mix(in srgb, var(--bg-input) 94%, transparent) !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) :where(input, select, textarea):focus {
+  border-color: var(--brand-primary) !important;
+  background: var(--bg-panel) !important;
+  box-shadow: 0 0 0 4px var(--focus-ring) !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) button:not(.rounded-full):not(.pill-nav-item):not(.pill-nav-sub),
+:where(.app-content, .oficina-content, .admin-panel) a[href]:not(.rounded-full) {
+  border-radius: var(--control-radius) !important;
+}
+
+.app-topbar-actions > button {
+  min-height: 42px;
+  padding-inline: 1rem !important;
+  border-radius: var(--control-radius) !important;
+  box-shadow: none !important;
+}
+
+.app-topbar-actions > div:last-child > button {
+  background: color-mix(in srgb, var(--bg-panel) 84%, transparent);
+}
+
+.responsive-sidebar {
+  background: color-mix(in srgb, var(--sidebar-bg) 96%, transparent) !important;
+  border-color: var(--border-line-soft) !important;
+  box-shadow: 14px 0 45px -42px var(--shadow-heavy) !important;
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+.responsive-sidebar nav {
+  scrollbar-width: none;
+}
+
+.responsive-sidebar nav::-webkit-scrollbar {
+  display: none;
+}
+
+.responsive-sidebar .pill-nav-item,
+.responsive-sidebar .pill-nav-sub,
+.responsive-sidebar .am-nav-item,
+.theme-toggle,
+.account-trigger {
+  border-radius: var(--control-radius) !important;
+}
+
+.responsive-sidebar .pill-nav-item.is-active,
+.responsive-sidebar .am-nav-item.is-active {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-deep)) !important;
+  box-shadow: 0 14px 30px -22px var(--brand-primary) !important;
+}
+
+.responsive-sidebar .pill-nav-sub.is-active {
+  color: var(--brand-primary) !important;
+  background: var(--brand-soft) !important;
+}
+
+.account-menu-popup,
+.settings-modal-panel,
+.lead-modal,
+.chat-panel {
+  border-radius: var(--card-radius) !important;
+  border-color: var(--border-line-soft) !important;
+  box-shadow: 0 24px 80px -36px var(--shadow-heavy) !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) table {
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) thead th {
+  background: var(--bg-panel-2) !important;
+  color: var(--text-muted) !important;
+  font-weight: 650 !important;
+  letter-spacing: .08em !important;
+}
+
+:where(.app-content, .oficina-content, .admin-panel) tbody tr {
+  transition: background-color .16s ease;
+}
+
+@media (hover: hover) {
+  :where(.app-content, .oficina-content, .admin-panel) tbody tr:hover > td {
+    background: var(--table-row-hover);
+  }
+
+  :where(.app-content, .oficina-content, .admin-panel) button:not(:disabled),
+  :where(.app-content, .oficina-content, .admin-panel) a[href] {
+    transition: transform .18s ease, filter .18s ease, background-color .18s ease, border-color .18s ease;
+  }
+
+  :where(.app-content, .oficina-content, .admin-panel) button:not(:disabled):hover,
+  :where(.app-content, .oficina-content, .admin-panel) a[href]:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.login-shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 82% 28%, rgba(215,25,32,.18), transparent 24rem);
+}
+
+.login-brand-logo {
+  width: min(12rem, 72%);
+  height: auto;
+  margin: 0 auto .75rem;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.22));
+}
+
+.login-card {
+  border-radius: 32px !important;
+  border: 1px solid rgba(255,255,255,.22);
+  background: linear-gradient(145deg, rgba(18,19,22,.68), rgba(18,19,22,.42)) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.18), 0 36px 100px -40px rgba(0,0,0,.9) !important;
+}
+
+.login-primary-button {
+  border-radius: var(--control-radius) !important;
+  background: linear-gradient(135deg, #ec3038, #b41118) !important;
+  box-shadow: 0 16px 35px -22px rgba(215,25,32,.95) !important;
+}
+
+@media (max-width: 900px) {
+  .app-topbar {
+    min-height: auto;
+  }
+
+  .app-topbar-title::before {
+    font-size: .54rem;
+    letter-spacing: .12em;
+  }
+
+  .responsive-sidebar {
+    border-radius: 0 28px 28px 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-content,
+  .oficina-content {
+    padding-inline: .75rem !important;
+  }
+
+  :where(.app-content, .oficina-content, .admin-panel) :where(div, section, article).rounded-2xl {
+    border-radius: 20px !important;
+  }
+
+  .login-card {
+    border-radius: 24px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

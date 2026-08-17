@@ -81,7 +81,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
         <div
-          className="w-full max-w-[680px] rounded-2xl modal-anim overflow-hidden glass-effect"
+          className="settings-modal w-full max-w-[680px] rounded-2xl modal-anim overflow-hidden glass-effect"
           style={{ border: '1px solid var(--border-line-soft)', boxShadow: '0 20px 50px -12px var(--shadow-heavy)' }}
         >
         {/* Head */}
@@ -95,17 +95,17 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           </button>
         </div>
 
-        <div className="flex" style={{ minHeight: 380 }}>
+        <div className="settings-modal-layout flex" style={{ minHeight: 380 }}>
           {/* Tabs (side nav) */}
-          <div className="flex flex-col gap-1 px-3 py-4" style={{ width: 168, borderRight: '1px solid var(--border-line-soft)', flexShrink: 0 }}>
+          <div className="settings-modal-tabs flex flex-col gap-1 px-3 py-4" style={{ width: 168, borderRight: '1px solid var(--border-line-soft)', flexShrink: 0 }}>
             {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] text-[13.5px] font-semibold cursor-pointer transition-colors text-left"
                 style={{
-                  background: tab === t.id ? '#0f7a5a1f' : 'transparent',
-                  color: tab === t.id ? '#0f7a5a' : 'var(--text-dim)',
+                  background: tab === t.id ? '#d719201f' : 'transparent',
+                  color: tab === t.id ? '#d71920' : 'var(--text-dim)',
                 }}
               >
                 {t.icon}
@@ -115,7 +115,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           </div>
 
           {/* Panel */}
-          <div className="flex-1 px-6 py-5 overflow-y-auto">
+          <div className="settings-modal-panel flex-1 min-w-0 px-6 py-5 overflow-y-auto">
             {tab === 'perfil' && (
               <div className="flex flex-col gap-5">
                 <div className="flex items-center gap-3.5">
@@ -125,7 +125,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                     className="relative rounded-full flex items-center justify-center font-bold text-white cursor-pointer group"
                     style={{
                       width: 60, height: 60, fontSize: 22, flexShrink: 0,
-                      background: avatarDraft ? undefined : 'linear-gradient(135deg, #0f7a5a, #065f46)',
+                      background: avatarDraft ? undefined : 'linear-gradient(135deg, #d71920, #a90f16)',
                       backgroundImage: avatarDraft ? `url(${avatarDraft})` : undefined,
                       backgroundSize: 'cover', backgroundPosition: 'center',
                       border: '1px solid var(--border-line-soft)',
@@ -149,7 +149,7 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="text-[11.5px] font-semibold cursor-pointer mt-1"
-                      style={{ color: '#0f7a5a' }}
+                      style={{ color: '#d71920' }}
                     >
                       Alterar foto
                     </button>
@@ -256,14 +256,14 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
                         onClick={() => { if (theme !== t) toggle() }}
                         className="flex-1 flex flex-col items-center gap-2 rounded-[12px] border py-4 cursor-pointer transition-all"
                         style={{
-                          borderColor: sel ? '#0f7a5a' : 'var(--border-line)',
-                          background: sel ? '#0f7a5a14' : 'var(--bg-input)',
+                          borderColor: sel ? '#d71920' : 'var(--border-line)',
+                          background: sel ? '#d7192014' : 'var(--bg-input)',
                         }}
                       >
-                        <div style={{ color: sel ? '#0f7a5a' : 'var(--text-dim)' }}>
+                        <div style={{ color: sel ? '#d71920' : 'var(--text-dim)' }}>
                           {t === 'dark' ? <IconMoonLg /> : <IconSunLg />}
                         </div>
-                        <span className="text-[13px] font-semibold" style={{ color: sel ? '#0f7a5a' : 'var(--text-dim)' }}>
+                        <span className="text-[13px] font-semibold" style={{ color: sel ? '#d71920' : 'var(--text-dim)' }}>
                           {t === 'dark' ? 'Escuro' : 'Claro'}
                         </span>
                       </button>
@@ -300,15 +300,26 @@ export function SettingsModal({ open, onClose, userName, userEmail, avatarUrl, g
           padding: 9px 12px; border-radius: 9px; font-size: 13.5px; outline: none; width: 100%;
           font-family: inherit; transition: border-color 0.12s, box-shadow 0.12s;
         }
-        .settings-inp:focus { border-color: #0f7a5a; box-shadow: 0 0 0 3px #0f7a5a33; }
+        .settings-inp:focus { border-color: #d71920; box-shadow: 0 0 0 3px #d7192033; }
         .settings-btn-primary {
           display: inline-flex; align-items: center; gap: 7px;
-          padding: 8px 16px; border-radius: 9px; border: 1px solid #0f7a5a;
-          background: linear-gradient(135deg, #0f7a5a, #065f46); color: #fff;
+          padding: 8px 16px; border-radius: 9px; border: 1px solid #d71920;
+          background: linear-gradient(135deg, #d71920, #a90f16); color: #fff;
           font-size: 13.5px; font-weight: 600; cursor: pointer; transition: 0.12s;
-          box-shadow: 0 6px 16px -6px #0f7a5a70; font-family: inherit;
+          box-shadow: 0 6px 16px -6px #d7192070; font-family: inherit;
         }
         .settings-btn-primary:hover { filter: brightness(1.08); }
+        @media (max-width: 640px) {
+          .settings-modal { max-height: calc(100dvh - 1rem); overflow-y: auto; border-radius: 14px; }
+          .settings-modal-layout { min-height: 0 !important; flex-direction: column; }
+          .settings-modal-tabs {
+            width: 100% !important; flex-direction: row; overflow-x: auto; border-right: 0 !important;
+            border-bottom: 1px solid var(--border-line-soft); padding: 8px; scrollbar-width: none;
+          }
+          .settings-modal-tabs button { flex: 0 0 auto; min-height: 48px; }
+          .settings-modal-panel { padding: 16px; overflow: visible; }
+          .settings-inp, .settings-btn-primary { min-height: 48px; font-size: 16px; }
+        }
       `}</style>
     </div>
   )

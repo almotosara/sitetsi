@@ -18,7 +18,7 @@ import {
 } from "../../lib/revisoes-calc";
 import { PrazoRevisaoCard } from "./prazo-revisao";
 
-const ACCENT = "#0f7a5a";
+const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
 
 /* ────────────────────────────── Galeria ────────────────────────────── */
@@ -37,7 +37,7 @@ function MotoCard({ modelo, onOpen, index }: { modelo: Modelo; onOpen: () => voi
         fontFamily: FONT,
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 22px 45px -24px rgba(15,122,90,.45)";
+        e.currentTarget.style.boxShadow = "0 22px 45px -24px rgba(215,25,32,.45)";
         e.currentTarget.style.borderColor = `${ACCENT}55`;
       }}
       onMouseLeave={(e) => {
@@ -140,7 +140,7 @@ function DetalheMoto({
       </button>
 
       <div
-        className="grid gap-8 rounded-[26px] p-7"
+        className="moto-detail-grid responsive-grid grid gap-8 rounded-[26px] p-7"
         style={{
           background: "var(--card-bg)",
           border: "1px solid var(--border-line-soft)",
@@ -210,7 +210,7 @@ function DetalheMoto({
                 background: ACCENT,
                 color: "#fff",
                 border: "none",
-                boxShadow: "0 16px 30px -18px rgba(15,122,90,.9)",
+                boxShadow: "0 16px 30px -18px rgba(215,25,32,.9)",
               }}
             >
               Abrir ordem de serviço
@@ -592,7 +592,7 @@ export function MotosView({ data }: { data: RevisoesData }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Encontre a moto… (ex: POP 110, PCX, CB 300)"
-          className="w-full max-w-sm motion-safe:transition-all motion-safe:duration-300 focus:shadow-[0_0_0_4px_rgba(15,122,90,.12)]"
+          className="w-full max-w-sm motion-safe:transition-all motion-safe:duration-300 focus:shadow-[0_0_0_4px_rgba(215,25,32,.12)]"
           style={{
             background: "var(--bg-input)",
             border: "1px solid var(--border-line)",
@@ -620,7 +620,7 @@ export function MotosView({ data }: { data: RevisoesData }) {
                   background: ativo ? ACCENT : "transparent",
                   color: ativo ? "#fff" : "var(--text-muted)",
                   border: `1px solid ${ativo ? ACCENT : "var(--border-line-soft)"}`,
-                  boxShadow: ativo ? "0 12px 24px -16px rgba(15,122,90,.9)" : "none",
+                  boxShadow: ativo ? "0 12px 24px -16px rgba(215,25,32,.9)" : "none",
                 }}
               >
                 {label}
