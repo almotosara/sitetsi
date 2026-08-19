@@ -19,13 +19,16 @@ No Supabase do projeto, abra **SQL Editor → New query**, cole todo o conteúdo
 Além das variáveis que o projeto já usa, configure no ambiente da hospedagem:
 
 ```text
-SUPABASE_SERVICE_ROLE_KEY=chave_service_role_do_supabase
+SUPABASE_SECRET_KEY=chave_secret_do_supabase
 AGENDAMENTOS_SYNC_TOKEN=um_token_aleatorio_forte
 TV_ACCESS_TOKEN=outro_token_aleatorio_forte
 ```
 
 - Use valores diferentes, com pelo menos 24 caracteres.
-- `SUPABASE_SERVICE_ROLE_KEY` e os tokens **não podem** começar com `NEXT_PUBLIC_`.
+- Para projetos atuais, use a chave **Secret** (`sb_secret_...`) em `SUPABASE_SECRET_KEY`.
+- Em projetos antigos, a chave legada `service_role` também funciona em `SUPABASE_SERVICE_ROLE_KEY`.
+- A chave **Publishable/anon não serve** para esta rota, porque não possui permissão administrativa.
+- A chave administrativa e os tokens **não podem** começar com `NEXT_PUBLIC_`.
 - Não coloque a service role dentro do userscript.
 - No formulário do Netlify, preencha os campos separadamente:
   - **Key:** `AGENDAMENTOS_SYNC_TOKEN`
@@ -53,7 +56,16 @@ Depois de instalar:
 3. Informe `https://SEU-SITE/api/agendamentos/sync`.
 4. Informe exatamente o mesmo valor de `AGENDAMENTOS_SYNC_TOKEN` configurado na hospedagem.
 
-Se aparecer **“Não autorizado / 401”**, confira os campos **Key** e **Value** acima, faça o novo deploy e abra novamente o comando **Configurar sincronização de agendamentos** no Tampermonkey. Cole apenas o valor do token; nunca a `SUPABASE_SERVICE_ROLE_KEY`.
+Se aparecer **“Não autorizado / 401”**, confira os campos **Key** e **Value** acima, faça o novo deploy e abra novamente o comando **Configurar sincronização de agendamentos** no Tampermonkey. Cole apenas o valor do token; nunca a `SUPABASE_SECRET_KEY`/`SUPABASE_SERVICE_ROLE_KEY`.
+
+Se o botão mostrar **“Criar tabela no Supabase”**, execute `supabase-agendamentos.sql` no SQL Editor do mesmo projeto usado por `NEXT_PUBLIC_SUPABASE_URL`.
+
+Se mostrar **“Configurar chave Supabase”**, configure no Netlify uma destas opções e publique um novo deploy:
+
+- `SUPABASE_SECRET_KEY`: chave atual **Secret**, iniciada por `sb_secret_`; ou
+- `SUPABASE_SERVICE_ROLE_KEY`: chave legada **service_role**.
+
+Não use a chave **Publishable** (`sb_publishable_...`) nem a chave legada `anon` nessa variável.
 
 Na tela de listagem do MicroWork aparecerá um botão no canto inferior direito. A sincronização ocorre automaticamente quando a tabela muda e também pode ser forçada clicando nesse botão.
 

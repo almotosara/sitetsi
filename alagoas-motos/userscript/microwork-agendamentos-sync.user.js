@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Sincronizar Agendamentos (Alagoas Motos)
 // @namespace    alagoasmotos
-// @version      1.1.0
+// @version      1.2.0
 // @description  Lê a listagem de agendamentos do MicroWork e envia ao painel da Alagoas Motos.
 // @match        https://microworkcloud.com.br/cloud/*
 // @run-at       document-idle
@@ -127,7 +127,11 @@
           try { json = JSON.parse(res.responseText || '{}'); } catch {}
           if (res.status >= 200 && res.status < 300) resolve(json || {});
           else if (res.status === 401) reject(new Error('Token não autorizado (401). No Netlify, use AGENDAMENTOS_SYNC_TOKEN somente no campo Key, o token somente no campo Value e publique um novo deploy'));
-          else reject(new Error((json && json.error) || `HTTP ${res.status}`));
+          else {
+            const detalhe = (json && json.error) || `A API respondeu HTTP ${res.status}`;
+            const codigo = json && json.code ? ` [${json.code}]` : '';
+            reject(new Error(`${detalhe}${codigo}`));
+          }
         },
         onerror: () => reject(new Error('Falha de rede')),
         ontimeout: () => reject(new Error('Tempo esgotado')),
@@ -191,7 +195,15 @@
         atualizarBotao('partial', `${linhas.length} de ${total} sincronizados`, 'Há mais páginas na listagem. Sincronize cada página ou aumente a quantidade de itens exibidos.');
       }
     } catch (erro) {
-      atualizarBotao('error', 'Erro ao sincronizar', `${erro.message}. Clique para tentar novamente.`);
+      const mensagem = erro instanceof Error ? erro.message : String(erro || 'Erro desconhecido');
+      const textoBotao = /agendamentos_dms|tabela de agendamentos/i.test(mensagem)
+        ? 'Criar tabela no Supabase'
+        : /chave (secret|pública)|SUPABASE_|gravação/i.test(mensagem)
+          ? 'Configurar chave Supabase'
+          : 'Erro ao sincronizar';
+      console.error('[Alagoas Motos · Agendamentos]', mensagem);
+      atualizarBotao('error', textoBotao, `${mensagem} Clique para tentar novamente.`);
+      if (forcar) window.alert(`Não foi possível sincronizar os agendamentos.\n\n${mensagem}`);
     } finally {
       sincronizando = false;
     }

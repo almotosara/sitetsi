@@ -27,6 +27,39 @@ create table if not exists public.agendamentos_dms (
   unique (empresa, numero_agendamento)
 );
 
+-- Também repara instalações antigas/incompletas sem apagar dados.
+alter table public.agendamentos_dms add column if not exists empresa text;
+alter table public.agendamentos_dms add column if not exists numero_agendamento text;
+alter table public.agendamentos_dms add column if not exists data_agendamento date;
+alter table public.agendamentos_dms add column if not exists hora_agendamento time;
+alter table public.agendamentos_dms add column if not exists situacao text default 'Agendado';
+alter table public.agendamentos_dms add column if not exists tipo_os text;
+alter table public.agendamentos_dms add column if not exists placa text;
+alter table public.agendamentos_dms add column if not exists modelo text;
+alter table public.agendamentos_dms add column if not exists pessoa text;
+alter table public.agendamentos_dms add column if not exists telefone text;
+alter table public.agendamentos_dms add column if not exists celular text;
+alter table public.agendamentos_dms add column if not exists consultor text;
+alter table public.agendamentos_dms add column if not exists origem text default 'microwork-dom';
+alter table public.agendamentos_dms add column if not exists ativo boolean default true;
+alter table public.agendamentos_dms add column if not exists capturado_em timestamptz;
+alter table public.agendamentos_dms add column if not exists sincronizado_em timestamptz default now();
+alter table public.agendamentos_dms add column if not exists criado_em timestamptz default now();
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.agendamentos_dms'::regclass
+      and contype = 'u'
+      and pg_get_constraintdef(oid) = 'UNIQUE (empresa, numero_agendamento)'
+  ) then
+    alter table public.agendamentos_dms
+      add constraint agendamentos_dms_empresa_numero_key unique (empresa, numero_agendamento);
+  end if;
+end $$;
+
 create index if not exists agendamentos_dms_data_hora_idx
   on public.agendamentos_dms (data_agendamento, hora_agendamento);
 create index if not exists agendamentos_dms_ativos_idx
