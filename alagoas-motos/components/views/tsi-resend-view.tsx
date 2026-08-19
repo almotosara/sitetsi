@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import type { TsiResendRow, TsiRow, ClienteFiel } from '@/lib/types'
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 interface TsiResendViewProps {
   data: TsiResendRow[]
@@ -62,7 +63,7 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
   const pendentes = data.filter((r) => !r.data_reenvio).length
 
   return (
-    <div className="view-enter flex flex-col gap-4">
+    <div className="consultant-view consultant-surveys view-enter flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Reenvio de Pesquisas</h2>
@@ -133,13 +134,9 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
                     </td>
                     <td className="px-3.5 py-2.5 whitespace-nowrap">
                       {r.tsiStatus !== null ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold" 
-                          style={{ 
-                            background: r.tsiStatus === 100 ? '#2fd67526' : '#ff5a5f26', 
-                            color: r.tsiStatus === 100 ? '#2fd675' : '#ff5a5f' 
-                          }}>
+                        <StatusBadge variant={r.tsiStatus === 100 ? 'success' : 'failed'} size="sm">
                           T2B: {r.tsiStatus}
-                        </span>
+                        </StatusBadge>
                       ) : (
                         <span className="text-[10px] opacity-40">—</span>
                       )}
@@ -151,13 +148,9 @@ export function TsiResendView({ data, tsiData = [], fieis = [], onImport, onMark
                     <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{r.data_envio_sms || '—'}</td>
                     <td className="px-3.5 py-2.5 whitespace-nowrap">
                       {r.data_reenvio ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: '#d7192026', color: '#d71920' }}>
-                          {r.data_reenvio}
-                        </span>
+                        <StatusBadge variant="submitted" size="sm">Reenviado · {r.data_reenvio}</StatusBadge>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: '#ffc40026', color: '#b98600' }}>
-                          Pendente
-                        </span>
+                        <StatusBadge status="Pendente" size="sm" />
                       )}
                     </td>
                     <td className="px-3.5 py-2.5 whitespace-nowrap">

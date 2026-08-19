@@ -57,7 +57,7 @@ export function ReportView({ leads }: ReportViewProps) {
   const convRate = total > 0 ? ((conv / total) * 100).toFixed(1) : '0.0'
 
   return (
-    <div className="view-enter flex flex-col gap-5">
+    <div className="consultant-view consultant-reports view-enter flex flex-col gap-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Relatórios</h2>
@@ -91,7 +91,7 @@ export function ReportView({ leads }: ReportViewProps) {
           {byDay.length === 0 ? (
             <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Nenhum lead convertido no período</p>
           ) : (
-            <div className="flex items-end gap-1 h-40 overflow-x-auto pb-2">
+            <div className="consultant-report-chart flex items-end gap-1 h-40 overflow-x-auto pb-2">
               {byDay.map(([d, v]) => {
                 const h = (v / maxDay) * 100
                 const [, m, day] = d.split('-')

@@ -35,6 +35,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 :root,
 [data-theme='light'] {
+  --animate-spin-around: spin-around .8s linear infinite;
   --bg-main: #f5f5f7;
   --bg-panel: #ffffff;
   --bg-panel-2: #f1f1f3;
@@ -198,6 +199,153 @@ button, a, input, select, textarea { touch-action: manipulation; }
 @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes slidein { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+@keyframes spin-around { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+
+/* Status badges — semântica única para leads, TSI, pesquisas e oficina */
+.status-badge-ui {
+  --status-badge-bg: var(--bg-elevated);
+  --status-badge-border: var(--border-line);
+  --status-badge-text: var(--text-dim);
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  border: 1px solid var(--status-badge-border);
+  border-radius: .75rem;
+  background: var(--status-badge-bg);
+  color: var(--status-badge-text);
+  padding: .36rem .68rem;
+  font-family: 'SUSE Local', var(--font-inter), Inter, sans-serif;
+  font-size: .72rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.status-badge-ui > svg {
+  width: .88rem;
+  height: .88rem;
+  flex: 0 0 auto;
+}
+
+.status-badge-ui > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge-ui[data-size='sm'] {
+  min-height: 1.5rem;
+  gap: .32rem;
+  padding: .26rem .52rem;
+  border-radius: .62rem;
+  font-size: .65rem;
+}
+
+.status-badge-ui[data-size='sm'] > svg {
+  width: .76rem;
+  height: .76rem;
+}
+
+.status-badge-ui[data-tone='pending'] {
+  --status-badge-bg: #fff7ed;
+  --status-badge-border: #fed7aa;
+  --status-badge-text: #c87528;
+}
+
+.status-badge-ui[data-tone='failed'] {
+  --status-badge-bg: #fff1f2;
+  --status-badge-border: #fecdd3;
+  --status-badge-text: #c75f55;
+}
+
+.status-badge-ui[data-tone='success'] {
+  --status-badge-bg: #ecfdf5;
+  --status-badge-border: #a7f3d0;
+  --status-badge-text: #248d4c;
+}
+
+.status-badge-ui[data-tone='progress'] {
+  --status-badge-bg: #eaf5ff;
+  --status-badge-border: #bae0ff;
+  --status-badge-text: #087bc7;
+}
+
+.status-badge-ui[data-tone='review'] {
+  --status-badge-bg: #fefce8;
+  --status-badge-border: #fef08a;
+  --status-badge-text: #b27a12;
+}
+
+.status-badge-ui[data-tone='expired'] {
+  --status-badge-bg: #f4f4f5;
+  --status-badge-border: #e4e4e7;
+  --status-badge-text: #71717a;
+}
+
+.status-badge-ui[data-tone='submitted'] {
+  --status-badge-bg: #f5f3ff;
+  --status-badge-border: #ddd6fe;
+  --status-badge-text: #6c3cf0;
+}
+
+.status-badge-ui[data-surface='dark'][data-tone='neutral'] {
+  --status-badge-bg: rgba(255, 255, 255, .05);
+  --status-badge-border: rgba(255, 255, 255, .1);
+  --status-badge-text: #cbd5e1;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='pending'],
+.status-badge-ui[data-surface='dark'][data-tone='pending'] {
+  --status-badge-bg: rgba(234, 166, 93, .11);
+  --status-badge-border: rgba(234, 166, 93, .25);
+  --status-badge-text: #f3b974;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='failed'],
+.status-badge-ui[data-surface='dark'][data-tone='failed'] {
+  --status-badge-bg: rgba(213, 116, 99, .11);
+  --status-badge-border: rgba(213, 116, 99, .25);
+  --status-badge-text: #e98d7c;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='success'],
+.status-badge-ui[data-surface='dark'][data-tone='success'] {
+  --status-badge-bg: rgba(87, 188, 108, .11);
+  --status-badge-border: rgba(87, 188, 108, .25);
+  --status-badge-text: #72d486;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='progress'],
+.status-badge-ui[data-surface='dark'][data-tone='progress'] {
+  --status-badge-bg: rgba(0, 138, 245, .11);
+  --status-badge-border: rgba(0, 138, 245, .25);
+  --status-badge-text: #53b5ff;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='review'],
+.status-badge-ui[data-surface='dark'][data-tone='review'] {
+  --status-badge-bg: rgba(240, 177, 61, .11);
+  --status-badge-border: rgba(240, 177, 61, .25);
+  --status-badge-text: #f3c35f;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='expired'],
+.status-badge-ui[data-surface='dark'][data-tone='expired'] {
+  --status-badge-bg: rgba(119, 119, 119, .12);
+  --status-badge-border: rgba(161, 161, 170, .2);
+  --status-badge-text: #a1a1aa;
+}
+
+[data-theme='dark'] .status-badge-ui[data-tone='submitted'],
+.status-badge-ui[data-surface='dark'][data-tone='submitted'] {
+  --status-badge-bg: rgba(108, 60, 240, .12);
+  --status-badge-border: rgba(139, 92, 246, .25);
+  --status-badge-text: #a78bfa;
+}
 
 .view-enter { animation: fadeSlideIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) both; }
 .modal-anim { animation: pop 0.16s ease-out; }
@@ -1203,8 +1351,9 @@ input, select, textarea, button { font-family: inherit; }
 }
 
 .shiny-cta {
-  --shiny-cta-bg: #111114;
-  --shiny-cta-bg-subtle: #331619;
+  --shiny-cta-bg: #651015;
+  --shiny-cta-bg-strong: #991b22;
+  --shiny-cta-bg-subtle: #c72a32;
   --shiny-cta-fg: #ffffff;
   --shiny-cta-highlight: #d71920;
   --shiny-cta-highlight-subtle: #ff757a;
@@ -1230,7 +1379,12 @@ input, select, textarea, button { font-family: inherit; }
   border-radius: var(--control-radius, 999px);
   outline: none;
   background:
-    linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+    linear-gradient(
+      105deg,
+      var(--shiny-cta-bg) 0%,
+      var(--shiny-cta-bg-strong) 48%,
+      var(--shiny-cta-bg) 100%
+    ) padding-box,
     conic-gradient(
       from calc(var(--shiny-gradient-angle) - var(--shiny-gradient-offset)),
       transparent,
@@ -1319,14 +1473,7 @@ input, select, textarea, button { font-family: inherit; }
 }
 
 .shiny-cta-content::before {
-  width: calc(100% + 2rem);
-  height: calc(100% + 1.35rem);
-  z-index: -1;
-  border-radius: 999px;
-  box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
-  opacity: .3;
-  animation: shiny-breathe calc(var(--shiny-duration) * 1.5) ease-in-out infinite;
-  transition: opacity var(--shiny-transition);
+  display: none;
 }
 
 .shiny-cta:is(:hover, :focus-visible) {

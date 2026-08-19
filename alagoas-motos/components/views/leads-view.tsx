@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useCallback, useRef } from 'react'
 import type { Lead, ClienteFiel } from '@/lib/types'
-import { STATUS_COLORS, ORIGEM_COLORS, fmtDate, STATUS_OPTIONS } from '@/lib/constants'
+import { ORIGEM_COLORS, fmtDate, STATUS_OPTIONS } from '@/lib/constants'
 import { useToast } from '@/components/toast'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 interface LeadsViewProps {
   leads: Lead[]
@@ -154,7 +155,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
   }, [filtered, safePage, pageSize])
 
   return (
-    <div className="view-enter flex flex-col gap-4">
+    <div className="consultant-view consultant-leads view-enter flex flex-col gap-4">
       {/* Filters */}
       <div className="responsive-filter-row flex flex-wrap gap-2.5 items-end glass-effect p-4 rounded-2xl">
         <div className="responsive-search relative flex-1 min-w-[220px]">
@@ -261,7 +262,6 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
               </thead>
               <tbody>
                 {paged.map((l) => {
-                  const sc = STATUS_COLORS[l.status]
                   const oc = ORIGEM_COLORS[l.origem]
                   const bk = `cb-${l.id}`
                   return (
@@ -323,7 +323,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
                       </td>
                       {/* Status */}
                       <td className="px-3.5 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11.5px] font-semibold" style={{ background: sc.bg, color: sc.text }}>{l.status}</span>
+                        <StatusBadge status={l.status} />
                       </td>
                       {/* Ações */}
                       <td className="px-3.5 py-3">

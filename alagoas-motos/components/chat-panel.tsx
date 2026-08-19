@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { getChatMessages, sendChatMessage, markChatRead, deleteChatMessageForMe, deleteChatMessageForEveryone, type ChatMessage } from '@/app/actions'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
 
 const CONSULTOR_ID = '00000000-0000-0000-0000-000000000001'
 const OFICINA_ID = '00000000-0000-0000-0000-000000000002'
@@ -223,7 +224,10 @@ export function ChatPanel({ open, onClose, myUserId, myName }: ChatPanelProps) {
         {/* Mensagens */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1" onClick={() => setMenuFor(null)}>
           {loading && (
-            <div className="text-xs text-center mt-4" style={{ color: 'var(--text-muted)' }}>Carregando conversa…</div>
+            <div className="mt-6 flex flex-col items-center justify-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+              <CircularProgressSpinner size={24} thickness={2.6} label="Carregando conversa" style={{ color: '#d71920' }} />
+              <span>Carregando conversa…</span>
+            </div>
           )}
           {!loading && messages.length === 0 && (
             <div className="text-xs text-center mt-4" style={{ color: 'var(--text-muted)' }}>

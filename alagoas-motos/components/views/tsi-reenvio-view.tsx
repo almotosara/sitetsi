@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import type { ReenvioRow, ClienteFiel } from '@/lib/types'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
 
 type ImportRow = Omit<ReenvioRow, 'id' | 'user_id' | 'importado_em' | 'contatado' | 'contatado_em' | 'contatado_canal'>
 
@@ -238,7 +239,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
   }
 
   return (
-    <div className="view-enter flex flex-col gap-4">
+    <div className="consultant-view consultant-surveys view-enter flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="flex items-center gap-2" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
@@ -252,7 +253,7 @@ export function TsiReenvioView({ fieis, rows, onImport, onContatado, onDelete }:
         <button onClick={handleImport} disabled={loading}
           className="flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-white font-semibold text-[13.5px] cursor-pointer hover:brightness-110 transition-all disabled:opacity-60"
           style={{ background: 'linear-gradient(135deg, #ff4b2b, #d63a1e)', border: '1px solid #ff4b2b', boxShadow: '0 6px 16px -6px #ff4b2b70' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
+          {loading ? <CircularProgressSpinner size={17} thickness={2.2} label="Processando planilha" /> : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>}
           {loading ? 'Processando…' : 'Anexar planilha de reenvio'}
         </button>
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileChange} />

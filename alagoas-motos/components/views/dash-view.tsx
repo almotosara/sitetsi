@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import type { Lead } from '@/lib/types'
 import { STATUS_COLORS, STATUS_OPTIONS, fmtDate } from '@/lib/constants'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 interface DashViewProps {
   leads: Lead[]
@@ -37,7 +38,7 @@ const IconStop = () => (
 // ── Card auxiliar ───────────────────────────────────────────────────
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border glass-effect liquid-spread ${className}`} style={{ borderColor: 'var(--border-line-soft)' }}>
+    <div className={`consultant-panel rounded-2xl border glass-effect liquid-spread ${className}`} style={{ borderColor: 'var(--border-line-soft)' }}>
       {children}
     </div>
   )
@@ -46,7 +47,7 @@ function Panel({ children, className = '' }: { children: React.ReactNode; classN
 // ── Stat card branco ────────────────────────────────────────────────
 function StatCard({ label, value, sub, onOpen }: { label: string; value: number; sub: string; onOpen: () => void }) {
   return (
-    <Panel className="p-5 flex flex-col gap-6">
+    <Panel className="consultant-kpi-card p-5 flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>{label}</span>
         <button type="button" onClick={onOpen} aria-label={`Abrir leads: ${label}`} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70" style={{ border: '1px solid var(--border-line)', color: 'var(--text-dim)' }}>
@@ -69,7 +70,7 @@ function StatCard({ label, value, sub, onOpen }: { label: string; value: number;
 // ── Stat card destacado (verde escuro) ──────────────────────────────
 function StatCardHighlight({ label, value, sub, onOpen }: { label: string; value: number; sub: string; onOpen: () => void }) {
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#d71920', color: '#ffffff', border: 'none' }}>
+    <div className="consultant-kpi-card consultant-kpi-highlight rounded-2xl p-5 flex flex-col gap-6 glass-effect" style={{ background: '#d71920', color: '#ffffff', border: 'none' }}>
       <div className="flex items-start justify-between">
         <span className="text-sm font-semibold opacity-90">{label}</span>
         <button type="button" onClick={onOpen} aria-label={`Abrir leads: ${label}`} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#ffffff', color: '#d71920' }}>
@@ -189,7 +190,7 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
           {total > 0 ? `${total} nos últimos 7 dias` : 'Últimos 7 dias'}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-3 h-40 relative pt-6">
+      <div className="consultant-bar-chart flex items-end justify-between gap-3 h-40 relative pt-6">
         {days.map((d, i) => {
           const pct = Math.round((d.count / DAILY_GOAL) * 100)
           const h = 12 + Math.min(d.count, DAILY_GOAL) / DAILY_GOAL * 120
@@ -210,8 +211,8 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
                   height: h,
                   maxWidth: 42,
                   background: isMax
-                    ? 'linear-gradient(180deg, #22c55e 0%, #d71920 100%)'
-                    : 'repeating-linear-gradient(135deg, #eef0ea 0 6px, transparent 6px 10px), #f2f3ef',
+                    ? 'linear-gradient(180deg, var(--consultant-green) 0%, var(--consultant-red) 100%)'
+                    : 'repeating-linear-gradient(135deg, var(--chart-neutral) 0 6px, transparent 6px 10px), var(--bg-elevated)',
                 }}
               />
               <span className="text-xs font-semibold" style={{ color: d.isToday ? 'var(--text-primary)' : 'var(--text-muted)' }}>{d.label}</span>
@@ -365,6 +366,7 @@ function ProjectsList({ leads, onView }: { leads: Lead[]; onView: (v: string) =>
               <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{l.nome || 'Sem nome'}</div>
               <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{l.modelo || l.origem} · {fmtDate(l.data)}</div>
             </div>
+            <StatusBadge status={l.status} size="sm" className="flex-none" />
           </div>
         ))}
       </div>
@@ -406,7 +408,7 @@ function StatusBreakdown({ leads, onView }: { leads: Lead[]; onView: (v: string)
               className="flex flex-col gap-1.5 text-left group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[12.5px] font-semibold" style={{ color: 'var(--text-dim)' }}>{r.status}</span>
+                <StatusBadge status={r.status} size="sm" />
                 <span className="text-[12.5px] font-bold" style={{ color: sc.text }}>{r.count}</span>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-elevated)' }}>
@@ -432,15 +434,15 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
     <Panel className="p-5 flex flex-col gap-3">
       <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Progresso da meta</h3>
       <div className="flex-1 flex flex-col items-center justify-center relative">
-        <svg width="220" height="130" viewBox="0 0 220 130">
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#eef0ea" strokeWidth="18" strokeLinecap="round" />
+        <svg className="consultant-gauge" width="220" height="130" viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet">
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="var(--chart-neutral)" strokeWidth="18" strokeLinecap="round" />
           <defs>
             <linearGradient id="gauge" x1="0" x2="1">
-              <stop offset="0%" stopColor="#22c55e" />
-              <stop offset="100%" stopColor="#d71920" />
+              <stop offset="0%" stopColor="var(--consultant-green)" />
+              <stop offset="100%" stopColor="var(--consultant-red)" />
             </linearGradient>
             <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="4" height="8" fill="#eef0ea" />
+              <rect width="4" height="8" fill="var(--chart-neutral)" />
             </pattern>
           </defs>
           <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.6" />
@@ -456,7 +458,7 @@ function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: n
       <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>
         <div className="flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#d71920' }} />Convertidos {done}</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: '#eef0ea' }} />Restante {Math.max(0, goal - done)}</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--chart-neutral)' }} />Restante {Math.max(0, goal - done)}</span>
         </div>
         <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
           Meta:
@@ -516,7 +518,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
   }, [leads, now])
 
   return (
-    <div className="view-enter flex flex-col gap-5">
+    <div className="consultant-view consultant-dashboard view-enter flex flex-col gap-5">
       {/* Stats row */}
       <div className="responsive-grid responsive-grid-4 grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <StatCardHighlight label="Total do mês" value={total} sub="Cadastros no mês atual" onOpen={() => onView('leads')} />

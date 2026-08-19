@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Lead, LeadOrigem, LeadStatus } from '@/lib/types'
 import { todayISO, STATUS_OPTIONS } from '@/lib/constants'
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
 
 interface LeadModalProps {
   open: boolean
@@ -167,7 +168,9 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
         <div className="px-5 py-4 flex justify-end gap-2.5" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
           <button onClick={onClose} className="btn-ghost-sm">Cancelar</button>
           <ShinyButton onClick={handleSave} disabled={saving || !form.nome.trim()} size="compact">
-            {saving ? 'Salvando…' : 'Salvar lead'}
+            {saving ? (
+              <><CircularProgressSpinner size={18} thickness={2.2} label="Salvando lead" /> Salvando…</>
+            ) : 'Salvar lead'}
           </ShinyButton>
         </div>
       </div>

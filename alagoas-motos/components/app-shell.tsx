@@ -532,7 +532,7 @@ export function AppShell({
   }, [])
 
   return (
-    <div className="app-layout flex min-h-screen">
+    <div className="app-layout consultant-shell flex min-h-screen">
       <Sidebar
         view={view}
         onView={(v) => setView(v as View)}
@@ -547,7 +547,7 @@ export function AppShell({
         onProfileChange={handleProfileChange}
       />
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="consultant-main flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
         <div
           className="app-topbar sticky top-0 z-20 flex items-center gap-3.5 px-6 py-4"
@@ -663,7 +663,7 @@ export function AppShell({
         </div>
 
         {/* Content */}
-        <div className="app-content flex-1 p-6 pb-16 max-w-[1320px] w-full mx-auto">
+        <div className="app-content consultant-content flex-1 p-6 pb-16 max-w-[1320px] w-full mx-auto">
           {view === 'dash' && (
             <DashView leads={leads} goal={goal} onGoalChange={handleGoalChange}
               onView={(v) => setView(v as View)}

@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { parseOSFile } from "@/lib/os-parser";
 import type { OSLinha } from "@/lib/os-types";
+import { CircularProgressSpinner } from "@/components/ui/circular-progress";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const STORAGE_KEY = "os_linhas_v1";
 type Tab = "overview" | "servicos" | "materiais" | "manual";
@@ -356,9 +358,10 @@ export function OSDashboard({ userName, userEmail, renderManual }: { userName?: 
         </div>
       )}
       {loading && (
-        <div className="fixed inset-0 grid place-items-center bg-black/60 z-50">
-          <div className="rounded-2xl px-6 py-4 bg-[#14141c] border border-white/10 text-slate-200 text-sm">
-            Processando planilha…
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 px-4 backdrop-blur-sm" role="status" aria-live="polite">
+          <div className="flex min-w-56 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-[#14141c] px-6 py-4 text-sm text-slate-200 shadow-2xl">
+            <CircularProgressSpinner size={24} thickness={2.6} label="Processando planilha" className="text-[#ef4444]" />
+            <span>Processando planilha…</span>
           </div>
         </div>
       )}
@@ -700,7 +703,7 @@ function Sparkline({ data, color, id }: { data: { d: string; v: number }[]; colo
   const last = points[points.length - 1];
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-full w-full" role="img" aria-label="Evolução do indicador">
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" className="h-auto w-full" role="img" aria-label="Evolução do indicador">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity=".28" />
@@ -808,7 +811,7 @@ function ServicosTab({ linhas }: { linhas: OSLinha[] }) {
                 <td className="px-3 py-2.5 text-slate-300 whitespace-nowrap">{fmtDate(l.emissao)}</td>
                 <td className="px-3 py-2.5 text-white font-medium">{l.numero_os}</td>
                 <td className="px-3 py-2.5">
-                  <SituacaoBadge s={l.situacao} />
+                  <StatusBadge status={l.situacao} size="sm" surface="dark" />
                 </td>
                 <td className="px-3 py-2.5 text-slate-300">{l.tipo_os}</td>
                 <td className="px-3 py-2.5 text-slate-300 max-w-[220px] truncate">{l.pessoa}</td>
@@ -858,20 +861,6 @@ function ServicosTab({ linhas }: { linhas: OSLinha[] }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function SituacaoBadge({ s }: { s: string }) {
-  const map: Record<string, string> = {
-    ABERTA: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-    PENDENTE: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    CONCLUÍDA: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    PARADA: "bg-slate-500/15 text-slate-300 border-slate-500/30",
-    CANCELADA: "bg-red-500/15 text-red-300 border-red-500/30",
-  };
-  const cls = map[s] ?? "bg-white/5 text-slate-300 border-white/10";
-  return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${cls}`}>{s || "—"}</span>
   );
 }
 

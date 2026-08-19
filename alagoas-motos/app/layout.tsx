@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Rajdhani, Inter, Poppins, JetBrains_Mono, Manrope } from 'next/font/google'
 import './globals.css'
+import './consultant.css'
 import { AppleLoading } from '@/components/ui/apple-loading'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })

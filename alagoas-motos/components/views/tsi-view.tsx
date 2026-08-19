@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { StatusBadge, type StatusBadgeVariant } from '@/components/ui/status-badge'
 import { TSI_CATS, TSI_META, TSI_META_PESQ, TSI_STORE_MAP, TSI_YELLOW } from '@/lib/constants'
 import type { TsiRow } from '@/lib/types'
 
@@ -110,6 +111,12 @@ function statusFor(value: number) {
   if (value >= TSI_META) return { label: 'Meta atingida', tone: 'green' as Tone }
   if (value >= TSI_YELLOW) return { label: 'Atenção', tone: 'amber' as Tone }
   return { label: 'Crítico', tone: 'red' as Tone }
+}
+
+function badgeVariantForTone(tone: Tone): StatusBadgeVariant {
+  if (tone === 'green' || tone === 'lime') return 'success'
+  if (tone === 'amber') return 'review'
+  return 'failed'
 }
 
 function buildTrend(rows: TsiRow[]): TrendPoint[] {
@@ -604,7 +611,7 @@ function StoreStatus({ item, position }: { item: StoreMetric; position: number }
       <div className={styles.storeInfo}>
         <div>
           <strong title={item.name}>{item.name}</strong>
-          <span className={styles.statusBadge} data-tone={status.tone}>{status.label}</span>
+          <StatusBadge status={status.label} variant={badgeVariantForTone(status.tone)} size="sm" surface="dark" />
         </div>
         <div className={styles.progressTrack} style={progressStyle} data-tone={status.tone}>
           <i />
@@ -641,7 +648,7 @@ function TrendChart({ points }: { points: TrendPoint[] }) {
 
   return (
     <div className={styles.trendChart} role="img" aria-label="Evolução do Top2Box no período selecionado">
-      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="tsiTrendArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#f04449" stopOpacity=".34" />
@@ -710,7 +717,7 @@ function MonitorTable({ rows }: { rows: TsiRow[] }) {
                 <td data-label="Segmento">{row.cilindrada || '—'}</td>
                 <td data-label="Top2Box"><b data-tone={status.tone}>{t2b.toFixed(1)}</b></td>
                 <td data-label="TSI">{score(row.tsi).toFixed(1)}</td>
-                <td data-label="Situação"><span className={styles.statusBadge} data-tone={status.tone}>{status.label}</span></td>
+                <td data-label="Situação"><StatusBadge status={status.label} variant={badgeVariantForTone(status.tone)} size="sm" surface="dark" /></td>
               </tr>
             )
           })}

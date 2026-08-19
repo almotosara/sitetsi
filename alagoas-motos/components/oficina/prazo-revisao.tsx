@@ -8,6 +8,7 @@
 import { useMemo, useState } from "react";
 import { nomeCurto } from "../../lib/motos-catalog";
 import type { RevisoesData } from "../../lib/revisoes-calc";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const ACCENT = "#d71920";
 const FONT = "var(--font-poppins), Poppins, sans-serif";
@@ -217,16 +218,12 @@ export function PrazoRevisaoCard({ data }: { data: RevisoesData }) {
                   <div className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
                     {l.meses} meses · até {fmtData(l.limite)}
                   </div>
-                  <span
-                    className="self-start rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                    style={
-                      l.vencida
-                        ? { background: "#ff5a5f1f", color: "#ff5a5f" }
-                        : { background: `${ACCENT}22`, color: ACCENT }
-                    }
-                  >
-                    {l.vencida ? "vencida" : proxima ? "próxima válida" : "no prazo"}
-                  </span>
+                  <StatusBadge
+                    status={l.vencida ? "Vencida" : proxima ? "Próxima válida" : "No prazo"}
+                    variant={l.vencida ? "expired" : proxima ? "review" : "success"}
+                    size="sm"
+                    className="self-start"
+                  />
                 </div>
               );
             })}

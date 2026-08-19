@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Lock, Loader2 } from 'lucide-react'
+import { Lock } from 'lucide-react'
 
 import {
   GlassCard,
@@ -12,6 +12,7 @@ import {
   GlassCardTitle,
 } from '@/components/ui/glass-card'
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -134,7 +135,7 @@ export default function LoginPage() {
                 className="login-primary-button mt-1 w-full text-[15px] font-semibold text-on-media disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <CircularProgressSpinner size={20} thickness={2.4} label="Entrando" />
                 ) : (
                   <>
                     <Lock className="h-[18px] w-[18px]" />

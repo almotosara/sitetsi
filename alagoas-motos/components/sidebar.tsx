@@ -180,7 +180,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
     />
     <aside
       ref={sidebarRef}
-      className={`app-sidebar responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-visible transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
+      className={`app-sidebar responsive-sidebar consultant-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,

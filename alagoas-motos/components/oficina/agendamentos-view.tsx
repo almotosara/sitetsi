@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { AgendamentosTvPayload } from '@/lib/agendamentos'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 function hora(h: string) { return h.slice(0, 5) }
 
@@ -11,14 +13,6 @@ function dataHora(valor: string | null) {
     timeZone: 'America/Maceio',
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
-}
-
-function tom(situacao: string) {
-  const s = situacao.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  if (s === 'os' || s.includes('receb')) return { bg: '#e6f5ed', color: '#137548' }
-  if (s.includes('nao compareceu') || s.includes('cancel')) return { bg: '#f2eeee', color: '#8b4b4b' }
-  if (s.includes('confirm')) return { bg: '#fff2d6', color: '#9a620b' }
-  return { bg: '#ffebec', color: '#b91b20' }
 }
 
 export function AgendamentosView() {
@@ -87,13 +81,22 @@ export function AgendamentosView() {
                   <td className="px-4 py-3 font-mono text-[10px]">{a.placa_exibicao || '—'}</td>
                   <td className="px-4 py-3">{a.tipo_os || '—'}</td>
                   <td className="px-4 py-3">{a.consultor || '—'}</td>
-                  <td className="px-4 py-3"><span className="inline-flex rounded-full px-2 py-1 text-[9px] font-bold" style={tom(a.situacao)}>{a.situacao}</span></td>
+                  <td className="px-4 py-3"><StatusBadge status={a.situacao} size="sm" /></td>
                 </tr>
               ))}
               {dados && !dados.agendamentos.length && (
                 <tr><td colSpan={7} className="px-4 py-10 text-center" style={{ color: 'var(--text-muted)' }}>Nenhum agendamento sincronizado para hoje.</td></tr>
               )}
-              {!dados && !erro && <tr><td colSpan={7} className="px-4 py-10 text-center" style={{ color: 'var(--text-muted)' }}>Carregando agenda…</td></tr>}
+              {!dados && !erro && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center justify-center gap-2.5">
+                      <CircularProgressSpinner size={22} thickness={2.5} label="Carregando agenda" style={{ color: '#d71920' }} />
+                      <span>Carregando agenda…</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

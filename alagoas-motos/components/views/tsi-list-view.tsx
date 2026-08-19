@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import type { TsiRow } from '@/lib/types'
 import { TSI_STORE_MAP, tsiColor } from '@/lib/constants'
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { StatusBadge, type StatusBadgeVariant } from '@/components/ui/status-badge'
 
 interface TsiListViewProps {
   tsiData: TsiRow[]
@@ -40,10 +41,10 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
     return true
   }), [tsiData, q, lojaFilter, faixa])
 
-  const colors = { green: '#2fd675', yellow: '#ffc400', red: '#ff5a5f' }
+  const statusVariants: Record<string, StatusBadgeVariant> = { green: 'success', yellow: 'review', red: 'failed' }
 
   return (
-    <div className="view-enter flex flex-col gap-4">
+    <div className="consultant-view consultant-surveys view-enter flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Pesquisas TSI</h2>
@@ -102,7 +103,6 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
                   const t2b = Number(r.t2b ?? 0)
                   const tsi = Number(r.tsi ?? 0)
                   const tc = tsiColor(t2b)
-                  const tColor = colors[tc as keyof typeof colors]
                   return (
                     <tr key={r.id} className="transition-colors last:border-0"
                       style={{ borderBottom: '1px solid var(--border-line-soft)' }}
@@ -111,10 +111,7 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
                       <td className="px-3.5 py-2.5 font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{lojaNome}</td>
                       <td className="px-3.5 py-2.5 font-mono text-xs" style={{ color: 'var(--text-dim)' }}>{r.os}</td>
                       <td className="px-3.5 py-2.5">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold"
-                          style={{ background: tColor + '26', color: tColor }}>
-                          {t2b.toFixed(1)}%
-                        </span>
+                        <StatusBadge variant={statusVariants[tc]} size="sm">{t2b.toFixed(1)}%</StatusBadge>
                       </td>
                       <td className="px-3.5 py-2.5" style={{ color: 'var(--text-dim)' }}>{tsi.toFixed(2)}</td>
                       <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>{r.data || '—'}</td>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { ClienteFiel } from '@/lib/types'
 import { ShinyButton } from '@/components/ui/shiny-button'
+import { CircularProgressSpinner } from '@/components/ui/circular-progress'
 
 interface FieisViewProps {
   fieis: ClienteFiel[]
@@ -59,7 +60,7 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
   }
 
   return (
-    <div className="view-enter flex flex-col gap-4">
+    <div className="consultant-view consultant-loyalty view-enter flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Clientes Fiéis</h2>
@@ -158,7 +159,9 @@ export function FieisView({ fieis, onAdd, onEdit, onDelete }: FieisViewProps) {
             <div className="px-5 py-4 flex justify-end gap-2.5" style={{ borderTop: '1px solid var(--border-line-soft)' }}>
               <button onClick={closeModal} style={GHOST_BTN}>Cancelar</button>
               <ShinyButton onClick={handleSave} disabled={saving || !modal.nome.trim()} size="compact">
-                {saving ? 'Salvando…' : 'Salvar'}
+                {saving ? (
+                  <><CircularProgressSpinner size={18} thickness={2.2} label="Salvando cliente" /> Salvando…</>
+                ) : 'Salvar'}
               </ShinyButton>
             </div>
           </div>

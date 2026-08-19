@@ -1,0 +1,493 @@
+/* ========================================================================
+   CONSULTOR · SUSE ANALYTICS
+   Camada visual isolada do painel do consultor. A oficina e o admin não são
+   afetados por estas regras.
+   ======================================================================== */
+
+@font-face {
+  font-family: 'SUSE Local';
+  src: url('/fonts/suse/SUSE-VariableFont_wght.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUSE Local';
+  src: url('/fonts/suse/SUSE-Italic-VariableFont_wght.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+.consultant-shell {
+  --consultant-font: 'SUSE Local', var(--font-inter), Inter, system-ui, sans-serif;
+  --consultant-red: #ef4444;
+  --consultant-red-deep: #c92f36;
+  --consultant-red-soft: rgba(239, 68, 68, .13);
+  --consultant-amber: #ffb739;
+  --consultant-amber-soft: rgba(255, 183, 57, .13);
+  --consultant-lime: #dce300;
+  --consultant-lime-soft: rgba(220, 227, 0, .13);
+  --consultant-green: #29b985;
+  --consultant-green-soft: rgba(41, 185, 133, .13);
+  --consultant-radius: 17px;
+  --consultant-control-radius: 12px;
+  --font-sans: var(--consultant-font);
+  --font-display: var(--consultant-font);
+
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  align-items: stretch;
+  overflow-x: clip;
+  overflow-y: visible;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 76% -15%, var(--consultant-ambient-red), transparent 34rem),
+    radial-gradient(circle at 98% 30%, var(--consultant-ambient-lime), transparent 25rem),
+    var(--bg-main) !important;
+  font-family: var(--consultant-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.012em;
+}
+
+[data-theme='light'] .consultant-shell {
+  --consultant-lime: #919700;
+  --consultant-lime-soft: rgba(145, 151, 0, .12);
+  --consultant-green: #16855f;
+  --consultant-green-soft: rgba(22, 133, 95, .12);
+  --bg-main: #f2f3f1;
+  --bg-panel: #ffffff;
+  --bg-panel-2: #f4f4f2;
+  --bg-elevated: #ececea;
+  --bg-input: #f8f8f6;
+  --border-line: #d7d8d4;
+  --border-line-soft: #e4e5e1;
+  --text-primary: #171818;
+  --text-dim: #51534f;
+  --text-muted: #7e817b;
+  --sidebar-bg: #fbfbf9;
+  --sidebar-hover: #ededeb;
+  --topbar-bg: rgba(242, 243, 241, .9);
+  --card-bg: #ffffff;
+  --toast-bg: #ffffff;
+  --account-menu-bg: #ffffff;
+  --account-menu-border: #d7d8d4;
+  --brand-primary: var(--consultant-red);
+  --brand-primary-deep: var(--consultant-red-deep);
+  --brand-soft: #ffe9ea;
+  --focus-ring: rgba(239, 68, 68, .17);
+  --shadow-heavy: rgba(30, 31, 29, .16);
+  --consultant-panel-sheen: rgba(255, 255, 255, .82);
+  --consultant-ambient-red: rgba(239, 68, 68, .08);
+  --consultant-ambient-lime: rgba(220, 227, 0, .045);
+  --chart-neutral: #d7d8d4;
+}
+
+[data-theme='dark'] .consultant-shell {
+  --consultant-lime: #faff00;
+  --consultant-lime-soft: rgba(250, 255, 0, .12);
+  --consultant-green: #3bd69b;
+  --consultant-green-soft: rgba(59, 214, 155, .12);
+  --bg-main: #080909;
+  --bg-panel: #171818;
+  --bg-panel-2: #1c1d1d;
+  --bg-elevated: #202121;
+  --bg-input: #1d1e1e;
+  --border-line: #303131;
+  --border-line-soft: #262727;
+  --text-primary: #f5f5f2;
+  --text-dim: #b8b9b5;
+  --text-muted: #777974;
+  --sidebar-bg: #121313;
+  --sidebar-hover: #202121;
+  --topbar-bg: rgba(8, 9, 9, .88);
+  --card-bg: #171818;
+  --toast-bg: #202121;
+  --account-menu-bg: #1c1d1d;
+  --account-menu-border: #303131;
+  --brand-primary: var(--consultant-red);
+  --brand-primary-deep: var(--consultant-red-deep);
+  --brand-soft: rgba(239, 68, 68, .14);
+  --focus-ring: rgba(239, 68, 68, .22);
+  --shadow-heavy: rgba(0, 0, 0, .72);
+  --consultant-panel-sheen: rgba(255, 255, 255, .018);
+  --consultant-ambient-red: rgba(239, 68, 68, .09);
+  --consultant-ambient-lime: rgba(250, 255, 0, .025);
+  --chart-neutral: #343535;
+}
+
+.consultant-shell,
+.consultant-shell :where(button, input, select, textarea) {
+  font-family: var(--consultant-font);
+}
+
+.consultant-main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.consultant-content {
+  min-width: 0;
+  max-width: 1480px !important;
+}
+
+/* Sidebar: parte do layout no desktop; somente a lista central rola. */
+.consultant-sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  align-self: flex-start;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-right: 1px solid var(--border-line-soft) !important;
+  border-radius: 0 !important;
+  background: var(--sidebar-bg) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.consultant-sidebar .sidebar-brand {
+  min-height: 68px;
+  border-bottom: 1px solid var(--border-line-soft);
+}
+
+.consultant-sidebar .sidebar-brand img {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.consultant-sidebar .sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-block: .35rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.consultant-sidebar .sidebar-utility,
+.consultant-sidebar .sidebar-footer {
+  flex: 0 0 auto;
+  background: var(--sidebar-bg);
+}
+
+.consultant-sidebar .pill-nav-item,
+.consultant-sidebar .pill-nav-sub,
+.consultant-sidebar .theme-toggle {
+  min-height: 44px;
+  border-radius: 12px !important;
+  font-weight: 600;
+}
+
+.consultant-sidebar .pill-nav-item.is-active {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--consultant-red), #d4383e) !important;
+  box-shadow: 0 12px 28px -20px rgba(239, 68, 68, .9) !important;
+}
+
+.consultant-sidebar .pill-nav-sub.is-active {
+  color: var(--consultant-red) !important;
+  background: var(--consultant-red-soft) !important;
+}
+
+.consultant-sidebar .sidebar-collapse-button:hover,
+.consultant-sidebar .pill-nav-item:hover,
+.consultant-sidebar .pill-nav-sub:hover,
+.consultant-sidebar .theme-toggle:hover {
+  background: var(--sidebar-hover) !important;
+}
+
+/* Cabeçalho compacto e alinhado à referência SUSE. */
+.consultant-shell .app-topbar {
+  min-height: 78px;
+  flex: 0 0 auto;
+  padding-block: .8rem !important;
+  border-color: var(--border-line-soft) !important;
+  background: var(--topbar-bg) !important;
+  box-shadow: 0 12px 35px -34px var(--shadow-heavy);
+  backdrop-filter: blur(22px) saturate(145%) !important;
+}
+
+.consultant-shell .app-topbar-title::before {
+  color: var(--consultant-red);
+  font-family: var(--consultant-font);
+  font-weight: 700;
+}
+
+.consultant-shell .app-topbar-title h1,
+.consultant-view :where(h1, h2, h3) {
+  font-family: var(--consultant-font) !important;
+  letter-spacing: -.025em !important;
+}
+
+.consultant-shell .app-topbar-title h1 {
+  font-size: clamp(1.15rem, 1.8vw, 1.42rem) !important;
+  font-weight: 700 !important;
+}
+
+.consultant-shell .app-topbar-actions > button:not(.shiny-cta),
+.consultant-shell .app-topbar-actions > div > button {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: var(--border-line) !important;
+  border-radius: 12px !important;
+  background: var(--bg-panel) !important;
+}
+
+/* Painéis e KPIs. */
+.consultant-view {
+  width: 100%;
+  min-width: 0;
+}
+
+.consultant-view .consultant-panel,
+.consultant-view > :where(div, section, article).rounded-2xl,
+.consultant-view > div > :where(div, section, article).rounded-2xl,
+.consultant-view .glass-effect {
+  border-color: var(--border-line) !important;
+  border-radius: var(--consultant-radius) !important;
+  background:
+    linear-gradient(145deg, var(--consultant-panel-sheen), transparent 42%),
+    var(--card-bg) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025), 0 22px 48px -42px var(--shadow-heavy) !important;
+  backdrop-filter: none;
+}
+
+.consultant-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.consultant-kpi-card {
+  position: relative;
+  min-height: 144px;
+  gap: 1.25rem !important;
+}
+
+.consultant-kpi-card::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: inherit;
+  background: var(--consultant-red);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.consultant-dashboard .consultant-kpi-card:nth-child(2)::after { background: var(--consultant-green); }
+.consultant-dashboard .consultant-kpi-card:nth-child(3)::after { background: var(--consultant-amber); }
+.consultant-dashboard .consultant-kpi-card:nth-child(4)::after { background: var(--consultant-lime); }
+
+.consultant-kpi-highlight {
+  color: var(--text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--consultant-red) 55%, var(--border-line)) !important;
+  background:
+    radial-gradient(circle at 100% 0, var(--consultant-red-soft), transparent 54%),
+    var(--card-bg) !important;
+}
+
+.consultant-kpi-highlight button {
+  color: #fff !important;
+  background: var(--consultant-red) !important;
+}
+
+.consultant-kpi-highlight > div:last-child > span:last-child {
+  color: var(--text-muted);
+}
+
+.consultant-view :where(input, select, textarea) {
+  min-width: 0;
+  min-height: 44px;
+  border-color: var(--border-line) !important;
+  border-radius: var(--consultant-control-radius) !important;
+  color: var(--text-primary) !important;
+  background: var(--bg-input) !important;
+}
+
+.consultant-view :where(button, a[href]) {
+  min-height: 44px;
+}
+
+.consultant-view .responsive-filter-row {
+  min-width: 0;
+  padding: .8rem;
+  border: 1px solid var(--border-line);
+  border-radius: var(--consultant-radius);
+  background: var(--bg-panel);
+}
+
+.consultant-view .responsive-search {
+  min-width: min(100%, 14rem) !important;
+}
+
+.consultant-view table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.consultant-view table th {
+  height: 44px;
+  color: var(--text-muted) !important;
+  background: var(--bg-panel-2) !important;
+}
+
+.consultant-view table td {
+  background: transparent;
+}
+
+.consultant-view table tbody tr:hover > td {
+  background: var(--bg-panel-2);
+}
+
+.consultant-view table :where(button, a[href]) {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.consultant-view .shiny-cta {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+/* Gráficos: uma única razão visual em vez de altura imposta pelo container. */
+.consultant-bar-chart {
+  width: 100%;
+  height: clamp(10.5rem, 18vw, 12.5rem) !important;
+  min-height: 10.5rem;
+}
+
+.consultant-report-chart {
+  width: 100%;
+  height: clamp(11rem, 19vw, 13rem) !important;
+  min-height: 11rem;
+  overscroll-behavior-inline: contain;
+}
+
+.consultant-gauge {
+  display: block;
+  width: min(100%, 220px);
+  height: auto;
+  aspect-ratio: 220 / 130;
+}
+
+.consultant-view svg:not([width='14']):not([width='15']):not([width='16']):not([width='18']):not([width='20']):not([width='22']):not([width='24']) {
+  max-width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .consultant-content {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .consultant-shell {
+    display: block !important;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .consultant-main {
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .consultant-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    align-self: auto;
+    width: min(88vw, 19rem) !important;
+    min-width: min(88vw, 19rem) !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    border-right: 1px solid var(--border-line) !important;
+    border-radius: 0 22px 22px 0 !important;
+    box-shadow: 24px 0 60px -24px rgba(0, 0, 0, .5) !important;
+  }
+
+  .consultant-sidebar .sidebar-nav {
+    overflow-y: auto !important;
+  }
+
+  .consultant-sidebar .pill-nav-item,
+  .consultant-sidebar .pill-nav-sub,
+  .consultant-sidebar .theme-toggle,
+  .consultant-shell .app-topbar-actions > button:not(.shiny-cta),
+  .consultant-shell .app-topbar-actions > div > button,
+  .consultant-view :where(button, a[href]),
+  .consultant-view :where(input, select, textarea),
+  .consultant-view .shiny-cta {
+    min-height: 48px;
+  }
+
+  .consultant-view table :where(button, a[href]) {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .consultant-shell .app-topbar {
+    padding-inline: .85rem !important;
+  }
+
+  .consultant-content {
+    padding: 1rem .85rem calc(3rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .consultant-view {
+    gap: .8rem !important;
+  }
+
+  .consultant-view .responsive-filter-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: .65rem !important;
+    padding: .75rem;
+  }
+
+  .consultant-view .responsive-filter-row > *,
+  .consultant-view .responsive-filter-row > div,
+  .consultant-view .responsive-filter-row input,
+  .consultant-view .responsive-filter-row select,
+  .consultant-view .responsive-filter-row button {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+  }
+
+  .consultant-view .responsive-filter-row > div:has(input[type='date']) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .consultant-kpi-card {
+    min-height: 132px;
+    padding: 1rem !important;
+  }
+
+  .consultant-bar-chart,
+  .consultant-report-chart {
+    height: 11rem !important;
+    min-height: 11rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consultant-shell *,
+  .consultant-shell *::before,
+  .consultant-shell *::after {
+    scroll-behavior: auto !important;
+  }
+}

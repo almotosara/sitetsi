@@ -15,22 +15,22 @@
 }
 
 .dashboard {
-  --tsi-bg: #080909;
-  --tsi-panel: #171818;
-  --tsi-panel-raised: #1c1d1d;
-  --tsi-panel-soft: #202121;
-  --tsi-border: #303131;
-  --tsi-border-soft: #262727;
-  --tsi-text: #f5f5f2;
-  --tsi-dim: #b8b9b5;
-  --tsi-muted: #777974;
-  --tsi-red: #ef4444;
+  --tsi-bg: var(--bg-main, #080909);
+  --tsi-panel: var(--bg-panel, #171818);
+  --tsi-panel-raised: var(--bg-panel-2, #1c1d1d);
+  --tsi-panel-soft: var(--bg-elevated, #202121);
+  --tsi-border: var(--border-line, #303131);
+  --tsi-border-soft: var(--border-line-soft, #262727);
+  --tsi-text: var(--text-primary, #f5f5f2);
+  --tsi-dim: var(--text-dim, #b8b9b5);
+  --tsi-muted: var(--text-muted, #777974);
+  --tsi-red: var(--consultant-red, #ef4444);
   --tsi-red-soft: rgba(239, 68, 68, .14);
-  --tsi-amber: #ffb739;
+  --tsi-amber: var(--consultant-amber, #ffb739);
   --tsi-amber-soft: rgba(255, 183, 57, .13);
-  --tsi-lime: #faff00;
+  --tsi-lime: var(--consultant-lime, #faff00);
   --tsi-lime-soft: rgba(250, 255, 0, .12);
-  --tsi-green: #3bd69b;
+  --tsi-green: var(--consultant-green, #3bd69b);
   --tsi-green-soft: rgba(59, 214, 155, .12);
   --font-suse: 'SUSE Local', var(--font-inter), Inter, system-ui, sans-serif;
 
@@ -38,7 +38,7 @@
   min-width: 0;
   overflow: hidden;
   padding: clamp(.9rem, 1.8vw, 1.5rem);
-  border: 1px solid #202121;
+  border: 1px solid var(--tsi-border-soft);
   border-radius: 30px;
   color: var(--tsi-text);
   background:
@@ -128,13 +128,13 @@
   border: 1px solid var(--tsi-border-soft);
   border-radius: 12px;
   color: var(--tsi-muted);
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
   transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
 }
 
 .searchBox:focus-within {
   border-color: rgba(239, 68, 68, .72);
-  background: #202121;
+  background: var(--tsi-panel-soft);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
 }
 
@@ -151,7 +151,7 @@
 }
 
 .searchBox input::placeholder {
-  color: #777974;
+  color: var(--tsi-muted);
 }
 
 .periodSelect,
@@ -162,7 +162,7 @@
   align-items: center;
   border: 1px solid var(--tsi-border-soft);
   border-radius: 12px;
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
 }
 
 .periodSelect select,
@@ -185,8 +185,8 @@
 
 .periodSelect option,
 .compactFilter option {
-  color: #f5f5f2;
-  background: #1c1d1d;
+  color: var(--tsi-text);
+  background: var(--tsi-panel-raised);
 }
 
 .importButton {
@@ -202,10 +202,10 @@
   justify-content: center;
   flex-direction: column;
   padding: 2rem;
-  border: 1px dashed #3a3b3b;
+  border: 1px dashed var(--tsi-border);
   border-radius: 22px;
   text-align: center;
-  background: rgba(255, 255, 255, .018);
+  background: color-mix(in srgb, var(--tsi-panel-raised) 78%, transparent);
 }
 
 .emptyIcon {
@@ -273,7 +273,7 @@
   border: 1px solid var(--tsi-border);
   border-radius: 17px;
   color: var(--tsi-text);
-  background: linear-gradient(145deg, #1b1c1c, #151616);
+  background: linear-gradient(145deg, var(--tsi-panel-raised), var(--tsi-panel));
   box-shadow: inset 0 1px rgba(255, 255, 255, .025);
 }
 
@@ -364,7 +364,7 @@
 .goalCard:hover,
 .goalCard:focus-visible {
   border-color: rgba(59, 214, 155, .5);
-  background: #1b1d1c;
+  background: var(--tsi-panel-raised);
   transform: translateY(-2px);
 }
 
@@ -407,7 +407,7 @@
   padding: 1rem;
   border: 1px solid var(--tsi-border);
   border-radius: 17px;
-  background: linear-gradient(145deg, #191a1a, #151616);
+  background: linear-gradient(145deg, var(--tsi-panel-raised), var(--tsi-panel));
   box-shadow: inset 0 1px rgba(255, 255, 255, .02);
 }
 
@@ -474,7 +474,7 @@
   border: 1px solid var(--tsi-border-soft);
   border-radius: 999px;
   color: var(--tsi-muted);
-  background: #202121;
+  background: var(--tsi-panel-soft);
   font-size: .59rem;
   font-weight: 600;
 }
@@ -498,7 +498,7 @@
   padding: .7rem;
   border: 1px solid var(--tsi-border-soft);
   border-radius: 12px;
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
 }
 
 .miniMetric[data-tone='red'] { --tone: var(--tsi-red); }
@@ -549,7 +549,7 @@
 .chartGrid {
   position: absolute;
   inset: 1.55rem 0 1.75rem;
-  background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(25% - 1px), rgba(255,255,255,.055) 25%);
+  background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(25% - 1px), color-mix(in srgb, var(--tsi-border) 55%, transparent) 25%);
   pointer-events: none;
 }
 
@@ -569,8 +569,8 @@
   right: .1rem;
   padding: .08rem .3rem;
   border-radius: 4px;
-  color: #ff8185;
-  background: #261719;
+  color: var(--tsi-red);
+  background: var(--tsi-red-soft);
   font-size: .5rem;
   font-weight: 700;
 }
@@ -611,14 +611,14 @@
   justify-self: center;
   overflow: hidden;
   border-radius: 5px 5px 2px 2px;
-  background: rgba(255, 255, 255, .055);
+  background: color-mix(in srgb, var(--tsi-border) 60%, transparent);
 }
 
 .barFill {
   width: 100%;
   min-height: 4px;
   border-radius: inherit;
-  background: linear-gradient(to top, color-mix(in srgb, var(--tone) 72%, #101111), var(--tone));
+  background: linear-gradient(to top, color-mix(in srgb, var(--tone) 72%, var(--tsi-panel)), var(--tone));
   box-shadow: 0 -6px 18px color-mix(in srgb, var(--tone) 16%, transparent);
   transform-origin: bottom;
   animation: barRise .65s cubic-bezier(.22, 1, .36, 1) both;
@@ -667,10 +667,10 @@
   width: 68%;
   aspect-ratio: 1;
   place-content: center;
-  border: 1px solid #2b2c2c;
+  border: 1px solid var(--tsi-border-soft);
   border-radius: 50%;
   text-align: center;
-  background: #191a1a;
+  background: var(--tsi-panel-raised);
   box-shadow: inset 0 0 30px rgba(0,0,0,.22);
 }
 
@@ -742,7 +742,7 @@
   padding: .62rem;
   border: 1px solid var(--tsi-border-soft);
   border-radius: 11px;
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
 }
 
 .storeRank {
@@ -800,7 +800,7 @@
   overflow: hidden;
   margin: .42rem 0 .3rem;
   border-radius: 999px;
-  background: #303131;
+  background: var(--tsi-border);
 }
 
 .progressTrack[data-tone='green'] { --tone: var(--tsi-green); }
@@ -866,12 +866,14 @@
 .trendChart svg {
   display: block;
   width: 100%;
-  min-height: 210px;
-  overflow: visible;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 660 / 230;
+  overflow: hidden;
 }
 
 .gridLine {
-  stroke: rgba(255,255,255,.055);
+  stroke: color-mix(in srgb, var(--tsi-border) 58%, transparent);
   stroke-width: 1;
 }
 
@@ -883,7 +885,7 @@
 
 .metaText,
 .axisText {
-  fill: #777974;
+  fill: var(--tsi-muted);
   font-family: 'SUSE Local', sans-serif;
   font-size: 9px;
   font-weight: 600;
@@ -899,7 +901,7 @@
 }
 
 .trendPoint {
-  fill: #171818;
+  fill: var(--tsi-panel);
   stroke: var(--tsi-red);
   stroke-width: 2.5;
 }
@@ -914,7 +916,7 @@
   padding: .5rem;
   border-radius: 9px;
   color: var(--tsi-muted);
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
   font-size: .56rem;
   text-align: center;
 }
@@ -943,7 +945,7 @@
   overflow-x: auto;
   border: 1px solid var(--tsi-border-soft);
   border-radius: 11px;
-  scrollbar-color: #464747 transparent;
+  scrollbar-color: var(--tsi-border) transparent;
   scrollbar-width: thin;
 }
 
@@ -968,7 +970,7 @@
   padding: .65rem .72rem;
   border-bottom: 1px solid var(--tsi-border) !important;
   color: var(--tsi-muted) !important;
-  background: #202121 !important;
+  background: var(--tsi-panel-soft) !important;
   font-family: var(--font-suse);
   font-size: .5rem;
   font-weight: 700 !important;
@@ -993,7 +995,7 @@
 
 .dashboard .monitorTable tbody tr:hover > td,
 .dashboard .matrixTable tbody tr:hover > td {
-  background: rgba(255,255,255,.022) !important;
+  background: color-mix(in srgb, var(--tsi-panel-soft) 72%, transparent) !important;
 }
 
 .monitorTable td:first-child strong {
@@ -1070,7 +1072,7 @@
 }
 
 .mutedValue {
-  color: #565854;
+  color: var(--tsi-muted);
 }
 
 .feedbackGrid {
@@ -1087,7 +1089,7 @@
   padding: .75rem;
   border: 1px solid var(--tsi-border-soft);
   border-radius: 11px;
-  background: #1d1e1e;
+  background: var(--tsi-panel-raised);
 }
 
 .feedbackCard header,
@@ -1297,9 +1299,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .trendChart svg {
-    min-height: 185px;
-  }
+  .trendChart svg { min-height: 0; }
 
   .monitorTable {
     min-width: 0;
@@ -1329,7 +1329,7 @@
     padding: .7rem;
     border: 1px solid var(--tsi-border-soft);
     border-radius: 10px;
-    background: #1b1c1c;
+    background: var(--tsi-panel-raised);
   }
 
   .dashboard .monitorTable td {
