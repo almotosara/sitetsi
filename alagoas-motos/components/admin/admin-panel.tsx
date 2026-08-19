@@ -313,7 +313,7 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
 
       {aba === 'revisoes' && (
         <div className="admin-split-grid responsive-grid grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
-          <aside style={{ ...card, padding: 12, maxHeight: '75vh', overflow: 'auto' }}>
+          <aside className="admin-workspace-sidebar" style={{ ...card, padding: 12, maxHeight: '75vh', overflow: 'auto' }}>
             <input
               style={{ ...inputStyle, marginBottom: 8 }}
               placeholder="Buscar modelo..."
@@ -442,7 +442,7 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
 
       {aba === 'avulsos' && (
         <div className="admin-split-grid responsive-grid grid gap-4" style={{ gridTemplateColumns: 'minmax(220px, 300px) 1fr' }}>
-          <aside style={{ ...card, padding: 12 }}>
+          <aside className="admin-workspace-sidebar" style={{ ...card, padding: 12 }}>
             {avulsos.map((s) => (
               <button
                 key={s.id}

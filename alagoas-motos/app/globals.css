@@ -550,6 +550,40 @@ input, select, textarea, button { font-family: inherit; }
   min-width: 0;
 }
 
+/* Sidebars de Oficina e Admin permanecem visíveis durante a rolagem. */
+.oficina-sidebar-spacer {
+  flex: 0 0 auto;
+}
+
+.am-sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  z-index: 40;
+  align-self: flex-start;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  border-radius: 0 !important;
+}
+
+.am-sidebar .sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.admin-workspace-sidebar {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100dvh - 2rem) !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 :where(input, select, textarea):focus-visible,
 :where(button, a[href]):focus-visible {
   outline: none;
@@ -755,6 +789,13 @@ input, select, textarea, button { font-family: inherit; }
   .admin-split-grid {
     grid-template-columns: minmax(0, 1fr) !important;
   }
+
+  .admin-workspace-sidebar {
+    position: static;
+    top: auto;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
 }
 
 @media (max-width: 900px) {
@@ -781,6 +822,10 @@ input, select, textarea, button { font-family: inherit; }
   }
 
   .responsive-sidebar.is-mobile-open { transform: translateX(0); }
+
+  .oficina-sidebar-spacer {
+    display: none;
+  }
 
   .sidebar-overlay {
     display: block;

@@ -93,9 +93,14 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
       aria-label="Fechar menu da oficina"
       tabIndex={mobileOpen ? 0 : -1}
     />
+    <div
+      aria-hidden="true"
+      className="oficina-sidebar-spacer flex-none transition-all duration-200"
+      style={{ width: w, minWidth: w }}
+    />
     <aside
       ref={sidebarRef}
-      className={`am-sidebar responsive-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-visible ${mobileOpen ? 'is-mobile-open' : ''}`}
+      className={`am-sidebar responsive-sidebar flex-none flex flex-col fixed left-0 top-0 h-screen overflow-hidden ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,
@@ -186,6 +191,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
                 className={`am-nav-item ${active ? 'is-active' : ''}`}
                 onClick={() => selectView(item.id)}
                 aria-current={active ? 'page' : undefined}
+                title={collapsed ? item.label : undefined}
                 style={{ justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 10 }}
               >
                 <span className="am-mark" aria-hidden="true" />
