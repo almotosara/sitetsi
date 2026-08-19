@@ -178,9 +178,14 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
       aria-label="Fechar menu"
       tabIndex={mobileOpen ? 0 : -1}
     />
+    <div
+      aria-hidden="true"
+      className="consultant-sidebar-spacer flex-none transition-all duration-200"
+      style={{ width: w, minWidth: w }}
+    />
     <aside
       ref={sidebarRef}
-      className={`app-sidebar responsive-sidebar consultant-sidebar flex-none flex flex-col sticky top-0 h-screen overflow-hidden transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
+      className={`app-sidebar responsive-sidebar consultant-sidebar flex-none flex flex-col fixed left-0 top-0 h-screen overflow-hidden transition-all duration-200 glass-effect ${mobileOpen ? 'is-mobile-open' : ''}`}
       style={{
         width: w,
         minWidth: w,

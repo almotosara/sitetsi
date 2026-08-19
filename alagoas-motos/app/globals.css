@@ -251,9 +251,9 @@ button, a, input, select, textarea { touch-action: manipulation; }
 }
 
 .status-badge-ui[data-tone='pending'] {
-  --status-badge-bg: #fff7ed;
-  --status-badge-border: #fed7aa;
-  --status-badge-text: #c87528;
+  --status-badge-bg: #fffbea;
+  --status-badge-border: #fde68a;
+  --status-badge-text: #b98600;
 }
 
 .status-badge-ui[data-tone='failed'] {
@@ -300,9 +300,9 @@ button, a, input, select, textarea { touch-action: manipulation; }
 
 [data-theme='dark'] .status-badge-ui[data-tone='pending'],
 .status-badge-ui[data-surface='dark'][data-tone='pending'] {
-  --status-badge-bg: rgba(234, 166, 93, .11);
-  --status-badge-border: rgba(234, 166, 93, .25);
-  --status-badge-text: #f3b974;
+  --status-badge-bg: rgba(255, 196, 0, .12);
+  --status-badge-border: rgba(255, 196, 0, .25);
+  --status-badge-text: #ffd24a;
 }
 
 [data-theme='dark'] .status-badge-ui[data-tone='failed'],

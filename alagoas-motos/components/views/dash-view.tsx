@@ -211,7 +211,7 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
                   height: h,
                   maxWidth: 42,
                   background: isMax
-                    ? 'linear-gradient(180deg, var(--consultant-green) 0%, var(--consultant-red) 100%)'
+                    ? 'var(--consultant-red)'
                     : 'repeating-linear-gradient(135deg, var(--chart-neutral) 0 6px, transparent 6px 10px), var(--bg-elevated)',
                 }}
               />
@@ -427,32 +427,34 @@ function StatusBreakdown({ leads, onView }: { leads: Lead[]; onView: (v: string)
 
 // ── Progress gauge ──────────────────────────────────────────────────
 function ProgressGauge({ pct, goal, done, onGoalChange }: { pct: number; goal: number; done: number; onGoalChange: (g: number) => void }) {
-  const R = 82
+  const R = 90
   const CIRC = Math.PI * R
   const filled = (pct / 100) * CIRC
   return (
     <Panel className="p-5 flex flex-col gap-3">
       <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Progresso da meta</h3>
-      <div className="flex-1 flex flex-col items-center justify-center relative">
-        <svg className="consultant-gauge" width="220" height="130" viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet">
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="var(--chart-neutral)" strokeWidth="18" strokeLinecap="round" />
-          <defs>
-            <linearGradient id="gauge" x1="0" x2="1">
-              <stop offset="0%" stopColor="var(--consultant-green)" />
-              <stop offset="100%" stopColor="var(--consultant-red)" />
-            </linearGradient>
-            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="4" height="8" fill="var(--chart-neutral)" />
-            </pattern>
-          </defs>
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="18" strokeLinecap="round" opacity="0.6" />
-          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gauge)" strokeWidth="18" strokeLinecap="round"
-            strokeDasharray={`${filled} ${CIRC}`}
-            style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{Math.round(pct)}%</div>
-          <div className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>convertidos</div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="relative w-full max-w-[220px]">
+          <svg className="consultant-gauge" width="220" height="130" viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet">
+            <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="var(--chart-neutral)" strokeWidth="24" strokeLinecap="round" />
+            <defs>
+              <linearGradient id="gauge" x1="0" x2="1">
+                <stop offset="0%" stopColor="var(--consultant-green)" />
+                <stop offset="100%" stopColor="var(--consultant-red)" />
+              </linearGradient>
+              <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="4" height="8" fill="var(--chart-neutral)" />
+              </pattern>
+            </defs>
+            <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#hatch)" strokeWidth="24" strokeLinecap="round" opacity="0.6" />
+            <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gauge)" strokeWidth="24" strokeLinecap="round"
+              strokeDasharray={`${filled} ${CIRC}`}
+              style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)' }} />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-end pb-4">
+            <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{Math.round(pct)}%</div>
+            <div className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>convertidos</div>
+          </div>
         </div>
       </div>
       <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-line-soft)' }}>

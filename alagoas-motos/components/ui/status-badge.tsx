@@ -33,11 +33,11 @@ const ICONS: Record<StatusBadgeVariant, LucideIcon> = {
 }
 
 const EXACT_VARIANTS: Record<string, StatusBadgeVariant> = {
-  novo: "pending",
+  novo: "progress",
   agendado: "pending",
   pendente: "pending",
   aguardando: "pending",
-  "em contato": "progress",
+  "em contato": "pending",
   "em andamento": "progress",
   aberta: "progress",
   "em execucao": "progress",
