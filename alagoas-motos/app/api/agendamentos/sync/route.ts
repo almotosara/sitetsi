@@ -101,13 +101,25 @@ export async function POST(request: Request) {
     }, 503)
   }
 
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
-  if (!tokenValido(bearer, tokenServidor)) {
-    return json({ error: 'Token de sincronização não autorizado', code: 'SYNC_TOKEN_INVALID' }, 401)
-  }
-
   try {
-    const body = await request.json()
+    const corpoTexto = await request.text()
+    if (corpoTexto.length > 1_500_000) {
+      return json({ error: 'Carga de sincronização grande demais', code: 'SYNC_PAYLOAD_TOO_LARGE' }, 413)
+    }
+
+    let body: Record<string, unknown>
+    try {
+      body = JSON.parse(corpoTexto || '{}') as Record<string, unknown>
+    } catch {
+      return json({ error: 'Corpo da sincronização inválido', code: 'SYNC_PAYLOAD_INVALID' }, 400)
+    }
+
+    const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+    const tokenCorpo = typeof body.sync_token === 'string' ? body.sync_token.trim() : ''
+    if (!tokenValido(bearer || tokenCorpo, tokenServidor)) {
+      return json({ error: 'Token de sincronização não autorizado', code: 'SYNC_TOKEN_INVALID' }, 401)
+    }
+
     const recebidos = Array.isArray(body?.agendamentos) ? body.agendamentos.slice(0, 500) : []
     const agendamentos = recebidos.map(normalizar).filter(Boolean) as AgendamentoImportado[]
 
@@ -118,7 +130,10 @@ export async function POST(request: Request) {
     const agora = new Date().toISOString()
     const supabase = createAdminClient()
 
-    const capturado = new Date(body?.capturado_em)
+    const capturadoValor = typeof body.capturado_em === 'string' || typeof body.capturado_em === 'number'
+      ? body.capturado_em
+      : ''
+    const capturado = new Date(capturadoValor)
     const capturadoEm = Number.isNaN(capturado.getTime()) ? agora : capturado.toISOString()
     const linhas = agendamentos.map((a) => ({
       ...a,
@@ -170,6 +185,10 @@ export async function POST(request: Request) {
     console.error('[agendamentos/sync]', erro)
     return respostaFalha(erro)
   }
+}
+
+export async function GET() {
+  return json({ ok: true, servico: 'agendamentos-sync', metodo: 'POST' })
 }
 
 export async function OPTIONS() {

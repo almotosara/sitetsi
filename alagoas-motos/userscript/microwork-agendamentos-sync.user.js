@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MicroWork Cloud DMS - Sincronizar Agendamentos (Alagoas Motos)
 // @namespace    alagoasmotos
-// @version      1.2.0
+// @version      1.3.0
 // @description  Lê a listagem de agendamentos do MicroWork e envia ao painel da Alagoas Motos.
 // @match        https://microworkcloud.com.br/cloud/*
 // @run-at       document-idle
@@ -10,7 +10,8 @@
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // @grant        GM_addStyle
-// @connect      *
+// @connect      alagoasmotos.netlify.app
+// @connect      *.netlify.app
 // ==/UserScript==
 
 (function () {
@@ -19,6 +20,7 @@
   const CHAVE_ENDPOINT = 'am_agendamentos_endpoint';
   const CHAVE_TOKEN = 'am_agendamentos_token';
   const ID_BOTAO = 'am-sync-agendamentos';
+  const ENDPOINT_PADRAO = 'https://alagoasmotos.netlify.app/api/agendamentos/sync';
   let ultimoAssinatura = '';
   let timerDebounce = 0;
   let sincronizando = false;
@@ -83,15 +85,16 @@
   }
 
   function getConfig() {
+    const endpointSalvo = String(GM_getValue(CHAVE_ENDPOINT, '') || '').trim().replace(/\/$/, '');
     return {
-      endpoint: String(GM_getValue(CHAVE_ENDPOINT, '') || '').trim().replace(/\/$/, ''),
+      endpoint: !endpointSalvo || /SEU-SITE/i.test(endpointSalvo) ? ENDPOINT_PADRAO : endpointSalvo,
       token: String(GM_getValue(CHAVE_TOKEN, '') || '').trim(),
     };
   }
 
   function configurar() {
     const atual = getConfig();
-    const endpoint = window.prompt('URL do endpoint de sincronização:', atual.endpoint || 'https://SEU-SITE.netlify.app/api/agendamentos/sync');
+    const endpoint = window.prompt('URL do endpoint de sincronização:', atual.endpoint || ENDPOINT_PADRAO);
     if (endpoint === null) return false;
     if (!/^https:\/\/.+\/api\/agendamentos\/sync$/i.test(endpoint.trim())) {
       window.alert('Informe uma URL HTTPS terminando em /api/agendamentos/sync.');
@@ -111,7 +114,19 @@
     return true;
   }
 
-  function requestJson(url, token, payload) {
+  function interpretarResposta(status, responseText, statusText) {
+    let json = null;
+    try { json = JSON.parse(responseText || '{}'); } catch {}
+    if (status >= 200 && status < 300) return json || {};
+    if (status === 401) {
+      throw new Error('Token não autorizado (401). No Netlify, use AGENDAMENTOS_SYNC_TOKEN somente no campo Key, o token somente no campo Value e publique um novo deploy');
+    }
+    const detalhe = (json && json.error) || statusText || `A API respondeu HTTP ${status || 0}`;
+    const codigo = json && json.code ? ` [${json.code}]` : '';
+    throw new Error(`${detalhe}${codigo}`);
+  }
+
+  function requestComTampermonkey(url, token, payload) {
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
         method: 'POST',
@@ -123,20 +138,54 @@
         },
         data: JSON.stringify(payload),
         onload: (res) => {
-          let json = null;
-          try { json = JSON.parse(res.responseText || '{}'); } catch {}
-          if (res.status >= 200 && res.status < 300) resolve(json || {});
-          else if (res.status === 401) reject(new Error('Token não autorizado (401). No Netlify, use AGENDAMENTOS_SYNC_TOKEN somente no campo Key, o token somente no campo Value e publique um novo deploy'));
-          else {
-            const detalhe = (json && json.error) || `A API respondeu HTTP ${res.status}`;
-            const codigo = json && json.code ? ` [${json.code}]` : '';
-            reject(new Error(`${detalhe}${codigo}`));
-          }
+          try { resolve(interpretarResposta(res.status, res.responseText, res.statusText)); }
+          catch (erro) { reject(erro); }
         },
-        onerror: () => reject(new Error('Falha de rede')),
-        ontimeout: () => reject(new Error('Tempo esgotado')),
+        onerror: (res) => {
+          const detalhe = [res && res.status, res && res.statusText, res && res.error].filter(Boolean).join(' · ');
+          reject(new Error(`GM_NETWORK:${detalhe || 'conexão recusada pelo navegador/extensão'}`));
+        },
+        ontimeout: () => reject(new Error('GM_NETWORK:tempo esgotado')),
+        onabort: () => reject(new Error('GM_NETWORK:requisição cancelada')),
       });
     });
+  }
+
+  async function requestComFetch(url, token, payload) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20000);
+    try {
+      // text/plain mantém a chamada como CORS simples e evita que proxies ou
+      // extensões bloqueiem o preflight causado pelo header Authorization.
+      const res = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify({ ...payload, sync_token: token }),
+        signal: controller.signal,
+      });
+      return interpretarResposta(res.status, await res.text(), res.statusText);
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async function requestJson(url, token, payload) {
+    try {
+      return await requestComTampermonkey(url, token, payload);
+    } catch (erroGm) {
+      const mensagemGm = erroGm instanceof Error ? erroGm.message : String(erroGm || '');
+      if (!mensagemGm.startsWith('GM_NETWORK:')) throw erroGm;
+      console.warn('[Alagoas Motos · Agendamentos] Canal Tampermonkey indisponível; tentando CORS simples.', mensagemGm);
+      try {
+        return await requestComFetch(url, token, payload);
+      } catch (erroFetch) {
+        const mensagemFetch = erroFetch instanceof Error ? erroFetch.message : String(erroFetch || 'falha desconhecida');
+        throw new Error(`A conexão foi bloqueada pelos dois canais. Endpoint: ${url}. Tampermonkey: ${mensagemGm.replace('GM_NETWORK:', '')}. Fetch: ${mensagemFetch}`);
+      }
+    }
   }
 
   function garantirBotao() {
@@ -215,6 +264,7 @@
   }
 
   GM_registerMenuCommand('Configurar sincronização de agendamentos', configurar);
+  GM_registerMenuCommand('Mostrar endpoint configurado', () => window.alert(`Endpoint atual:\n${getConfig().endpoint}`));
   GM_registerMenuCommand('Sincronizar agendamentos agora', () => sincronizar(true));
 
   garantirBotao();

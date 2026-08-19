@@ -69,6 +69,14 @@ Não use a chave **Publishable** (`sb_publishable_...`) nem a chave legada `anon
 
 Na tela de listagem do MicroWork aparecerá um botão no canto inferior direito. A sincronização ocorre automaticamente quando a tabela muda e também pode ser forçada clicando nesse botão.
 
+O coletor 1.3.0 possui dois canais de envio. Primeiro usa a API própria do Tampermonkey; se o navegador ou a extensão bloquear esse canal, tenta automaticamente uma requisição CORS simples, sem expor o token na URL. O endpoint padrão já vem preenchido como:
+
+```text
+https://alagoasmotos.netlify.app/api/agendamentos/sync
+```
+
+Abrir esse endereço diretamente deve retornar um JSON com `"ok": true`. Isso confirma que a função publicada está acessível.
+
 ### Paginação
 
 O coletor identifica quando a tela mostra, por exemplo, “1–10 de 25 itens”. Nesse caso ele avisa **10 de 25 sincronizados** e não remove registros antigos, porque a captura é parcial.
