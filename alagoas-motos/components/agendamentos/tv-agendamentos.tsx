@@ -120,7 +120,7 @@ export function TvAgendamentos({ inicial, demo = false }: { inicial: Agendamento
     <main className={styles.screen}>
       <header className={styles.header}>
         <div className={styles.brand}>
-          <Image src="/alagoas-motos-logo.png" width={190} height={76} alt="Alagoas Motos" priority />
+          <Image src="/alagoas-motos-logo.webp" width={190} height={76} alt="Alagoas Motos" priority />
           <div className={styles.brandText}>
             <strong>Recepção de serviços</strong>
             <span>Agenda de hoje · {dataExtenso}</span>

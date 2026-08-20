@@ -142,7 +142,7 @@ export function OficinaSidebar({ view, onView, userName, userEmail, avatarUrl, o
         }}
       >
         <Image
-          src={collapsed ? '/alagoas-motos-symbol.png' : '/alagoas-motos-logo.png'}
+          src={collapsed ? '/alagoas-motos-symbol.webp' : '/alagoas-motos-logo.webp'}
           alt="Alagoas Motos"
           width={collapsed ? 38 : 188}
           height={collapsed ? 38 : 75}

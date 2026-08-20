@@ -58,7 +58,10 @@ function MotoCard({ modelo, onOpen, index }: { modelo: Modelo; onOpen: () => voi
         <img
           src={v.foto}
           alt={modelo.modelo}
+          width={860}
+          height={550}
           loading="lazy"
+          decoding="async"
           className="max-h-[168px] w-auto object-contain motion-safe:transition-transform motion-safe:duration-[550ms] group-hover:scale-[1.09]"
           style={{ opacity: v.temFotoPropria ? 1 : 0.45, transitionTimingFunction: "cubic-bezier(.22,1,.36,1)" }}
         />
@@ -168,6 +171,10 @@ function DetalheMoto({
             key={modelo.modelo}
             src={v.foto}
             alt={modelo.modelo}
+            width={860}
+            height={550}
+            loading="lazy"
+            decoding="async"
             className="w-full max-h-[360px] rounded-2xl object-contain animate-oficina-zoom"
             style={{ background: "#fff", opacity: v.temFotoPropria ? 1 : 0.45 }}
           />

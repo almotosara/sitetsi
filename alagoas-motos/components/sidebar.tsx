@@ -205,7 +205,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
       >
         <span className="sr-only">Alternar largura do menu</span>
         <Image
-          src={collapsed ? '/alagoas-motos-symbol.png' : '/alagoas-motos-logo.png'}
+          src={collapsed ? '/alagoas-motos-symbol.webp' : '/alagoas-motos-logo.webp'}
           alt="Alagoas Motos"
           width={collapsed ? 38 : 188}
           height={collapsed ? 38 : 75}

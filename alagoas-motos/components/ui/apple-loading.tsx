@@ -62,7 +62,7 @@ export function AppleLoading() {
               </CircularProgressIndicator>
               <div className="absolute inset-[15px] grid place-items-center overflow-hidden rounded-[24px] border border-white/10 bg-white shadow-[0_18px_45px_-22px_rgba(239,68,68,.9)]">
                 <Image
-                  src="/alagoas-motos-symbol.png"
+                  src="/alagoas-motos-symbol.webp"
                   alt="Alagoas Motos"
                   width={66}
                   height={66}

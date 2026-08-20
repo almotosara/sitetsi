@@ -5,6 +5,7 @@ import { OficinaShell } from '@/components/oficina-shell'
 import { ToastProvider } from '@/components/toast'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SiteBackground } from '@/components/ui/site-background'
+import './consultant.css'
 
 // Tenta carregar dados do Supabase se disponível
 async function loadData() {

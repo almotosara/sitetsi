@@ -34,7 +34,7 @@ export default async function TvAgendamentosPage({
     return (
       <main className={styles.blocked}>
         <div className={styles.blockedCard}>
-          <Image src="/alagoas-motos-logo.png" width={190} height={76} alt="Alagoas Motos" priority />
+          <Image src="/alagoas-motos-logo.webp" width={190} height={76} alt="Alagoas Motos" priority />
           <div className={styles.blockedIcon}>TV</div>
           <h1>Acesso da recepção não configurado</h1>
           <p>Abra nesta TV o link de ativação fornecido pelo responsável do painel. A ativação fica salva neste aparelho.</p>

@@ -2,11 +2,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = [
   '/auth/login',
+  '/auth/error',
   '/api/auth/login',
   '/api/revisoes',
   '/api/agendamentos/sync',
   '/api/agendamentos/tv',
   '/tv/agendamentos',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/manifest.webmanifest',
+  '/sw.js',
 ]
 const ADMIN_EMAIL = 'administrativo@alagoasmotos.com'
 
@@ -27,7 +32,18 @@ export function middleware(request: NextRequest) {
 
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
-  // Não autenticado tentando acessar rota protegida → redireciona para login
+  // A raiz mostra o login sem uma viagem extra de redirecionamento. Com uma
+  // sessão válida, a requisição segue normalmente para o painel correto.
+  if (!session && pathname === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    const response = NextResponse.rewrite(url)
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0')
+    response.headers.set('Vary', 'Cookie')
+    return response
+  }
+
+  // Não autenticado tentando acessar outra rota protegida → login.
   if (!session && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
@@ -55,6 +71,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf)$).*)',
   ],
 }

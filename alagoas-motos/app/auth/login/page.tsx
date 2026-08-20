@@ -1,159 +1,91 @@
-'use client'
+import type { Metadata } from 'next'
 
-import { useState } from 'react'
-import { Lock } from 'lucide-react'
+import { LoginForm } from '@/components/auth/login-form'
 
-import {
-  GlassCard,
-  GlassCardContent,
-  GlassCardDescription,
-  GlassCardFooter,
-  GlassCardHeader,
-  GlassCardTitle,
-} from '@/components/ui/glass-card'
-import { ShinyButton } from '@/components/ui/shiny-button'
-import { CircularProgressSpinner } from '@/components/ui/circular-progress'
+export const dynamic = 'force-static'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+export const metadata: Metadata = {
+  title: 'Acesso',
+  description: 'Acesso restrito ao painel operacional da Alagoas Motos.',
+}
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Erro ao fazer login')
-        return
-      }
-
-      window.location.href = '/'
-    } catch {
-      setError('Erro de conexão com o servidor')
-    } finally {
-      setLoading(false)
-    }
+function HeroPicture({ backdrop = false }: { backdrop?: boolean }) {
+  if (backdrop) {
+    return (
+      <picture className="login-hero-backdrop" aria-hidden="true">
+        <img
+          src="/sahara-hero-blur.webp"
+          width={960}
+          height={350}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+        />
+      </picture>
+    )
   }
 
   return (
-    <main className="login-shell relative min-h-screen w-full overflow-hidden bg-[#0b0f12] font-manrope">
-      {/* preenchimento de fundo desfocado (não corta a arte principal) */}
+    <picture>
+      <source media="(max-width: 640px)" srcSet="/sahara-hero-960.webp" />
+      <source media="(max-width: 1280px)" srcSet="/sahara-hero-1440.webp" />
       <img
-        src="/sahara-hero.webp"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
-      />
-      {/* arte principal: moto e textos sempre inteiros, à esquerda */}
-      <img
-        src="/sahara-hero.webp"
+        src="/sahara-hero-1920.webp"
+        width={1920}
+        height={700}
         alt="Honda Sahara 300 em estrada litorânea"
-        className="absolute left-[-58%] top-1/2 w-[200%] max-w-none -translate-y-1/2 md:left-[-26%] md:w-[120%] lg:left-[-18%] lg:w-[112%]"
+        fetchPriority="high"
+        decoding="async"
+        className="login-hero-art max-w-none"
       />
+    </picture>
+  )
+}
 
-      {/* escurece só o lado direito, preservando a moto e os textos à esquerda */}
+export default function LoginPage() {
+  return (
+    <main className="login-shell relative min-h-screen w-full overflow-hidden bg-[#0b0f12] font-manrope">
+      <HeroPicture backdrop />
+      <HeroPicture />
+
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,12,14,0.15)_0%,transparent_35%,transparent_58%,rgba(8,12,14,0.6)_74%,rgba(8,12,14,0.9)_90%)]" />
       <div className="absolute inset-0 bg-black/35 md:bg-transparent" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10 md:justify-end md:px-10 lg:px-16">
-        <GlassCard className="login-card w-full max-w-md">
-          <GlassCardHeader className="text-center">
+        <section className="login-card liquid-glass relative isolate flex w-full max-w-md flex-col gap-6 py-7" aria-labelledby="login-title">
+          <span aria-hidden="true" className="liquid-glass-sheen" />
+
+          <header className="relative grid auto-rows-min items-start gap-1.5 px-7 text-center">
             <img
-              src="/alagoas-motos-logo.png"
+              src="/alagoas-motos-logo.webp"
+              width={384}
+              height={153}
               alt="Alagoas Motos"
               className="login-brand-logo"
             />
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-on-media-muted">
               Analytics · Oficina · TSI
             </p>
-            <GlassCardTitle className="mt-2 text-[clamp(1.55rem,5vw,2rem)] font-semibold tracking-[-0.04em] text-on-media">
+            <h1 id="login-title" className="mt-2 text-[clamp(1.55rem,5vw,2rem)] font-semibold leading-none tracking-[-0.04em] text-on-media">
               Bem-vindo de volta
-            </GlassCardTitle>
-            <GlassCardDescription className="mt-1 text-on-media-muted">
+            </h1>
+            <p className="mt-1 text-sm text-on-media-muted">
               Acesse o painel operacional da Alagoas Motos.
-            </GlassCardDescription>
-          </GlassCardHeader>
+            </p>
+          </header>
 
-          <GlassCardContent>
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-media-muted"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  required
-                  autoComplete="email"
-                  className="field-glass w-full rounded-xl px-4 py-3 text-sm"
-                />
-              </div>
+          <div className="relative px-7">
+            <LoginForm />
+          </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-media-muted"
-                >
-                  Senha
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                  className="field-glass w-full rounded-xl px-4 py-3 text-sm"
-                />
-              </div>
-
-              {error && <p className="text-center text-sm text-red-400">{error}</p>}
-
-              <ShinyButton
-                type="submit"
-                size="wide"
-                disabled={loading}
-                className="login-primary-button mt-1 w-full text-[15px] font-semibold text-on-media disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <CircularProgressSpinner size={20} thickness={2.4} label="Entrando" />
-                ) : (
-                  <>
-                    <Lock className="h-[18px] w-[18px]" />
-                    Entrar
-                  </>
-                )}
-              </ShinyButton>
-            </form>
-          </GlassCardContent>
-
-          <GlassCardFooter>
+          <footer className="relative flex flex-col gap-3 px-7">
             <p className="text-center text-xs leading-relaxed text-on-media-muted">
               Acesso restrito à equipe Alagoas Motos.
               <br />
               Seus dados ficam salvos com segurança na nuvem.
             </p>
-          </GlassCardFooter>
-        </GlassCard>
+          </footer>
+        </section>
       </div>
     </main>
   )

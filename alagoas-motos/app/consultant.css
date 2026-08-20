@@ -4,22 +4,6 @@
    afetados por estas regras.
    ======================================================================== */
 
-@font-face {
-  font-family: 'SUSE Local';
-  src: url('/fonts/suse/SUSE-VariableFont_wght.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SUSE Local';
-  src: url('/fonts/suse/SUSE-Italic-VariableFont_wght.ttf') format('truetype');
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
 .consultant-shell {
   --consultant-font: 'SUSE Local', var(--font-inter), Inter, system-ui, sans-serif;
   --consultant-red: #ef4444;
