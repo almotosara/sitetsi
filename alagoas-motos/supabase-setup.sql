@@ -19,9 +19,15 @@ CREATE TABLE IF NOT EXISTS leads (
   email       TEXT,
   status      TEXT NOT NULL DEFAULT 'Novo',
   obs         TEXT,
+  lembrete_em TIMESTAMPTZ,
+  lembrete_texto TEXT,
   criado_em   TIMESTAMPTZ NOT NULL DEFAULT now(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Instalações existentes: mantém o script idempotente.
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS lembrete_em TIMESTAMPTZ;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS lembrete_texto TEXT;
 
 -- 2. Tabela de dados TSI
 CREATE TABLE IF NOT EXISTS tsi_data (
@@ -108,6 +114,7 @@ CREATE POLICY "user_full_access_tsi_resend" ON tsi_resend
 -- 7. Índices para performance
 CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id);
 CREATE INDEX IF NOT EXISTS idx_leads_criado ON leads(criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_leads_lembrete_em ON leads(lembrete_em) WHERE lembrete_em IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_tsi_user ON tsi_data(user_id);
 CREATE INDEX IF NOT EXISTS idx_fieis_user ON clientes_fieis(user_id);
 CREATE INDEX IF NOT EXISTS idx_tsi_resend_user ON tsi_resend(user_id);

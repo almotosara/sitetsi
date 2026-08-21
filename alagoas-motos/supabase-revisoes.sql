@@ -106,6 +106,17 @@ BEGIN
   END LOOP;
 END $$;
 
+-- Mão de obra é editada apenas pela API autenticada do admin (service role).
+-- A oficina continua podendo consultar os valores com a anon key.
+DROP POLICY IF EXISTS rev_mao_de_obra_full_access ON public.rev_mao_de_obra;
+REVOKE INSERT, UPDATE, DELETE ON public.rev_mao_de_obra FROM anon, authenticated;
+GRANT SELECT ON public.rev_mao_de_obra TO anon, authenticated;
+CREATE POLICY rev_mao_de_obra_public_read
+  ON public.rev_mao_de_obra
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
 -- ============================================================
 -- DADOS
 -- ============================================================
