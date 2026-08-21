@@ -116,6 +116,12 @@ export function findGrupoMaoDeObra(modelo: string, grupos: MaoDeObraRow[]): MaoD
   return findGrupoPorToken(modelo, grupos) || findGrupoPorPalavras(modelo, grupos);
 }
 
+/** Valor fixo da revisão geral definido para o grupo do modelo. */
+export function valorRevisaoGeral(modelo: string, grupos: MaoDeObraRow[]): number | null {
+  const valor = findGrupoMaoDeObra(modelo, grupos)?.revisao_geral_valor;
+  return typeof valor === "number" && Number.isFinite(valor) ? valor : null;
+}
+
 export function estimarMaoDeObra(
   revisao: Revisao,
   modelo: string,
@@ -125,7 +131,7 @@ export function estimarMaoDeObra(
   if (revisao.mao_de_obra_valor != null) return { valor: revisao.mao_de_obra_valor, estimado: false };
   if (revisao.tmo_horas == null) return { valor: null, estimado: false };
   const grupo = findGrupoMaoDeObra(modelo, grupos);
-  if (!grupo) return { valor: null, estimado: false };
+  if (!grupo || !Number.isFinite(grupo.tmo_hora_valor)) return { valor: null, estimado: false };
   return { valor: revisao.tmo_horas * grupo.tmo_hora_valor, estimado: true };
 }
 

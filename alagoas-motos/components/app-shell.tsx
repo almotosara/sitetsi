@@ -10,6 +10,7 @@ import { LeadsView } from './views/leads-view'
 import { ChatPanel } from './chat-panel'
 import { ReportView } from './views/report-view'
 import { TsiView } from './views/tsi-view'
+import { TsiDetailView } from './views/tsi-detail-view'
 import { TsiListView } from './views/tsi-list-view'
 import { TsiResendView } from './views/tsi-resend-view'
 import { FieisView } from './views/fieis-view'
@@ -22,13 +23,14 @@ import {
   bulkCreateLeads, replaceTsiResend, markTsiResendSent,
 } from '@/app/actions'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'tsiresend' | 'fieis'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsidetail' | 'tsilist' | 'tsiresend' | 'fieis'
 
 const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
   dash:      { title: 'Painel de Leads', sub: 'Visão geral do mês' },
   leads:     { title: 'Leads', sub: 'Todos os registros' },
   report:    { title: 'Relatórios', sub: 'Análise por período' },
   tsi:       { title: 'TSI — Inteligência de Leads', sub: 'Satisfação, desempenho e oportunidades' },
+  tsidetail: { title: 'Detalhamento TSI', sub: 'Indicadores da pesquisa organizados por blocos' },
   tsilist:   { title: 'Pesquisas TSI', sub: 'Lista detalhada' },
   tsiresend: { title: 'Reenvio de Pesquisas', sub: 'Controle de reenvio TSI' },
   fieis:     { title: 'Clientes Fiéis', sub: 'Clientes recorrentes' },
@@ -36,6 +38,17 @@ const VIEW_TITLES: Record<View, { title: string; sub: string }> = {
 
 // ID fixo do usuário (single-user)
 const USER_ID = '00000000-0000-0000-0000-000000000001'
+
+function normalizeLeadPhone(value?: string | null) {
+  let digits = (value || '').replace(/\D/g, '')
+  if (digits.startsWith('55') && digits.length >= 12) digits = digits.slice(2)
+  return digits.length >= 8 ? digits : ''
+}
+
+function normalizeLeadDocument(value?: string | null) {
+  const digits = (value || '').replace(/\D/g, '')
+  return digits.length >= 11 ? digits : ''
+}
 
 // ─── Utility: getCol — busca flexível de coluna (igual ao HTML de referência) ───
 function getCol(row: Record<string, unknown>, ...candidates: string[]): string {
@@ -140,15 +153,36 @@ export function AppShell({
 
   const handleSaveLead = useCallback(async (data: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'>) => {
     if (editing) {
-      setLeads((prev) => prev.map((l) => l.id === editing.id ? { ...l, ...data } : l))
+      const updatedAt = new Date().toISOString()
+      setLeads((prev) => prev.map((l) => l.id === editing.id ? { ...l, ...data, atualizado_em: updatedAt } : l))
       try {
         await updateLead(editing.id, data)
         toast('Lead atualizado com sucesso.')
+        return true
       } catch (e) {
-        setLeads(initialLeads)
+        setLeads((prev) => prev.map((l) => l.id === editing.id ? editing : l))
         toast('Erro ao atualizar lead.', true)
+        return false
       }
     } else {
+      const normalizedPhone = normalizeLeadPhone(data.telefone)
+      const normalizedDocument = normalizeLeadDocument(data.cpf)
+      const duplicate = leads.find((lead) => (
+        (normalizedPhone && normalizeLeadPhone(lead.telefone) === normalizedPhone) ||
+        (normalizedDocument && normalizeLeadDocument(lead.cpf) === normalizedDocument)
+      ))
+
+      if (duplicate) {
+        const reasons = [
+          normalizedPhone && normalizeLeadPhone(duplicate.telefone) === normalizedPhone ? 'telefone' : '',
+          normalizedDocument && normalizeLeadDocument(duplicate.cpf) === normalizedDocument ? 'CPF/CNPJ' : '',
+        ].filter(Boolean).join(' e ')
+        const shouldContinue = window.confirm(
+          `Já existe um lead com este ${reasons}: ${duplicate.nome}. Deseja continuar mesmo assim?`,
+        )
+        if (!shouldContinue) return false
+      }
+
       const temp: Lead = {
         id: `temp-${Date.now()}`,
         user_id: USER_ID,
@@ -158,16 +192,19 @@ export function AppShell({
       }
       setLeads((prev) => [temp, ...prev])
       try {
-        await createLead(data)
+        const created = await createLead(data)
+        setLeads((prev) => prev.map((lead) => lead.id === temp.id ? created : lead))
         toast('Lead cadastrado com sucesso.')
         startTrans(() => {})
+        return true
       } catch (e: unknown) {
         setLeads((prev) => prev.filter((l) => l.id !== temp.id))
         const msg = e instanceof Error ? e.message : 'Erro desconhecido'
         toast(`Erro ao cadastrar lead: ${msg}`, true)
+        return false
       }
     }
-  }, [editing, initialLeads, toast])
+  }, [editing, leads, toast])
 
   const handleDeleteLead = useCallback(async (id: string) => {
     setLeads((prev) => prev.filter((l) => l.id !== id))
@@ -679,6 +716,14 @@ export function AppShell({
           )}
           {view === 'report' && <ReportView leads={leads} />}
           {view === 'tsi' && <TsiView tsiData={tsiData} tsiUpdatedAt={tsiUpdatedAt} onImport={handleTsiImport} />}
+          {view === 'tsidetail' && (
+            <TsiDetailView
+              tsiData={tsiData}
+              tsiResend={tsiResend}
+              tsiUpdatedAt={tsiUpdatedAt}
+              onImport={handleTsiImport}
+            />
+          )}
           {view === 'tsilist' && <TsiListView tsiData={tsiData} onImport={handleTsiImport} />}
           {view === 'tsiresend' && <TsiResendView data={tsiResend} tsiData={tsiData} fieis={fieis} onImport={handleTsiResendImport} onMarkSent={handleMarkTsiResendSent} />}
           {view === 'fieis' && (

@@ -22,9 +22,6 @@ const IconArrow = ({ className = '' }: { className?: string }) => (
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
 )
-const IconDownload = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-)
 const IconPlay = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
 )
@@ -233,7 +230,7 @@ function ProjectAnalytics({ leads }: { leads: Lead[] }) {
 interface ReminderItem { id: string; text: string; done: boolean }
 const REMINDERS_KEY = 'am_reminders'
 
-function Reminders() {
+function Reminders({ leads, onView }: { leads: Lead[]; onView: (v: string) => void }) {
   const [items, setItems] = useState<ReminderItem[]>([])
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
@@ -268,7 +265,10 @@ function Reminders() {
     setItems((prev) => prev.filter((it) => it.id !== id))
   }
 
-  const pending = items.filter((i) => !i.done).length
+  const linkedReminders = useMemo(() => leads
+    .filter((lead) => Boolean(lead.lembrete_em))
+    .sort((a, b) => new Date(a.lembrete_em!).getTime() - new Date(b.lembrete_em!).getTime()), [leads])
+  const pending = items.filter((i) => !i.done).length + linkedReminders.length
 
   return (
     <Panel className="p-5 flex flex-col gap-4">
@@ -305,7 +305,36 @@ function Reminders() {
       )}
 
       <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 220 }}>
-        {items.length === 0 && !adding && (
+        {linkedReminders.length > 0 && (
+          <span className="px-1 pb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Vinculados a leads</span>
+        )}
+        {linkedReminders.map((lead) => {
+          const when = new Date(lead.lembrete_em!)
+          const overdue = when.getTime() < Date.now()
+          return (
+            <button
+              type="button"
+              key={`lead-${lead.id}`}
+              onClick={() => onView('leads')}
+              className="flex min-h-12 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-[var(--sidebar-hover)]"
+              title="Abrir lista de leads"
+            >
+              <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg" style={{ color: overdue ? 'var(--color-red)' : 'var(--color-blue)', background: overdue ? 'color-mix(in srgb, var(--color-red) 11%, transparent)' : 'color-mix(in srgb, var(--color-blue) 11%, transparent)' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block truncate text-[12.5px]" style={{ color: 'var(--text-primary)' }}>{lead.nome}</strong>
+                <small className="block truncate text-[10.5px]" style={{ color: overdue ? 'var(--color-red)' : 'var(--text-muted)' }}>
+                  {lead.lembrete_texto || 'Retornar contato'} · {when.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </small>
+              </span>
+            </button>
+          )
+        })}
+        {linkedReminders.length > 0 && items.length > 0 && (
+          <span className="px-1 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Lembretes pessoais</span>
+        )}
+        {items.length === 0 && linkedReminders.length === 0 && !adding && (
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Nenhum lembrete. Clique em + para adicionar.</p>
         )}
         {items.map((it) => (
@@ -536,7 +565,7 @@ export function DashView({ leads, goal, onGoalChange, onView, onNewLead }: DashV
       {/* Middle row */}
       <div className="responsive-grid responsive-grid-3 grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr 1fr' }}>
         <ProjectAnalytics leads={leads} />
-        <Reminders />
+        <Reminders leads={leads} onView={onView} />
         <ProjectsList leads={leads} onView={onView} />
       </div>
 

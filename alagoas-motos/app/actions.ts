@@ -23,9 +23,14 @@ export async function createLead(
   lead: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'>
 ) {
   const supabase = await createClient()
-  const { error } = await supabase.from('leads').insert({ ...lead, user_id: USER_ID })
+  const { data, error } = await supabase
+    .from('leads')
+    .insert({ ...lead, user_id: USER_ID })
+    .select()
+    .single()
   if (error) throw error
   revalidatePath('/')
+  return data as Lead
 }
 
 export async function bulkCreateLeads(
@@ -49,7 +54,7 @@ export async function updateLead(
   const supabase = await createClient()
   const { error } = await supabase
     .from('leads')
-    .update(lead)
+    .update({ ...lead, atualizado_em: new Date().toISOString() })
     .eq('id', id)
   if (error) throw error
   revalidatePath('/')

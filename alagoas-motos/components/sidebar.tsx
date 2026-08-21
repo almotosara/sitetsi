@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useTheme } from './theme-provider'
 import { SettingsModal } from './settings-modal'
 
-type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsilist' | 'tsiresend' | 'fieis'
+type View = 'dash' | 'leads' | 'report' | 'tsi' | 'tsidetail' | 'tsilist' | 'tsiresend' | 'fieis'
 
 interface SidebarProps {
   view: View
@@ -49,6 +49,7 @@ const NAV_ITEMS: NavItemDef[] = [
     icon: <IconTsi />,
     children: [
       { id: 'tsi', label: 'Metas', icon: <IconTarget /> },
+      { id: 'tsidetail', label: 'Detalhamento', icon: <IconDetails /> },
       { id: 'tsilist', label: 'Pesquisas', icon: <IconCheck /> },
       { id: 'tsiresend', label: 'Reenvio de Pesquisas', icon: <IconResend /> },
       { id: 'fieis', label: 'Clientes Fiéis', icon: <IconHeart /> },
@@ -66,7 +67,7 @@ export function Sidebar({ view, onView, userName, userEmail, avatarUrl, onSignOu
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     if (view === 'leads' || view === 'report') init['leads'] = true
-    if (['tsi', 'tsilist', 'tsiresend', 'fieis'].includes(view)) init['tsi'] = true
+    if (['tsi', 'tsidetail', 'tsilist', 'tsiresend', 'fieis'].includes(view)) init['tsi'] = true
     return init
   })
 
@@ -407,6 +408,9 @@ function IconTsi() {
 }
 function IconTarget() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+}
+function IconDetails() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17.5h7M17.5 14v7"/></svg>
 }
 function IconCheck() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>

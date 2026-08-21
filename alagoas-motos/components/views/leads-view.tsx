@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useMemo, useCallback, useRef } from 'react'
-import type { Lead, ClienteFiel } from '@/lib/types'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import type { Lead, ClienteFiel, LeadStatus } from '@/lib/types'
 import { ORIGEM_COLORS, fmtDate, STATUS_OPTIONS } from '@/lib/constants'
 import { useToast } from '@/components/toast'
 import { StatusBadge } from '@/components/ui/status-badge'
+import { FunnelChart, type FunnelStage } from '@/components/ui/funnel-chart'
+
+import styles from './leads-funnel.module.css'
 
 interface LeadsViewProps {
   leads: Lead[]
@@ -52,7 +55,55 @@ function normName(v?: string | null): string {
   return (v || '').trim().toLowerCase()
 }
 
+function waLink(phone: string, name: string) {
+  let digits = phone.replace(/\D/g, '')
+  if (digits.startsWith('55') && digits.length >= 12) digits = digits.slice(2)
+  const firstName = name.trim().split(/\s+/)[0] || 'cliente'
+  const message = `Olá, ${firstName}! Tudo bem? Aqui é da Alagoas Motos. Podemos falar sobre seu atendimento?`
+  return `https://wa.me/55${digits}?text=${encodeURIComponent(message)}`
+}
+
+function reminderLabel(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+  })
+}
+
+type LeadsTab = 'list' | 'funnel'
+type FunnelLeadStatus = Exclude<LeadStatus, 'Perdido'>
+
+const FUNNEL_STATUSES: FunnelLeadStatus[] = ['Novo', 'Em contato', 'Proposta enviada', 'Convertido']
+
+interface FunnelMetric {
+  status: FunnelLeadStatus
+  value: number
+  current: number
+  topPercent: number
+  conversion: number
+  dropOff: number
+  averageHours: number | null
+}
+
+function averageCycleHours(rows: Lead[]) {
+  const durations = rows.map((lead) => {
+    const start = new Date(lead.criado_em).getTime()
+    const end = new Date(lead.atualizado_em).getTime()
+    return Number.isFinite(start) && Number.isFinite(end) && end >= start ? (end - start) / 3_600_000 : null
+  }).filter((value): value is number => value !== null)
+  return durations.length ? durations.reduce((sum, value) => sum + value, 0) / durations.length : null
+}
+
+function formatCycleTime(hours: number | null) {
+  if (hours === null) return '—'
+  if (hours < 24) return `${Math.max(1, Math.round(hours))}h`
+  const days = hours / 24
+  return `${days < 10 ? days.toFixed(1) : Math.round(days)}d`
+}
+
 export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, onDedupe }: LeadsViewProps) {
+  const [activeTab, setActiveTab] = useState<LeadsTab>('list')
   const [q, setQ] = useState('')
   const [origem, setOrigem] = useState('')
   const [status, setStatus] = useState('')
@@ -65,7 +116,16 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
   const [copiedBtn, setCopiedBtn] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [funnelVertical, setFunnelVertical] = useState(false)
   const toast = useToast()
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 680px)')
+    const update = () => setFunnelVertical(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
   const { fielPhones, fielNames } = useMemo(() => {
     const phones = new Set<string>()
@@ -120,7 +180,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
     }).catch(() => { toast('Não foi possível copiar.', true) })
   }, [toast])
 
-  const filtered = useMemo(() => leads.filter((l) => {
+  const contextFiltered = useMemo(() => leads.filter((l) => {
     const text = q.toLowerCase()
     if (text && !l.nome.toLowerCase().includes(text) &&
       !(l.telefone || '').includes(text) &&
@@ -130,22 +190,65 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
       !(l.cpf || '').includes(text) &&
       !(l.modelo || '').toLowerCase().includes(text)) return false
     if (origem && l.origem !== origem) return false
-    if (status && l.status !== status) return false
     if (modelo && l.modelo !== modelo) return false
     if (hideCnpj && isCNPJ(l.cpf)) return false
     if (onlyFieis && !isLeadFiel(l)) return false
-    if (de && l.data && l.data < de) return false
-    if (ate && l.data && l.data > ate) return false
+    if ((de || ate) && !l.data) return false
+    if (de && l.data! < de) return false
+    if (ate && l.data! > ate) return false
     return true
-  }), [leads, q, origem, status, de, ate, modelo, hideCnpj, onlyFieis, isLeadFiel])
+  }), [leads, q, origem, de, ate, modelo, hideCnpj, onlyFieis, isLeadFiel])
 
-  // Reset para a primeira página sempre que os filtros mudarem
-  const filterKey = `${q}|${origem}|${status}|${de}|${ate}|${modelo}|${hideCnpj}|${onlyFieis}`
-  const prevFilterKey = useRef(filterKey)
-  if (prevFilterKey.current !== filterKey) {
-    prevFilterKey.current = filterKey
-    if (page !== 1) setPage(1)
-  }
+  const filtered = useMemo(() => contextFiltered.filter((lead) => !status || lead.status === status), [contextFiltered, status])
+
+  const funnelMetrics = useMemo<FunnelMetric[]>(() => {
+    const top = contextFiltered.length
+    const reachedRows = FUNNEL_STATUSES.map((stage, stageIndex) => contextFiltered.filter((lead) => {
+      if (stageIndex === 0) return true
+      if (lead.status === 'Perdido') return false
+      const currentIndex = FUNNEL_STATUSES.indexOf(lead.status as FunnelLeadStatus)
+      return currentIndex >= stageIndex
+    }))
+
+    return FUNNEL_STATUSES.map((stage, index) => {
+      const value = reachedRows[index].length
+      const previous = index === 0 ? top : reachedRows[index - 1].length
+      const conversion = previous > 0 ? (value / previous) * 100 : 0
+      return {
+        status: stage,
+        value,
+        current: contextFiltered.filter((lead) => lead.status === stage).length,
+        topPercent: top > 0 ? (value / top) * 100 : 0,
+        conversion: index === 0 ? 100 : conversion,
+        dropOff: index === 0 ? 0 : Math.max(0, 100 - conversion),
+        averageHours: averageCycleHours(reachedRows[index]),
+      }
+    })
+  }, [contextFiltered])
+
+  const funnelData = useMemo<FunnelStage[]>(() => funnelMetrics.map((metric, index) => ({
+    label: metric.status,
+    value: metric.value,
+    displayValue: metric.value.toLocaleString('pt-BR'),
+    gradient: [
+      { offset: '0%', color: `var(--chart-${index + 1})` },
+      { offset: '100%', color: `var(--chart-${index + 2})` },
+    ],
+  })), [funnelMetrics])
+
+  const lostCount = useMemo(() => contextFiltered.filter((lead) => lead.status === 'Perdido').length, [contextFiltered])
+
+  const selectFunnelStage = useCallback((nextStatus: FunnelLeadStatus | 'Perdido') => {
+    setStatus(nextStatus)
+    setPage(1)
+    setActiveTab('list')
+  }, [])
+
+  // Reset para a primeira página depois que um filtro muda, sem disparar
+  // atualização de estado durante a fase de renderização.
+  useEffect(() => {
+    setPage(1)
+  }, [q, origem, status, de, ate, modelo, hideCnpj, onlyFieis, activeTab])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -156,6 +259,29 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
 
   return (
     <div className="consultant-view consultant-leads view-enter flex flex-col gap-4">
+      <div className={styles.tabBar} role="tablist" aria-label="Visualização dos leads">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'list'}
+          className={activeTab === 'list' ? styles.activeTab : ''}
+          onClick={() => setActiveTab('list')}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          Lista
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'funnel'}
+          className={activeTab === 'funnel' ? styles.activeTab : ''}
+          onClick={() => { setStatus(''); setActiveTab('funnel') }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h18l-7 8v6l-4 2v-8L3 4Z"/></svg>
+          Funil
+        </button>
+      </div>
+
       {/* Filters */}
       <div className="responsive-filter-row flex flex-wrap gap-2.5 items-end glass-effect p-4 rounded-2xl">
         <div className="responsive-search relative flex-1 min-w-[220px]">
@@ -239,7 +365,17 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
         )}
       </div>
 
-      {/* Table — igual ao HTML de referência */}
+      {activeTab === 'funnel' ? (
+        <FunnelPanel
+          data={funnelData}
+          metrics={funnelMetrics}
+          lostCount={lostCount}
+          total={contextFiltered.length}
+          vertical={funnelVertical}
+          onSelect={selectFunnelStage}
+        />
+      ) : (
+      /* Table — igual ao HTML de referência */
       <div className="rounded-2xl overflow-hidden glass-effect" style={{ border: '1px solid var(--border-line-soft)' }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16" style={{ color: 'var(--text-muted)' }}>
@@ -287,6 +423,18 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
                             title="Clique para copiar telefone"
                           >{l.telefone}</span>
                         )}
+                        {l.lembrete_em && (
+                          <button
+                            type="button"
+                            className={styles.reminderBadge}
+                            data-overdue={new Date(l.lembrete_em).getTime() < Date.now() ? 'true' : 'false'}
+                            title={l.lembrete_texto || 'Lembrete de contato'}
+                            onClick={() => onEdit(l)}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+                            {reminderLabel(l.lembrete_em)}
+                          </button>
+                        )}
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           <button onClick={() => copyText(l.nome, 'Nome', `${l.id}-nome`)} style={COPY_BTN_STYLE}>Nome</button>
                           {l.telefone && <button onClick={() => copyText(l.telefone, 'Telefone', `${l.id}-tel2`)} style={COPY_BTN_STYLE}>Tel</button>}
@@ -328,6 +476,7 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
                       {/* Ações */}
                       <td className="px-3.5 py-3">
                         <div className="flex gap-1.5 justify-end">
+                          {l.telefone && <WhatsappButton href={waLink(l.telefone, l.nome)} />}
                           {l.status !== 'Convertido' && (
                             <IconBtn title="Converter" onClick={() => onConvert(l.id)} green>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -384,7 +533,130 @@ export function LeadsView({ leads, fieis, onEdit, onDelete, onConvert, onNew, on
           )}
         </div>
       </div>
+      )}
     </div>
+  )
+}
+
+function FunnelPanel({
+  data,
+  metrics,
+  lostCount,
+  total,
+  vertical,
+  onSelect,
+}: {
+  data: FunnelStage[]
+  metrics: FunnelMetric[]
+  lostCount: number
+  total: number
+  vertical: boolean
+  onSelect: (status: FunnelLeadStatus | 'Perdido') => void
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+
+  if (total === 0) {
+    return (
+      <section className={styles.funnelEmpty} aria-live="polite">
+        <span className={styles.emptyIcon} aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h18l-7 8v6l-4 2v-8L3 4Z"/></svg>
+        </span>
+        <h2>Nenhum lead neste período</h2>
+        <p>Ajuste os filtros acima para visualizar a jornada comercial e as taxas de conversão.</p>
+      </section>
+    )
+  }
+
+  return (
+    <section className={styles.funnelPanel} aria-labelledby="funnel-title">
+      <header className={styles.funnelHeader}>
+        <div>
+          <span className={styles.eyebrow}>Jornada comercial</span>
+          <h2 id="funnel-title">Funil de conversão</h2>
+          <p>{total.toLocaleString('pt-BR')} lead(s) no recorte atual · clique em uma etapa para abrir a lista filtrada.</p>
+        </div>
+        <div className={styles.periodBadge}>
+          <span aria-hidden="true" />
+          Dados filtrados em tempo real
+        </div>
+      </header>
+
+      <div className={styles.funnelContent}>
+        <div className={styles.chartCard}>
+          <FunnelChart
+            data={data}
+            orientation={vertical ? 'vertical' : 'horizontal'}
+            layers={3}
+            gap={vertical ? 7 : 5}
+            edges="curved"
+            grid={{ bands: true, lines: true }}
+            hoveredIndex={hoveredIndex}
+            onHoverChange={setHoveredIndex}
+            onStageClick={(_, index) => onSelect(metrics[index].status)}
+            labelLayout={vertical ? 'grouped' : 'spread'}
+            labelOrientation={vertical ? 'horizontal' : 'vertical'}
+            className={styles.chart}
+          />
+        </div>
+
+        <div className={styles.detailCard}>
+          <div className={styles.detailHeading}>
+            <div>Etapa</div>
+            <div>Alcançaram</div>
+            <div>Do topo</div>
+            <div>Conversão</div>
+            <div>Drop-off</div>
+            <div>Tempo médio</div>
+          </div>
+          <div className={styles.detailRows}>
+            {metrics.map((metric, index) => (
+              <button
+                type="button"
+                key={metric.status}
+                className={styles.detailRow}
+                data-highlighted={hoveredIndex === index ? 'true' : 'false'}
+                onClick={() => onSelect(metric.status)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <span className={styles.stageName}>
+                  <i style={{ background: `var(--chart-${index + 1})` }} />
+                  <span>
+                    <strong>{metric.status}</strong>
+                    <small>{metric.current.toLocaleString('pt-BR')} atualmente nesta etapa</small>
+                  </span>
+                </span>
+                <MetricCell label="Alcançaram" value={metric.value.toLocaleString('pt-BR')} />
+                <MetricCell label="Do topo" value={`${metric.topPercent.toFixed(1)}%`} />
+                <MetricCell label="Conversão" value={index === 0 ? 'Base' : `${metric.conversion.toFixed(1)}%`} positive={index > 0} />
+                <MetricCell label="Drop-off" value={index === 0 ? '—' : `${metric.dropOff.toFixed(1)}%`} warning={index > 0 && metric.dropOff > 0} />
+                <MetricCell label="Tempo médio" value={formatCycleTime(metric.averageHours)} />
+                <svg className={styles.rowArrow} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            ))}
+          </div>
+          <button type="button" className={styles.lostRow} onClick={() => onSelect('Perdido')}>
+            <span className={styles.lostIcon} aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+            </span>
+            <span><strong>Perdidos</strong><small>Saíram do fluxo principal</small></span>
+            <b>{lostCount.toLocaleString('pt-BR')}</b>
+            <span className={styles.lostRate}>{total > 0 ? `${((lostCount / total) * 100).toFixed(1)}% do topo` : '0% do topo'}</span>
+            <svg className={styles.rowArrow} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <p className={styles.detailNote}>“Alcançaram” considera os leads que chegaram à etapa ou avançaram além dela. O clique filtra a lista pelo status atual correspondente.</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function MetricCell({ label, value, positive, warning }: { label: string; value: string; positive?: boolean; warning?: boolean }) {
+  return (
+    <span className={styles.metricCell} data-positive={positive ? 'true' : 'false'} data-warning={warning ? 'true' : 'false'}>
+      <small>{label}</small>
+      <strong>{value}</strong>
+    </span>
   )
 }
 
@@ -424,5 +696,20 @@ function IconBtn({ children, onClick, title, danger, green }: { children: React.
     >
       {children}
     </button>
+  )
+}
+
+function WhatsappButton({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Conversar no WhatsApp"
+      aria-label="Conversar com o lead no WhatsApp"
+      className={styles.whatsappButton}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.4-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.1c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.7.8 1.8.1.2.1.3 0 .5-.1.2-.1.3-.3.5-.1.2-.3.4-.4.5-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.3.1.5.1.7-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.2.1 1.5.7 1.8.8.3.1.5.2.5.3.1.2.1.6-.1 1.1Z"/></svg>
+    </a>
   )
 }

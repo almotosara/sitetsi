@@ -13,56 +13,109 @@ const PUBLIC_PATHS = [
   '/manifest.webmanifest',
   '/sw.js',
 ]
-const ADMIN_EMAIL = 'administrativo@alagoasmotos.com'
 
-// O token de sessão é base64url de "email:segredo" — aqui só precisamos do e-mail.
-function emailFromToken(token: string): string | null {
+type Role = 'consultor' | 'oficina' | 'admin'
+
+interface EdgeSession {
+  email: string
+  role: Role
+  sessionVersion: number
+  expiresAt: number
+}
+
+const VALID_ROLES = new Set<Role>(['consultor', 'oficina', 'admin'])
+
+function decodeBase64Url(value: string) {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const decoded = atob(base64 + '='.repeat((4 - (base64.length % 4)) % 4))
+  return Uint8Array.from(decoded, (char) => char.charCodeAt(0))
+}
+
+function decodeUtf8Base64Url(value: string) {
+  return new TextDecoder().decode(decodeBase64Url(value))
+}
+
+async function verifySessionToken(token: string): Promise<EdgeSession | null> {
+  const secret = process.env.SESSION_SECRET
+  if (!secret || secret.length < 32 || !token || token.length > 2048) return null
+
+  const parts = token.split('.')
+  if (parts.length !== 2) return null
+
   try {
-    const b64 = token.replace(/-/g, '+').replace(/_/g, '/')
-    const decoded = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
-    return decoded.split(':')[0] || null
+    const payloadText = decodeUtf8Base64Url(parts[0])
+    const signature = decodeBase64Url(parts[1])
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    )
+    const signatureValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signature,
+      new TextEncoder().encode(payloadText),
+    )
+    if (!signatureValid) return null
+
+    const [email, roleValue, sessionVersionValue, expiresAtValue, ...extra] = payloadText.split(':')
+    const role = roleValue as Role
+    const sessionVersion = Number(sessionVersionValue)
+    const expiresAt = Number(expiresAtValue)
+    if (
+      extra.length > 0 ||
+      !email ||
+      !VALID_ROLES.has(role) ||
+      !Number.isInteger(sessionVersion) || sessionVersion < 0 ||
+      !Number.isSafeInteger(expiresAt) || expiresAt <= Date.now()
+    ) return null
+
+    return { email: email.toLowerCase(), role, sessionVersion, expiresAt }
   } catch {
     return null
   }
 }
 
-export function middleware(request: NextRequest) {
+function unauthenticatedRoot(request: NextRequest) {
+  const url = request.nextUrl.clone()
+  url.pathname = '/auth/login'
+  const response = NextResponse.rewrite(url)
+  response.headers.set('Cache-Control', 'private, no-store, max-age=0')
+  response.headers.set('Vary', 'Cookie')
+  return response
+}
+
+function redirectToLogin(request: NextRequest, clearInvalidCookie = false) {
+  const url = request.nextUrl.clone()
+  url.pathname = '/auth/login'
+  const response = NextResponse.redirect(url)
+  if (clearInvalidCookie) response.cookies.delete('am_session')
+  return response
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const session = request.cookies.get('am_session')
+  const rawSession = request.cookies.get('am_session')?.value
+  const session = rawSession ? await verifySessionToken(rawSession) : null
+  const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path))
 
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  // A raiz continua exibindo o login por rewrite, sem salto visual adicional.
+  if (!session && pathname === '/') return unauthenticatedRoot(request)
 
-  // A raiz mostra o login sem uma viagem extra de redirecionamento. Com uma
-  // sessão válida, a requisição segue normalmente para o painel correto.
-  if (!session && pathname === '/') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    const response = NextResponse.rewrite(url)
-    response.headers.set('Cache-Control', 'private, no-store, max-age=0')
-    response.headers.set('Vary', 'Cookie')
-    return response
-  }
+  if (!session && !isPublic) return redirectToLogin(request, Boolean(rawSession))
 
-  // Não autenticado tentando acessar outra rota protegida → login.
-  if (!session && !isPublic) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
-  }
-
-  const email = session ? emailFromToken(session.value) : null
-
-  // Área administrativa: só o usuário admin entra (nem digitando a URL direto)
-  if (pathname.startsWith('/admin') && email !== ADMIN_EMAIL) {
+  // O role vem do payload assinado; não há chamada ao Supabase no Edge.
+  if (pathname.startsWith('/admin') && session?.role !== 'admin') {
     const url = request.nextUrl.clone()
     url.pathname = session ? '/' : '/auth/login'
     return NextResponse.redirect(url)
   }
 
-  // Autenticado na página de login → redireciona para a home certa
   if (session && pathname === '/auth/login') {
     const url = request.nextUrl.clone()
-    url.pathname = email === ADMIN_EMAIL ? '/admin' : '/'
+    url.pathname = session.role === 'admin' ? '/admin' : '/'
     return NextResponse.redirect(url)
   }
 

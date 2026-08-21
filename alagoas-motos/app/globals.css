@@ -97,6 +97,13 @@
   --focus-ring: rgba(215, 25, 32, .18);
   --card-radius: 24px;
   --control-radius: 999px;
+  --chart-1: #d71920;
+  --chart-2: #e36b35;
+  --chart-3: #d9a441;
+  --chart-4: #4f7ac7;
+  --chart-5: #16855f;
+  --chart-grid: rgba(81, 81, 87, .18);
+  --chart-line-primary: rgba(255, 255, 255, .58);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -142,6 +149,13 @@
   --focus-ring: rgba(231, 43, 51, .24);
   --card-radius: 24px;
   --control-radius: 999px;
+  --chart-1: #f04449;
+  --chart-2: #ff8a45;
+  --chart-3: #ffbd45;
+  --chart-4: #6f9bea;
+  --chart-5: #3bd69b;
+  --chart-grid: rgba(183, 188, 196, .16);
+  --chart-line-primary: rgba(255, 255, 255, .68);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -614,7 +628,8 @@ input, select, textarea, button { font-family: inherit; }
 }
 
 /* Sidebars de Oficina e Admin permanecem visíveis durante a rolagem. */
-.oficina-sidebar-spacer {
+.oficina-sidebar-spacer,
+.consultant-sidebar-spacer {
   flex: 0 0 auto;
 }
 
@@ -886,7 +901,8 @@ input, select, textarea, button { font-family: inherit; }
 
   .responsive-sidebar.is-mobile-open { transform: translateX(0); }
 
-  .oficina-sidebar-spacer {
+  .oficina-sidebar-spacer,
+  .consultant-sidebar-spacer {
     display: none;
   }
 
@@ -1057,6 +1073,10 @@ input, select, textarea, button { font-family: inherit; }
   .admin-panel {
     padding: 1rem !important;
     overflow-x: hidden;
+  }
+
+  .admin-panel.admin-dock-layout {
+    padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
   }
 
   .admin-panel header > div:first-child,
@@ -1721,6 +1741,25 @@ input, select, textarea, button { font-family: inherit; }
   .shiny-cta-default,
   .shiny-cta-wide {
     min-height: 48px;
+  }
+}
+
+/* Tablets em orientação horizontal também são dispositivos de toque, mesmo
+   quando ultrapassam o breakpoint visual de 900px. */
+@media (pointer: coarse) {
+  :where(.app-content, .oficina-content, .admin-panel, .app-sidebar, .am-sidebar)
+    :where(button, a[href], input:not([type='checkbox']):not([type='radio']), select, textarea) {
+    min-height: 48px;
+  }
+
+  :where(.app-content, .oficina-content, .admin-panel, .app-sidebar, .am-sidebar)
+    :where(button, a[href]) {
+    min-width: 48px;
+  }
+
+  :where(.app-content, .oficina-content, .admin-panel)
+    :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+    font-size: 16px !important;
   }
 }
 

@@ -1,0 +1,217 @@
+.panel {
+  overflow: hidden;
+  border: 1px solid var(--border-line-soft);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+  box-shadow: 0 28px 72px -55px var(--shadow-heavy);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+  border-bottom: 1px solid var(--border-line-soft);
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: .35rem;
+  color: var(--brand-primary);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 700;
+}
+
+.heading p {
+  max-width: 43rem;
+  margin: .45rem 0 0;
+  color: var(--text-muted);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+
+.refreshButton,
+.errorState button {
+  display: inline-flex;
+  min-width: 48px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  border: 1px solid var(--border-line);
+  border-radius: 14px;
+  background: var(--bg-panel-2);
+  color: var(--text-primary);
+  padding: .7rem 1rem;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.refreshButton svg,
+.errorState svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.refreshButton:disabled { opacity: .55; cursor: wait; }
+
+.grid {
+  width: 100%;
+}
+
+.gridHeader,
+.gridRow {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) minmax(10rem, 12rem) minmax(10rem, 12rem);
+  align-items: center;
+  gap: 1rem;
+}
+
+.gridHeader {
+  min-height: 3rem;
+  padding: 0 1.25rem;
+  background: var(--bg-panel-2);
+  color: var(--text-muted);
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.gridHeader span {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.gridHeader svg { width: .9rem; height: .9rem; }
+
+.gridRow {
+  min-height: 4.7rem;
+  padding: .75rem 1.25rem;
+  border-top: 1px solid var(--border-line-soft);
+  transition: background-color .18s ease;
+}
+
+.gridRow:hover {
+  background: color-mix(in srgb, var(--brand-primary) 4%, transparent);
+}
+
+.modelCell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .8rem;
+  color: var(--text-primary);
+  font-size: .84rem;
+}
+
+.modelCell strong { overflow-wrap: anywhere; }
+
+.order {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 34%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+  color: var(--brand-primary);
+  font-size: .68rem;
+  font-weight: 750;
+}
+
+.valueCell { min-width: 0; }
+.valueCell > span { display: none; }
+
+.currencyInput {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--border-line);
+  border-radius: 14px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  padding: .7rem .85rem;
+  font: inherit;
+  font-size: .84rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  text-align: right;
+}
+
+.currencyInput:disabled { opacity: .6; cursor: wait; }
+
+.state,
+.errorState {
+  display: flex;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  padding: 1.5rem;
+  color: var(--text-muted);
+  font-size: .85rem;
+  text-align: center;
+}
+
+.state svg { width: 1.1rem; height: 1.1rem; }
+
+.errorState {
+  flex-direction: column;
+  color: var(--color-red, #d71920);
+}
+
+.spinning { animation: spin .85s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 720px) {
+  .heading { align-items: stretch; flex-direction: column; }
+  .refreshButton { width: 100%; }
+  .gridHeader { display: none; }
+  .gridRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: .8rem;
+    padding: 1rem;
+  }
+  .modelCell { grid-column: 1 / -1; }
+  .valueCell {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  .valueCell > span {
+    display: block;
+    color: var(--text-muted);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 420px) {
+  .gridRow { grid-template-columns: minmax(0, 1fr); }
+  .modelCell { grid-column: auto; }
+  .currencyInput { text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning { animation-duration: 1.8s; }
+}

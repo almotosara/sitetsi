@@ -15,6 +15,8 @@ export interface Lead {
   email: string | null
   status: LeadStatus
   obs: string | null
+  lembrete_em?: string | null
+  lembrete_texto?: string | null
   criado_em: string
   atualizado_em: string
 }

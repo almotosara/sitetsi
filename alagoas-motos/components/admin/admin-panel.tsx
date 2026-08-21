@@ -1,7 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Bike, Boxes, ClipboardList, Wrench } from 'lucide-react'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import { DockTabs, type DockTabItem } from '@/components/ui/dock-tabs'
+import { MaoDeObraEditor } from '@/components/admin/mao-de-obra-editor'
 
 const VERDE = '#d71920'
 
@@ -53,7 +56,14 @@ const btnGhost: React.CSSProperties = {
   borderRadius: 8, padding: '6px 10px', fontSize: 12, cursor: 'pointer',
 }
 
-type Aba = 'revisoes' | 'avulsos' | 'catalogo'
+type Aba = 'revisoes' | 'avulsos' | 'catalogo' | 'maodeobra'
+
+const ADMIN_DOCK_ITEMS: DockTabItem[] = [
+  { id: 'revisoes', name: 'Revisões', icon: <Bike />, color: 'linear-gradient(145deg, #ef4444, #a90e14)' },
+  { id: 'avulsos', name: 'Serviços avulsos', icon: <Wrench />, color: 'linear-gradient(145deg, #f59e0b, #b45309)' },
+  { id: 'catalogo', name: 'Catálogo de mercadorias', icon: <Boxes />, color: 'linear-gradient(145deg, #3b82f6, #1d4ed8)' },
+  { id: 'maodeobra', name: 'Mão de Obra', icon: <ClipboardList />, color: 'linear-gradient(145deg, #22c55e, #087443)' },
+]
 
 export function AdminPanel({ userEmail }: { userEmail: string }) {
   if (!isSupabaseConfigured()) {
@@ -267,7 +277,14 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
     }, 0)
 
   return (
-    <div className="admin-panel" style={{ minHeight: '100vh', padding: '24px clamp(12px, 4vw, 40px)' }}>
+    <div
+      className="admin-panel admin-dock-layout"
+      style={{
+        minHeight: '100vh',
+        padding: '24px clamp(12px, 4vw, 40px)',
+        paddingBottom: 'calc(140px + env(safe-area-inset-bottom))',
+      }}
+    >
       <header className="flex flex-wrap items-center justify-between gap-3" style={{ marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700 }}>Painel administrativo — Valores e Mercadorias</h1>
@@ -286,26 +303,6 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
           </button>
         </div>
       </header>
-
-      <nav className="admin-tabs flex gap-2" style={{ marginBottom: 16 }}>
-        {([['revisoes', 'Revisões'], ['avulsos', 'Serviços avulsos'], ['catalogo', 'Catálogo de mercadorias']] as [Aba, string][]).map(
-          ([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setAba(k)}
-              style={{
-                ...btnGhost,
-                background: aba === k ? VERDE : 'transparent',
-                color: aba === k ? '#fff' : 'inherit',
-                borderColor: aba === k ? VERDE : 'rgba(127,127,127,.35)',
-                fontWeight: 600,
-              }}
-            >
-              {label}
-            </button>
-          )
-        )}
-      </nav>
 
       {msg && (
         <div style={{ ...card, padding: '8px 12px', marginBottom: 12, borderColor: VERDE, fontSize: 13 }}>{msg}</div>
@@ -565,6 +562,8 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
         </section>
       )}
 
+      {aba === 'maodeobra' && <MaoDeObraEditor />}
+
       {addAberto && (
         <ModalAdicionar
           busca={catBusca}
@@ -573,6 +572,14 @@ function ConfiguredAdminPanel({ userEmail }: { userEmail: string }) {
           onFechar={() => setAddAberto(false)}
           onAdicionar={adicionarMercadoria}
           onCriar={criarMercadoria}
+        />
+      )}
+
+      {!addAberto && (
+        <DockTabs
+          items={ADMIN_DOCK_ITEMS}
+          activeId={aba}
+          onChange={(id) => setAba(id as Aba)}
         />
       )}
     </div>

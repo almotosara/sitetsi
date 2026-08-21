@@ -19,13 +19,18 @@
 2. Em **Site settings → Environment variables**, confirme que existem:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SECRET_KEY` (ou `SUPABASE_SERVICE_ROLE_KEY` somente como fallback legado)
+   - `SESSION_SECRET`
 3. Deploy. O `netlify.toml` já está configurado (`npm run build` + plugin Next.js).
 
 ## 3. Acessar o painel
 
 - URL: `https://SEU-SITE.netlify.app/admin`
 - Login: `administrativo@alagoasmotos.com`
-- Senha: `AL@Adm01`
+- Senha: use a credencial forte cujo hash bcrypt foi cadastrado na tabela `app_users`.
+
+Consulte `AUTENTICACAO-SUPABASE-LEIA-ME.md` para criar as contas iniciais sem
+versionar senhas em texto puro.
 
 O usuário administrativo cai direto no painel ao logar. As outras contas (consultor e
 oficina) não conseguem abrir `/admin` nem digitando a URL — são redirecionadas.
@@ -98,7 +103,7 @@ só trocando a URL.
 | `app/api/revisoes/route.ts` | **novo** — endpoint público |
 | `app/admin/page.tsx` | **novo** — rota protegida do painel |
 | `components/admin/admin-panel.tsx` | **novo** — interface do painel |
-| `lib/auth.ts` | conta `administrativo@alagoasmotos.com` com papel `admin` |
+| `lib/auth.ts` | autenticação assinada e consulta da conta administrativa no Supabase |
 | `middleware.ts` | protege `/admin`, libera `/api/revisoes`, manda o admin pro painel |
 | `app/page.tsx` | admin logado é redirecionado para `/admin` |
 | `components/oficina-shell.tsx` | passou a ler `/api/revisoes` + Realtime |
@@ -109,10 +114,9 @@ só trocando a URL.
 
 - O userscript (`userscript/microwork-autofill_final.user.js`) **não foi alterado**,
   conforme combinado. Para integrá-lo, aponte-o para a URL do item 4.
-- O controle de acesso do painel usa o mesmo mecanismo de login por cookie que o app já
-  tinha. As tabelas `rev_*` aceitam escrita com a anon key (mesmo padrão das outras
-  tabelas do projeto); se quiser endurecer isso depois, é trocar as políticas por
-  autenticação Supabase real.
+- O painel usa cookie HTTP-only assinado e valida o papel `admin`. A edição protegida de
+  mão de obra ocorre no servidor com a service role; clientes públicos não recebem
+  permissão de escrita em `rev_mao_de_obra`.
 
 ---
 

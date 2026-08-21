@@ -1,20 +1,19 @@
 <div align="center">
-  <img src="./alagoas-motos/public/alagoas-motos-logo.png" width="320" alt="Alagoas Motos" />
+  <img src="public/alagoas-motos-logo.webp" alt="Alagoas Motos" width="360" />
 
-  <h1>Painel Operacional · Alagoas Motos</h1>
+  <h1>Alagoas Motos · Painel Operacional</h1>
 
   <p>
-    Plataforma interna para gestão de <strong>leads</strong>, indicadores <strong>TSI</strong>,
-    pesquisas de satisfação, rotinas da <strong>oficina</strong> e agendamentos da recepção.
+    Leads, pesquisas TSI, clientes fiéis, oficina, revisões e agendamentos<br />
+    reunidos em uma experiência responsiva para desktop, tablet, celular e TV.
   </p>
 
   <p>
-    <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-111111?style=for-the-badge&amp;logo=nextdotjs&amp;logoColor=white" />
-    <img alt="React" src="https://img.shields.io/badge/React-19-20232a?style=for-the-badge&amp;logo=react&amp;logoColor=61dafb" />
-    <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.7-3178c6?style=for-the-badge&amp;logo=typescript&amp;logoColor=white" />
-    <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-0f172a?style=for-the-badge&amp;logo=tailwindcss&amp;logoColor=38bdf8" />
-    <img alt="Supabase" src="https://img.shields.io/badge/Supabase-PostgreSQL-181818?style=for-the-badge&amp;logo=supabase&amp;logoColor=3ecf8e" />
-    <img alt="Netlify" src="https://img.shields.io/badge/Netlify-Deploy-014847?style=for-the-badge&amp;logo=netlify&amp;logoColor=32e6e2" />
+    <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs" />
+    <img alt="React" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" />
+    <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
+    <img alt="Supabase" src="https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white" />
+    <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" />
   </p>
 </div>
 
@@ -22,196 +21,157 @@
 
 ## Sobre o projeto
 
-O **Painel Operacional Alagoas Motos** reúne informações que antes ficavam espalhadas entre planilhas, o MicroWork Cloud DMS e processos manuais. A aplicação oferece experiências específicas para consultores, oficina, administração e recepção, mantendo o MicroWork como fonte operacional quando necessário.
+O painel centraliza rotinas comerciais e de pós-venda da Alagoas Motos. O projeto foi construído com Next.js App Router, TypeScript e Supabase, com foco em leitura rápida de indicadores, operação segura e boa usabilidade em qualquer tamanho de tela.
 
-O layout foi desenvolvido para funcionar em desktop, tablets, smartphones e TVs, com temas claro e escuro, componentes reutilizáveis, feedbacks de carregamento e indicadores de status acessíveis.
+### Principais módulos
 
-## Principais módulos
+- **Dashboard de leads:** indicadores, metas, evolução e lembretes vinculados a clientes.
+- **Leads:** filtros, paginação, WhatsApp, exportação, detecção de duplicatas e funil interativo.
+- **TSI:** painel analítico, detalhamento por blocos, matriz de oportunidades, voz do cliente e reenvios.
+- **Clientes fiéis:** consulta e acompanhamento da base recorrente.
+- **Oficina:** catálogo de motos, revisões, peças, T.M.O., manuais e abertura assistida de O.S.
+- **Agendamentos:** sincronização com MicroWork CloudDMS e visualização dedicada para a TV da recepção.
+- **Admin:** dock inferior e edição protegida de valores de mão de obra por grupo de modelos.
 
-| Área | Recursos |
-| --- | --- |
-| **Painel do consultor** | Resumo de resultados, metas, lembretes e leads recentes |
-| **Leads** | Cadastro, edição, filtros, deduplicação, conversão, relatórios e importação de planilhas |
-| **TSI · Top2Box** | Metas, evolução por período, ranking de lojas, matriz de desempenho e monitoramento de pesquisas |
-| **Pesquisas** | Listagem detalhada, filtros, importação e reenvio de pesquisas por e-mail ou WhatsApp |
-| **Clientes fiéis** | Cadastro e identificação automática por nome ou telefone |
-| **Oficina** | Dashboard de O.S., indicadores financeiros, consulta de revisões, prazos de garantia e cálculo de TMO |
-| **Agendamentos** | Sincronização do MicroWork, agenda diária e modo TV para a recepção |
-| **Administração** | Gestão de revisões, serviços, mão de obra, mercadorias e valores |
-| **Chat interno** | Comunicação entre consultor e oficina com atualização em tempo real |
+## Experiência visual
 
-## Fluxo dos agendamentos
-
-```mermaid
-flowchart LR
-    A[MicroWork Cloud DMS] -->|Userscript Tampermonkey| B[API protegida do Next.js]
-    B -->|Validação por token| C[(Supabase)]
-    C --> D[Oficina · Agendamentos]
-    C --> E[TV da recepção]
-    E -->|Atualização automática| E
-```
-
-- O userscript lê somente as linhas visíveis da listagem do MicroWork.
-- A sincronização atualiza os registros sem duplicá-los.
-- A API da TV mascara dados pessoais antes de enviá-los à tela da recepção.
-- O painel destaca a próxima chegada e atualiza a agenda automaticamente.
+- Fonte **SUSE** carregada localmente;
+- temas claro e escuro por meio de `[data-theme='dark']`;
+- background aurora vermelho animado em WebGL;
+- componentes responsivos, áreas de toque de no mínimo 48 px e suporte a `prefers-reduced-motion`;
+- badges semânticas, estados de carregamento e gráficos adaptáveis.
 
 ## Tecnologias
 
-- **Next.js 16** com App Router
-- **React 19** e **TypeScript 5.7**
-- **Tailwind CSS 4** e estrutura **shadcn/ui**
-- **Supabase** para PostgreSQL, Realtime e persistência
-- **Netlify** para hospedagem e funções server-side
-- **XLSX** para leitura e exportação de planilhas
-- **Framer Motion** e **GSAP** para interações e animações
-- **Lucide React** para iconografia
-- **Tampermonkey** para integração com o MicroWork Cloud DMS
+| Camada | Tecnologias |
+| --- | --- |
+| Interface | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn, CSS Modules |
+| Movimento e ícones | Framer Motion, Lucide React, GSAP |
+| Dados | Supabase/PostgreSQL |
+| Relatórios | SheetJS (`xlsx`) |
+| Autenticação | Cookie HTTP-only assinado com HMAC-SHA256 e senhas bcrypt |
+| Deploy | Netlify + Next.js Runtime |
 
-## Como executar localmente
+## Como executar
 
 ### Requisitos
 
-- [Node.js 20 ou superior](https://nodejs.org/)
-- Uma conta e um projeto no [Supabase](https://supabase.com/)
+- Node.js 20 ou superior;
+- npm;
+- um projeto Supabase;
+- variáveis de ambiente configuradas.
 
 ### Instalação
 
 ```bash
-git clone https://github.com/almotosara/sitetsi.git
-cd sitetsi/alagoas-motos
-npm ci
+git clone <URL_DO_REPOSITORIO>
+cd alagoas-motos
+npm install
 cp .env.example .env.local
 npm run dev
 ```
 
-A aplicação ficará disponível em `http://localhost:8080`.
+O ambiente local abre por padrão em `http://localhost:8080`.
 
 ## Variáveis de ambiente
 
-Preencha o arquivo `.env.local` usando `.env.example` como referência:
+Use `.env.example` como referência. Nunca versione `.env.local`, chaves secretas ou senhas.
 
-| Variável | Visibilidade | Finalidade |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Pública | URL do projeto Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pública | Chave anônima usada pelo cliente |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Secreta · servidor** | Acesso administrativo usado pelas rotas protegidas |
-| `AGENDAMENTOS_SYNC_TOKEN` | **Secreta · servidor** | Autoriza a sincronização enviada pelo userscript |
-| `TV_ACCESS_TOKEN` | **Secreta · servidor** | Autoriza o navegador da TV da recepção |
-
-> [!IMPORTANT]
-> No Netlify, informe o nome da variável no campo **Key** e somente o valor no campo **Value**. Nunca use o prefixo `NEXT_PUBLIC_` em chaves secretas e publique um novo deploy após qualquer alteração.
-
-## Preparação do Supabase
-
-Execute os scripts necessários pelo **SQL Editor** do Supabase:
-
-| Arquivo | Conteúdo |
-| --- | --- |
-| `supabase-setup.sql` | Leads, TSI, clientes fiéis, preferências e chat |
-| `supabase-setup-os.sql` | Linhas e indicadores de Ordens de Serviço |
-| `supabase-agendamentos.sql` | Agendamentos sincronizados do MicroWork |
-| `supabase-revisoes.sql` | Modelos, revisões, mercadorias, serviços e mão de obra |
-| `supabase-migration-servico-dms.sql` | Migração aditiva do código de serviço do DMS |
-
-> [!WARNING]
-> `supabase-revisoes.sql` recria as tabelas `rev_*`. Depois que houver valores editados em produção, use apenas as migrações aditivas indicadas para evitar perda de dados.
-
-## Integração com o MicroWork
-
-Os scripts do Tampermonkey ficam em `alagoas-motos/userscript`:
-
-```text
-userscript/
-├── microwork-agendamentos-sync.user.js
-└── microwork-autofill_final.user.js
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=CHAVE_PUBLICA_DO_SUPABASE
+SUPABASE_SECRET_KEY=sb_secret_...
+SESSION_SECRET=SEGREDO_ALEATORIO_COM_PELO_MENOS_32_CARACTERES
+AGENDAMENTOS_SYNC_TOKEN=TOKEN_FORTE_E_EXCLUSIVO
+TV_ACCESS_TOKEN=OUTRO_TOKEN_FORTE_E_EXCLUSIVO
 ```
 
-- `microwork-agendamentos-sync.user.js`: captura a agenda visível e envia ao painel.
-- `microwork-autofill_final.user.js`: auxilia o preenchimento de O.S. a partir dos dados gerados pelo sistema.
+> `NEXT_PUBLIC_SUPABASE_ANON_KEY` é pública/publishable. `SUPABASE_SECRET_KEY`, `SESSION_SECRET`, `AGENDAMENTOS_SYNC_TOKEN` e `TV_ACCESS_TOKEN` são segredos de servidor e nunca devem usar o prefixo `NEXT_PUBLIC_`.
 
-Para a sincronização, configure no userscript a URL `https://SEU-SITE/api/agendamentos/sync` e o mesmo valor usado em `AGENDAMENTOS_SYNC_TOKEN`. **Nunca coloque a `SUPABASE_SERVICE_ROLE_KEY` no Tampermonkey.**
+Para projetos Supabase antigos, `SUPABASE_SERVICE_ROLE_KEY` permanece aceito como fallback da chave administrativa.
 
-## Modo TV
+## Configuração do Supabase
 
-Na primeira abertura do navegador da recepção, acesse:
+Execute os scripts necessários no **SQL Editor** do Supabase. Para uma instalação nova, use esta ordem:
 
-```text
-https://SEU-SITE/tv/agendamentos/acesso?chave=SEU_TV_ACCESS_TOKEN
+1. `supabase-setup.sql` — estrutura principal de leads e pesquisas;
+2. `supabase-revisoes.sql` — catálogo, revisões, serviços e mão de obra;
+3. `supabase-agendamentos.sql` — agendamentos sincronizados;
+4. `supabase-lead-reminders.sql` — lembretes vinculados aos leads;
+5. `supabase-auth-usuarios.sql` — usuários internos e auditoria de autenticação;
+6. `supabase-rev-mao-de-obra-admin.sql` — escrita de mão de obra restrita ao backend administrativo.
+
+O passo a passo completo da autenticação está em [AUTENTICACAO-SUPABASE-LEIA-ME.md](AUTENTICACAO-SUPABASE-LEIA-ME.md). Para a TV e o userscript de sincronização, consulte [AGENDAMENTOS-TV-LEIA-ME.md](AGENDAMENTOS-TV-LEIA-ME.md).
+
+### Criar as contas iniciais com bcrypt
+
+Defina temporariamente as três senhas no terminal e gere os hashes:
+
+```bash
+AUTH_PASSWORD_CONSULTOR='senha-forte' \
+AUTH_PASSWORD_OFICINA='outra-senha-forte' \
+AUTH_PASSWORD_ADMIN='mais-uma-senha-forte' \
+npm run auth:hashes
 ```
 
-Após a validação, o navegador poderá abrir diretamente:
+O comando imprime um SQL seguro para inserir ou atualizar as três contas em `app_users`. As senhas em texto puro não são gravadas no projeto.
 
-```text
-https://SEU-SITE/tv/agendamentos
+## Scripts
+
+```bash
+npm run dev          # desenvolvimento na porta 8080
+npm run build        # build de produção
+npm run start        # servidor de produção
+npm run lint         # análise estática, após configurar o ESLint
+npm run auth:hashes  # gera hashes bcrypt das contas iniciais
 ```
 
-## Scripts disponíveis
+Para validar os tipos diretamente:
 
-| Comando | Ação |
-| --- | --- |
-| `npm run dev` | Inicia o ambiente de desenvolvimento na porta `8080` |
-| `npm run build` | Gera o build otimizado de produção |
-| `npm run start` | Inicia a aplicação compilada |
-| `npm run lint` | Executa a análise estática do código |
+```bash
+npx tsc --noEmit
+```
 
 ## Estrutura resumida
 
 ```text
-sitetsi/
-├── README.md
-└── alagoas-motos/
-    ├── app/                 # Rotas, páginas e APIs do Next.js
-    ├── components/          # Dashboard, telas e componentes de interface
-    │   ├── admin/
-    │   ├── oficina/
-    │   ├── os/
-    │   ├── ui/
-    │   └── views/
-    ├── lib/                 # Regras, integrações, cálculos e acesso a dados
-    ├── public/              # Identidade visual, motos, fontes e documentos
-    ├── userscript/          # Integrações Tampermonkey com o MicroWork
-    ├── supabase-*.sql       # Estrutura e migrações do banco
-    ├── .env.example
-    ├── netlify.toml
-    └── package.json
+app/
+├── admin/                 # painel administrativo
+├── api/                   # autenticação, revisões e agendamentos
+├── auth/                  # login e tratamento de erro
+└── tv/agendamentos/       # painel da recepção
+components/
+├── admin/                 # editor administrativo
+├── oficina/               # views da oficina
+├── ui/                    # componentes reutilizáveis no padrão shadcn
+└── views/                 # dashboard, leads, TSI e relatórios
+lib/                       # autenticação, Supabase e regras de negócio
+public/                    # logos, fontes, imagens e PWA
+scripts/                   # utilitários locais
+userscript/                # integração do MicroWork via Tampermonkey
 ```
+
+## Segurança
+
+- Sessões em cookie `HttpOnly`, `SameSite=Lax` e assinatura HMAC-SHA256;
+- expiração e `session_version` para revogação global de sessões;
+- senhas armazenadas somente como hash bcrypt;
+- rate limit no login e logs básicos de auditoria;
+- tabelas de autenticação bloqueadas para `anon` e `authenticated` via RLS;
+- atualizações de mão de obra autorizadas somente para o papel `admin` por rota server-side.
 
 ## Deploy no Netlify
 
-1. Importe este repositório no Netlify.
-2. Defina `alagoas-motos` como **Base directory**.
-3. Cadastre todas as variáveis de ambiente.
-4. Execute os scripts SQL necessários no Supabase.
-5. Publique o projeto.
+1. Configure todas as variáveis em **Site configuration → Environment variables**;
+2. marque os valores sensíveis como secretos;
+3. disponibilize as variáveis nos contextos de Production e Preview necessários;
+4. execute as migrações no Supabase;
+5. publique um novo deploy.
 
-O arquivo `netlify.toml` já configura Node.js 20, `npm run build`, o diretório `.next` e o adaptador oficial do Next.js.
-
-## Segurança antes de publicar
-
-> [!CAUTION]
-> Este sistema trabalha com dados internos e informações de clientes. Revise estes pontos antes de disponibilizá-lo publicamente.
-
-- Nunca envie `.env.local`, service roles ou tokens ao GitHub.
-- Marque `SUPABASE_SERVICE_ROLE_KEY`, `AGENDAMENTOS_SYNC_TOKEN` e `TV_ACCESS_TOKEN` como valores secretos na hospedagem.
-- O projeto atualmente possui autenticação interna baseada em contas estáticas em `lib/auth.ts`. Antes de um uso público, migre as credenciais e o segredo de sessão para variáveis protegidas ou para um provedor de autenticação.
-- Troque imediatamente qualquer senha ou token que já tenha aparecido no histórico de commits.
-- Revise as políticas RLS do Supabase conforme o nível de acesso desejado.
-- A TV deve receber somente os dados mascarados fornecidos pela API própria.
-
-## Documentação complementar
-
-- [Agendamentos e modo TV](./alagoas-motos/AGENDAMENTOS-TV-LEIA-ME.md)
-- [Painel administrativo](./alagoas-motos/PAINEL-ADMIN-LEIA-ME.md)
-- [Dashboard de Ordens de Serviço](./alagoas-motos/OS_DASHBOARD_README.md)
-- [Configuração de ambiente](./alagoas-motos/.env.example)
-
-## Licença
-
-Projeto de uso interno da **Alagoas Motos**. Nenhuma licença de código aberto foi definida neste repositório.
+Depois do deploy, valide login, permissões de `/admin`, sincronização dos agendamentos, temas claro/escuro e as telas de oficina em desktop e mobile.
 
 ---
 
 <div align="center">
-  Desenvolvido para tornar o acompanhamento operacional da Alagoas Motos mais simples, visual e conectado.
+  Desenvolvido para a operação da <strong>Alagoas Motos</strong>.
 </div>

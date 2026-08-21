@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { Lead } from '@/lib/types'
 import { STATUS_COLORS, ORIGEM_COLORS } from '@/lib/constants'
+import { useToast } from '@/components/toast'
 
 interface ReportViewProps {
   leads: Lead[]
@@ -25,6 +26,8 @@ const INP: React.CSSProperties = {
 
 export function ReportView({ leads }: ReportViewProps) {
   const [range, setRange] = useState(monthRange)
+  const [exporting, setExporting] = useState(false)
+  const toast = useToast()
 
   const filtered = useMemo(() => leads.filter((l) => {
     if (!l.data) return false
@@ -56,6 +59,44 @@ export function ReportView({ leads }: ReportViewProps) {
   const conv = byStatus['Convertido'] || 0
   const convRate = total > 0 ? ((conv / total) * 100).toFixed(1) : '0.0'
 
+  async function exportFiltered() {
+    if (!filtered.length || exporting) return
+    setExporting(true)
+    try {
+      const XLSX = await import('xlsx')
+      const rows = filtered.map((lead) => ({
+        Nome: lead.nome,
+        Telefone: lead.telefone || '',
+        Origem: lead.origem,
+        Data: lead.data || '',
+        Status: lead.status,
+        'O.S.': lead.os || '',
+        'N.F.': lead.nf || '',
+        Modelo: lead.modelo || '',
+        'CPF/CNPJ': lead.cpf || '',
+        'E-mail': lead.email || '',
+        Observações: lead.obs || '',
+        'Lembrete em': lead.lembrete_em ? new Date(lead.lembrete_em).toLocaleString('pt-BR') : '',
+        'Motivo do lembrete': lead.lembrete_texto || '',
+      }))
+      const ws = XLSX.utils.json_to_sheet(rows)
+      ws['!cols'] = [
+        { wch: 30 }, { wch: 17 }, { wch: 17 }, { wch: 12 }, { wch: 20 },
+        { wch: 12 }, { wch: 12 }, { wch: 24 }, { wch: 18 }, { wch: 30 },
+        { wch: 38 }, { wch: 20 }, { wch: 30 },
+      ]
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Leads filtrados')
+      const suffix = `${range.de || 'inicio'}-a-${range.ate || 'hoje'}`
+      XLSX.writeFile(wb, `relatorio-leads-${suffix}.xlsx`)
+      toast('Relatório exportado com os filtros atuais.')
+    } catch {
+      toast('Não foi possível exportar o relatório.', true)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="consultant-view consultant-reports view-enter flex flex-col gap-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -69,6 +110,16 @@ export function ReportView({ leads }: ReportViewProps) {
           <input type="date" value={range.ate} onChange={(e) => setRange((r) => ({ ...r, ate: e.target.value }))} style={INP} />
           <button onClick={() => setRange(monthRange())} style={{ ...INP, cursor: 'pointer', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
             Este mês
+          </button>
+          <button
+            type="button"
+            onClick={exportFiltered}
+            disabled={!filtered.length || exporting}
+            className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+            style={{ ...INP, cursor: !filtered.length || exporting ? 'not-allowed' : 'pointer', color: '#fff', background: '#d71920', borderColor: '#d71920' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            {exporting ? 'Exportando…' : 'Exportar'}
           </button>
         </div>
       </div>

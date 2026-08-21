@@ -1,7 +1,7 @@
 # Prompt para o próximo agente Claude — ETAPA 3 de 3
 
-Contexto: projeto Next.js (App Router + Supabase) "Alagoas Motos". Login `oficina@alagoasmotos.com`
-(senha `Oficina@01`) renderiza `components/oficina-shell.tsx`, um painel separado do painel de
+Contexto: projeto Next.js (App Router + Supabase) "Alagoas Motos". A conta de papel `oficina`
+renderiza `components/oficina-shell.tsx`, um painel separado do painel de
 leads normal, com dados de revisão/manutenção Honda vindos de `public/data/revisoes.json`.
 
 ## O que foi feito na Etapa 2 (pronta)

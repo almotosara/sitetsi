@@ -10,12 +10,26 @@ interface LeadModalProps {
   open: boolean
   editing: Lead | null
   onClose: () => void
-  onSave: (data: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'>) => Promise<void>
+  onSave: (data: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'>) => Promise<boolean | void>
 }
 
 const EMPTY: Omit<Lead, 'id' | 'user_id' | 'criado_em' | 'atualizado_em'> = {
   nome: '', telefone: '', origem: 'Bot WhatsApp', data: '', os: '', nf: '',
-  modelo: '', cpf: '', email: '', status: 'Novo', obs: '',
+  modelo: '', cpf: '', email: '', status: 'Novo', obs: '', lembrete_em: null, lembrete_texto: '',
+}
+
+function toLocalDateTime(value?: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
+
+function toIsoDateTime(value?: string | null) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
 export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
@@ -30,6 +44,7 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
           data: editing.data ?? '', os: editing.os ?? '', nf: editing.nf ?? '',
           modelo: editing.modelo ?? '', cpf: editing.cpf ?? '', email: editing.email ?? '',
           status: editing.status, obs: editing.obs ?? '',
+          lembrete_em: toLocalDateTime(editing.lembrete_em), lembrete_texto: editing.lembrete_texto ?? '',
         })
       } else {
         setForm({ ...EMPTY, data: todayISO() })
@@ -47,8 +62,13 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
     if (!form.nome.trim()) return
     setSaving(true)
     try {
-      await onSave({ ...form, nome: form.nome.trim() })
-      onClose()
+      const saved = await onSave({
+        ...form,
+        nome: form.nome.trim(),
+        lembrete_em: toIsoDateTime(form.lembrete_em),
+        lembrete_texto: form.lembrete_texto?.trim() || null,
+      })
+      if (saved !== false) onClose()
     } finally {
       setSaving(false)
     }
@@ -155,6 +175,26 @@ export function LeadModal({ open, editing, onClose, onSave }: LeadModalProps) {
               {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </Field>
+
+          {/* Lembrete vinculado ao lead */}
+          <div className="lead-form-grid grid grid-cols-2 gap-3">
+            <Field label="Lembrar de contatar em">
+              <input
+                value={form.lembrete_em ?? ''}
+                onChange={(e) => set('lembrete_em', e.target.value)}
+                className="inp"
+                type="datetime-local"
+              />
+            </Field>
+            <Field label="Motivo do lembrete">
+              <input
+                value={form.lembrete_texto ?? ''}
+                onChange={(e) => set('lembrete_texto', e.target.value)}
+                placeholder="Ex: retornar proposta"
+                className="inp"
+              />
+            </Field>
+          </div>
 
           {/* Obs */}
           <Field label="Observações">

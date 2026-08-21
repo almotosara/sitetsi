@@ -13,6 +13,7 @@ import {
   fmtBRL,
   totalRevisao,
   estimarMaoDeObra,
+  valorRevisaoGeral,
   type Modelo,
   type RevisoesData,
 } from "../../lib/revisoes-calc";
@@ -103,16 +104,17 @@ function DetalheMoto({
     const rev = modelo.revisoes.find((x) => x.numero === numero);
     // "geral" só existe da 3ª revisão em diante
     const ehGeral = numero >= 3 && (geralOverride ?? geral);
-    // Mão de obra explícita da revisão (fallback: estimativa por grupo de TMO).
-    // Na revisão geral (fora da garantia) a mão de obra é sempre cobrada.
+    // Revisão normal: valor explícito ou estimativa pelo T.M.O do grupo.
+    // Revisão geral: prioriza o preço fixo configurado para o grupo do modelo.
     const calc = rev ? totalRevisao(rev, modelo.modelo, data.mao_de_obra) : null;
-    let mo: number | null = calc?.maoDeObra ?? null;
+    let mo: number | null = ehGeral
+      ? valorRevisaoGeral(modelo.modelo, data.mao_de_obra)
+      : calc?.maoDeObra ?? null;
     if (ehGeral && mo == null && rev) {
-      mo =
-        rev.mao_de_obra_valor ??
-        (rev.tmo_horas != null
-          ? estimarMaoDeObra({ ...rev, mao_de_obra_gratis: false }, modelo.modelo, data.mao_de_obra).valor
-          : null);
+      // Compatibilidade defensiva para bases antigas sem revisao_geral_valor.
+      mo = rev.mao_de_obra_valor ?? (rev.tmo_horas != null
+        ? estimarMaoDeObra({ ...rev, mao_de_obra_gratis: false }, modelo.modelo, data.mao_de_obra).valor
+        : null);
     }
     const url = urlOrdemServico({
       modelo: modelo.modelo,
