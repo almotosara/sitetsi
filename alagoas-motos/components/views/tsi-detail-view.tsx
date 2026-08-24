@@ -3,25 +3,32 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   Activity,
+  BadgeDollarSign,
   BarChart3,
+  Building2,
+  CalendarCheck2,
   CalendarDays,
-  CheckCircle2,
   ClipboardList,
   Gauge,
+  Handshake,
+  HeartHandshake,
   Mail,
   MessageSquareText,
+  PackageCheck,
   RefreshCw,
+  RotateCcw,
   Send,
+  ShieldCheck,
+  SmilePlus,
   Smartphone,
-  Store,
-  Target,
   Upload,
+  UserRoundCheck,
   UsersRound,
 } from 'lucide-react'
 
 import { ShinyButton } from '@/components/ui/shiny-button'
 import { TSI_META, TSI_STORE_MAP, TSI_YELLOW } from '@/lib/constants'
-import type { TsiResendRow, TsiRow } from '@/lib/types'
+import type { TsiBlockRatings, TsiResendRow, TsiRow } from '@/lib/types'
 
 import styles from './tsi-detail-view.module.css'
 
@@ -46,6 +53,12 @@ interface StoreMetric {
   name: string
   score: number
   responses: number
+}
+
+interface BlockScoreMetric {
+  score: number | null
+  responses: number
+  values: number[]
 }
 
 const clampScore = (value: number | null | undefined) => {
@@ -93,6 +106,35 @@ function average(rows: TsiRow[], selector: (row: TsiRow) => number) {
   return rows.length ? rows.reduce((sum, row) => sum + selector(row), 0) / rows.length : 0
 }
 
+function hasNumericScore(value: number | null | undefined): value is number {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+}
+
+function buildBlockScore(rows: TsiRow[], key: keyof TsiBlockRatings): BlockScoreMetric {
+  const values = rows
+    .map((row) => row.detalhamento?.[key])
+    .filter(hasNumericScore)
+    .map(Number)
+  return {
+    values,
+    responses: values.length,
+    score: values.length ? (values.filter((value) => value >= 9).length / values.length) * 100 : null,
+  }
+}
+
+function toneForBlockScore(value: number | null): Tone {
+  if (value === null) return 'neutral'
+  if (value >= 90) return 'green'
+  if (value >= 80) return 'amber'
+  return 'red'
+}
+
+function formatBlockScore(value: number | null) {
+  return value === null
+    ? '—'
+    : value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 function toneForScore(value: number): Tone {
   if (value >= TSI_META) return 'green'
   if (value >= TSI_YELLOW) return 'amber'
@@ -112,6 +154,7 @@ function buildMonths(rows: TsiRow[]): MonthMetric[] {
   const groups = new Map<string, { date: Date; sum: number; responses: number; feedbacks: number }>()
 
   rows.forEach((row) => {
+    if (!hasNumericScore(row.t2b)) return
     const date = parseDate(row.data)
     if (!date) return
     const key = monthKey(date)
@@ -137,6 +180,7 @@ function buildMonths(rows: TsiRow[]): MonthMetric[] {
 function buildStores(rows: TsiRow[]): StoreMetric[] {
   const stores = new Map<string, { sum: number; responses: number }>()
   rows.forEach((row) => {
+    if (!hasNumericScore(row.t2b)) return
     const name = storeName(row.loja)
     const current = stores.get(name) || { sum: 0, responses: 0 }
     current.sum += clampScore(row.t2b)
@@ -182,24 +226,27 @@ export function TsiDetailView({ tsiData, tsiResend, tsiUpdatedAt, onImport }: Ts
   }, [anchorDate, datedRows, filteredRows])
 
   const metrics = useMemo(() => {
-    const avgT2b = average(periodRows, (row) => clampScore(row.t2b))
-    const avgTsi = average(periodRows, (row) => clampScore(row.tsi))
-    const goal = periodRows.filter((row) => clampScore(row.t2b) >= TSI_META).length
-    const attention = periodRows.filter((row) => {
+    const scoredRows = periodRows.filter((row) => hasNumericScore(row.t2b))
+    const tsiRows = periodRows.filter((row) => hasNumericScore(row.tsi))
+    const avgT2b = average(scoredRows, (row) => clampScore(row.t2b))
+    const avgTsi = average(tsiRows, (row) => clampScore(row.tsi))
+    const goal = scoredRows.filter((row) => clampScore(row.t2b) >= TSI_META).length
+    const attention = scoredRows.filter((row) => {
       const value = clampScore(row.t2b)
       return value >= TSI_YELLOW && value < TSI_META
     }).length
-    const critical = Math.max(0, periodRows.length - goal - attention)
+    const critical = Math.max(0, scoredRows.length - goal - attention)
     const feedbacks = periodRows.filter((row) => row.comentario && normalize(row.comentario) !== 'nan')
     const praise = feedbacks.filter((row) => normalize(row.tipo).includes('elogio')).length
     const suggestions = feedbacks.length - praise
-    const perfect = periodRows.filter((row) => clampScore(row.t2b) >= 99.5).length
+    const perfect = scoredRows.filter((row) => clampScore(row.t2b) >= 99.5).length
     const stores = new Set(periodRows.map((row) => storeName(row.loja))).size
     const productCategories = new Set(periodRows.map((row) => row.cilindrada || 'Não informado')).size
     const uniqueOrders = new Set(periodRows.map((row) => normalize(row.os)).filter(Boolean)).size
     return {
       avgT2b,
       avgTsi,
+      responses: scoredRows.length,
       goal,
       attention,
       critical,
@@ -210,9 +257,25 @@ export function TsiDetailView({ tsiData, tsiResend, tsiUpdatedAt, onImport }: Ts
       stores,
       productCategories,
       uniqueOrders,
-      goalPercent: periodRows.length ? (goal / periodRows.length) * 100 : 0,
+      goalPercent: scoredRows.length ? (goal / scoredRows.length) * 100 : 0,
     }
   }, [periodRows])
+
+  const blockMetrics = useMemo(() => ({
+    satisfacaoGeral: buildBlockScore(periodRows, 'satisfacaoGeral'),
+    infraestrutura: buildBlockScore(periodRows, 'infraestrutura'),
+    consultor: buildBlockScore(periodRows, 'consultor'),
+    qualidade: buildBlockScore(periodRows, 'qualidade'),
+    entrega: buildBlockScore(periodRows, 'entrega'),
+    custoBeneficio: buildBlockScore(periodRows, 'custoBeneficio'),
+    recomendacao: buildBlockScore(periodRows, 'recomendacao'),
+    retornoFuturo: buildBlockScore(periodRows, 'retornoFuturo'),
+    agendamento: buildBlockScore(periodRows, 'agendamento'),
+    recepcao: buildBlockScore(periodRows, 'recepcao'),
+  }), [periodRows])
+
+  const hasBlockDetails = Object.values(blockMetrics).some((metric) => metric.responses > 0)
+  const blockResponseCount = blockMetrics.satisfacaoGeral.responses || metrics.responses
 
   const monthMetrics = useMemo(() => buildMonths(filteredRows), [filteredRows])
   const storeMetrics = useMemo(() => buildStores(periodRows), [periodRows])
@@ -285,7 +348,7 @@ export function TsiDetailView({ tsiData, tsiResend, tsiUpdatedAt, onImport }: Ts
           <article className={`${styles.contentCard} ${styles.gaugeCard}`}>
             <CardHeading title="Resultado Top2Box" subtitle={periodName} />
             <ScoreGauge value={metrics.avgT2b} />
-            <span className={styles.periodFoot}>{periodRows.length} respostas no período</span>
+            <span className={styles.periodFoot}>{metrics.responses} respostas válidas no período</span>
           </article>
 
           <article className={`${styles.contentCard} ${styles.storeCard}`}>
@@ -296,19 +359,24 @@ export function TsiDetailView({ tsiData, tsiResend, tsiUpdatedAt, onImport }: Ts
       </DetailSection>
 
       <DetailSection title="Nota Top2Box por bloco" subtitle={`Indicadores de ${periodName}`} icon={<BarChart3 size={18} />}>
+        {!hasBlockDetails && (
+          <div className={styles.blockImportNotice}>
+            Execute a migração <code>supabase-tsi-detalhamento.sql</code> e reimporte a planilha TSI para preencher as notas de cada área.
+          </div>
+        )}
         <div className={styles.blockGrid}>
-          <MetricBlock label="Pesquisas respondidas" value={String(periodRows.length)} note="respostas processadas" tone="blue" icon={<UsersRound size={17} />} />
-          <MetricBlock label="Índice Top2Box" value={`${metrics.avgT2b.toFixed(1)}%`} note={`meta ${TSI_META.toFixed(1)}%`} tone={toneForScore(metrics.avgT2b)} icon={<Target size={17} />} />
-          <MetricBlock label="Satisfação TSI" value={metrics.avgTsi.toFixed(1)} note="média geral" tone={toneForScore(metrics.avgTsi)} icon={<Gauge size={17} />} />
-          <MetricBlock label="Meta atingida" value={`${metrics.goalPercent.toFixed(0)}%`} note={`${metrics.goal} respostas`} tone="green" icon={<CheckCircle2 size={17} />} />
-          <MetricBlock label="Em atenção" value={String(metrics.attention)} note={`entre ${TSI_YELLOW.toFixed(1)} e ${TSI_META.toFixed(1)}`} tone="amber" icon={<Activity size={17} />} />
-          <MetricBlock label="Críticas" value={String(metrics.critical)} note="abaixo da faixa esperada" tone="red" icon={<Activity size={17} />} />
-          <MetricBlock label="Feedbacks" value={String(metrics.feedbacks)} note="comentários registrados" tone="blue" icon={<MessageSquareText size={17} />} />
-          <MetricBlock label="Elogios" value={String(metrics.praise)} note="classificados na base" tone="green" icon={<MessageSquareText size={17} />} />
-          <MetricBlock label="Sugestões e outros" value={String(metrics.suggestions)} note="pontos para acompanhamento" tone="amber" icon={<MessageSquareText size={17} />} />
-          <MetricBlock label="Notas máximas" value={String(metrics.perfect)} note="Top2Box igual a 100" tone="green" icon={<Target size={17} />} />
-          <MetricBlock label="Lojas ativas" value={String(metrics.stores)} note="com respostas no período" tone="neutral" icon={<Store size={17} />} />
-          <MetricBlock label="Categorias" value={String(metrics.productCategories)} note="segmentos de produto" tone="neutral" icon={<ClipboardList size={17} />} />
+          <MetricBlock label="Pesquisas respondidas" value={String(blockResponseCount)} note="respostas válidas no período" tone="blue" icon={<UsersRound size={17} />} />
+          <AreaMetricBlock label="Infraestrutura" metric={blockMetrics.infraestrutura} icon={<Building2 size={17} />} />
+          <AreaMetricBlock label="Consultor" metric={blockMetrics.consultor} icon={<UserRoundCheck size={17} />} />
+          <AreaMetricBlock label="Qualidade" metric={blockMetrics.qualidade} icon={<ShieldCheck size={17} />} />
+          <AreaMetricBlock label="Entrega" metric={blockMetrics.entrega} icon={<PackageCheck size={17} />} />
+          <AreaMetricBlock label="Custo-benefício" metric={blockMetrics.custoBeneficio} icon={<BadgeDollarSign size={17} />} />
+          <SatisfactionDistribution metric={blockMetrics.satisfacaoGeral} />
+          <AreaMetricBlock label="Satisfação geral" metric={blockMetrics.satisfacaoGeral} icon={<SmilePlus size={17} />} />
+          <AreaMetricBlock label="Recomendação" metric={blockMetrics.recomendacao} icon={<HeartHandshake size={17} />} />
+          <AreaMetricBlock label="Retorno futuro" metric={blockMetrics.retornoFuturo} icon={<RotateCcw size={17} />} />
+          <AreaMetricBlock label="Agendamento" metric={blockMetrics.agendamento} icon={<CalendarCheck2 size={17} />} />
+          <AreaMetricBlock label="Recepção" metric={blockMetrics.recepcao} icon={<Handshake size={17} />} />
         </div>
       </DetailSection>
 
@@ -361,6 +429,52 @@ function MetricBlock({ label, value, note, tone, icon }: {
       <header><span>{icon}</span><small>{label}</small></header>
       <strong>{value}</strong>
       <p>{note}</p>
+    </article>
+  )
+}
+
+function AreaMetricBlock({ label, metric, icon }: {
+  label: string
+  metric: BlockScoreMetric
+  icon: ReactNode
+}) {
+  return (
+    <MetricBlock
+      label={label}
+      value={formatBlockScore(metric.score)}
+      note={metric.responses
+        ? `Top2Box · ${metric.responses} ${metric.responses === 1 ? 'resposta válida' : 'respostas válidas'}`
+        : 'Aguardando reimportação da planilha'}
+      tone={toneForBlockScore(metric.score)}
+      icon={icon}
+    />
+  )
+}
+
+function SatisfactionDistribution({ metric }: { metric: BlockScoreMetric }) {
+  const counts = new Map<number, number>()
+  metric.values.forEach((value) => {
+    const scoreValue = Math.max(0, Math.min(10, Math.round(value)))
+    counts.set(scoreValue, (counts.get(scoreValue) || 0) + 1)
+  })
+  const entries = Array.from(counts.entries()).sort(([left], [right]) => right - left)
+  const max = Math.max(1, ...entries.map(([, count]) => count))
+
+  return (
+    <article className={`${styles.metricBlock} ${styles.distributionBlock}`} data-tone={entries.length ? 'blue' : 'neutral'}>
+      <header><span><BarChart3 size={17} /></span><small>Satisfação geral · distribuição</small></header>
+      {entries.length ? (
+        <div className={styles.distributionBars} aria-label="Quantidade de respostas por nota de satisfação geral">
+          {entries.map(([scoreValue, count]) => (
+            <div key={scoreValue}>
+              <span>{count}</span>
+              <i><b style={{ height: `${Math.max(7, (count / max) * 100)}%` }} /></i>
+              <small>{scoreValue}</small>
+            </div>
+          ))}
+        </div>
+      ) : <strong>—</strong>}
+      <p>{metric.responses ? `${metric.responses} respostas válidas` : 'Aguardando reimportação da planilha'}</p>
     </article>
   )
 }

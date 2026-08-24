@@ -32,6 +32,7 @@ function DockIcon({
   mouseX,
   canHover,
   reduceMotion,
+  labelAlignment,
   onSelect,
 }: {
   item: DockTabItem
@@ -39,10 +40,12 @@ function DockIcon({
   mouseX: MotionValue<number>
   canHover: boolean
   reduceMotion: boolean | null
+  labelAlignment: "start" | "center" | "end"
   onSelect: () => void
 }) {
   const ref = useRef<HTMLButtonElement>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
 
   const distance = useTransform(mouseX, (value) => {
     const bounds = ref.current?.getBoundingClientRect()
@@ -52,6 +55,7 @@ function DockIcon({
   const sizeSync = useTransform(distance, [-140, 0, 140], [50, 76, 50])
   const size = useSpring(sizeSync, { mass: 0.12, stiffness: 190, damping: 16 })
   const animatedSize = canHover && !reduceMotion ? size : 50
+  const showLabel = canHover ? isHovered || isFocused : active
 
   return (
     <motion.button
@@ -59,11 +63,14 @@ function DockIcon({
       type="button"
       aria-label={item.name}
       aria-current={active ? "page" : undefined}
+      aria-describedby={`${item.id}-dock-label`}
       title={!canHover ? item.name : undefined}
       style={{ width: animatedSize, height: animatedSize }}
       onClick={onSelect}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       whileTap={reduceMotion ? undefined : { scale: 0.94 }}
       className="relative flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0"
     >
@@ -75,7 +82,7 @@ function DockIcon({
         transition={{ type: "spring", stiffness: 400, damping: 19 }}
       >
         <motion.span
-          className="relative z-10 flex [&>svg]:h-[45%] [&>svg]:w-[45%]"
+          className="relative z-10 flex [&>svg]:h-7 [&>svg]:w-7 [&>svg]:shrink-0"
           animate={{ scale: canHover && isHovered && !reduceMotion ? 1.1 : 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 18 }}
         >
@@ -84,19 +91,25 @@ function DockIcon({
         <span className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/25 via-white/[.04] to-black/20" />
       </motion.span>
 
-      {canHover && (
-        <motion.span
-          initial={false}
-          animate={{
-            opacity: isHovered ? 1 : 0,
-            y: isHovered ? -10 : 3,
-            scale: isHovered ? 1 : 0.9,
-          }}
-          className="pointer-events-none absolute -top-10 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#151515]/95 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-xl backdrop-blur-xl"
-        >
-          {item.name}
-        </motion.span>
-      )}
+      <motion.span
+        id={`${item.id}-dock-label`}
+        role="tooltip"
+        initial={false}
+        aria-hidden={!showLabel}
+        animate={{
+          opacity: showLabel ? 1 : 0,
+          y: showLabel ? 0 : -4,
+          scale: showLabel ? 1 : 0.94,
+        }}
+        className={cn(
+          "pointer-events-none absolute top-[calc(100%+14px)] z-20 whitespace-nowrap rounded-md border border-white/10 bg-[#151515]/95 px-2 py-1 text-[11px] font-semibold leading-none text-white shadow-xl backdrop-blur-xl",
+          labelAlignment === "start" && "left-0",
+          labelAlignment === "center" && "left-1/2 -translate-x-1/2",
+          labelAlignment === "end" && "right-0",
+        )}
+      >
+        {item.name}
+      </motion.span>
 
       <motion.span
         aria-hidden="true"
@@ -136,7 +149,7 @@ export function DockTabs({
         onMouseMove={canHover ? (event) => mouseX.set(event.clientX) : undefined}
         onMouseLeave={() => mouseX.set(Number.POSITIVE_INFINITY)}
         className={cn(
-          "pointer-events-auto flex max-w-full items-end gap-2 rounded-[26px] border border-white/15 bg-[#111214]/90 px-3 pb-3 pt-2.5 shadow-[0_24px_65px_-22px_rgba(0,0,0,.9)] backdrop-blur-2xl sm:gap-3 sm:px-4",
+          "pointer-events-auto flex max-w-full items-end gap-2 rounded-[26px] border border-white/15 bg-[#111214]/90 px-5 pb-10 pt-2.5 shadow-[0_24px_65px_-22px_rgba(0,0,0,.9)] backdrop-blur-2xl sm:gap-3 sm:px-7",
           className,
         )}
         style={{ overflowX: "auto", scrollbarWidth: "none" }}
@@ -144,7 +157,7 @@ export function DockTabs({
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.08 }}
       >
-        {items.map((item) => (
+        {items.map((item, index) => (
           <DockIcon
             key={item.id}
             item={item}
@@ -152,6 +165,7 @@ export function DockTabs({
             mouseX={mouseX}
             canHover={canHover}
             reduceMotion={reduceMotion}
+            labelAlignment={index === 0 ? "start" : index === items.length - 1 ? "end" : "center"}
             onSelect={() => onChange(item.id)}
           />
         ))}

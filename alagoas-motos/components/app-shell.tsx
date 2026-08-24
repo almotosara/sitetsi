@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useCallback, useMemo } from 'react'
-import type { Lead, TsiRow, TsiResendRow, ClienteFiel, LeadOrigem, LeadStatus } from '@/lib/types'
+import type { Lead, TsiRow, TsiResendRow, ClienteFiel, LeadOrigem, LeadStatus, TsiBlockRatings } from '@/lib/types'
 import { TSI_STORE_MAP } from '@/lib/constants'
 import { Sidebar } from './sidebar'
 import { LeadModal } from './lead-modal'
@@ -61,10 +61,12 @@ function getCol(row: Record<string, unknown>, ...candidates: string[]): string {
   return ''
 }
 
-// ─── Utility: numOrZero — parseFloat que trata vazio/NaN como 0 (não existe "nulo" nessas pesquisas) ───
-function numOrZero(v: string): number {
-  const n = parseFloat(v)
-  return Number.isNaN(n) ? 0 : n
+// Preserva respostas vazias. Isso evita que pesquisas
+// não qualificadas sejam contabilizadas como nota zero no Top2Box.
+function numOrNull(v: string): number | null {
+  if (!v.trim()) return null
+  const n = Number(v.replace(',', '.'))
+  return Number.isFinite(n) ? n : null
 }
 
 // ─── Utility: titleCase (igual ao HTML de referência) ───
@@ -295,15 +297,28 @@ export function AppShell({
         if (!osKey) return null
         const rawLoja = getCol(r, 'Nome da conta') || 'Desconhecido'
         const rawDate = getCol(r, 'Data conclusão final', 'Data da resposta', 'Data conclusão', 'Data de conclusão', 'Data', 'Data da Avaliação')
+        const detalhamento: TsiBlockRatings = {
+          satisfacaoGeral: numOrNull(getCol(r, 'Avaliação satisfação geral')),
+          infraestrutura: numOrNull(getCol(r, 'Avaliação satisfação instalações e infra')),
+          consultor: numOrNull(getCol(r, 'Avaliação satisfação consultor')),
+          qualidade: numOrNull(getCol(r, 'Avaliação satisfação qualidade')),
+          entrega: numOrNull(getCol(r, 'Avaliação satisfação entrega')),
+          custoBeneficio: numOrNull(getCol(r, 'Avaliação satisfação custo benefício')),
+          recomendacao: numOrNull(getCol(r, 'Recomendaria dealer amigo e família')),
+          retornoFuturo: numOrNull(getCol(r, 'Avaliação satisfação retorno ao dealer')),
+          agendamento: numOrNull(getCol(r, 'Avaliação satisfação agendamento')),
+          recepcao: numOrNull(getCol(r, 'Avaliação satisfação recepção')),
+        }
         return {
           os: osKey,
           loja: (TSI_STORE_MAP as Record<string, string>)[rawLoja] || rawLoja,
-          t2b: numOrZero(getCol(r, 'Nota Top2Box')),
-          tsi: numOrZero(getCol(r, 'Nota Pesquisa TSI')),
+          t2b: numOrNull(getCol(r, 'Nota Top2Box')),
+          tsi: numOrNull(getCol(r, 'Nota Pesquisa TSI')),
           cilindrada: getCol(r, 'Categoria Produto') || 'Não Informado',
           tipo: getCol(r, 'Tipo conclusão final'),
           comentario: getCol(r, 'Comentário conclusão final'),
           data: tsiFmtDate(rawDate),
+          detalhamento,
         }
       }).filter(Boolean) as Omit<TsiRow, 'id' | 'user_id' | 'importado_em'>[]
 
@@ -315,7 +330,9 @@ export function AppShell({
       toast(`${mapped.length} pesquisas TSI importadas.${skipped ? ` (${skipped} linhas de rodapé ignoradas)` : ''}`)
     } catch (err) {
       console.error('[TSI] import error:', err)
-      toast('Erro ao importar planilha TSI.', true)
+      toast(err instanceof Error && err.message.includes('supabase-tsi-detalhamento.sql')
+        ? err.message
+        : 'Erro ao importar planilha TSI.', true)
     }
   }, [goal, toast])
 

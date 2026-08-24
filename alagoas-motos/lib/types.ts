@@ -32,7 +32,24 @@ export interface TsiRow {
   tipo: string | null
   comentario: string | null
   data: string | null
+  detalhamento?: TsiBlockRatings | null
   importado_em: string
+}
+
+/** Notas brutas (0 a 10) usadas para calcular o Top2Box de cada área.
+ * O campo fica em JSONB para acompanhar novas dimensões da pesquisa sem
+ * transformar cada ajuste do questionário em uma migração extensa. */
+export interface TsiBlockRatings {
+  satisfacaoGeral: number | null
+  infraestrutura: number | null
+  consultor: number | null
+  qualidade: number | null
+  entrega: number | null
+  custoBeneficio: number | null
+  recomendacao: number | null
+  retornoFuturo: number | null
+  agendamento: number | null
+  recepcao: number | null
 }
 
 export interface ClienteFiel {

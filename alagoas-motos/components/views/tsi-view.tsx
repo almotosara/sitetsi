@@ -61,6 +61,10 @@ const score = (value: number | null | undefined) => {
   return Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) : 0
 }
 
+const hasNumericScore = (value: number | null | undefined): value is number => (
+  value !== null && value !== undefined && Number.isFinite(Number(value))
+)
+
 const storeName = (value: string | null) => {
   if (!value) return 'Não informado'
   return TSI_STORE_MAP[value] || value
@@ -123,6 +127,7 @@ function buildTrend(rows: TsiRow[]): TrendPoint[] {
   const groups = new Map<string, { date: Date; sum: number; count: number }>()
 
   rows.forEach((row) => {
+    if (!hasNumericScore(row.t2b)) return
     const parsed = parseDate(row.data)
     if (!parsed) return
     const key = dateKey(parsed)
@@ -153,6 +158,9 @@ function buildTrend(rows: TsiRow[]): TrendPoint[] {
 }
 
 function aggregate(rows: TsiRow[]) {
+  // A exportação pode trazer pesquisas não qualificadas sem Nota Top2Box.
+  // Elas continuam disponíveis na lista, mas não entram nos indicadores.
+  const scoredRows = rows.filter((row) => hasNumericScore(row.t2b))
   let t2bSum = 0
   let tsiSum = 0
   let goalCount = 0
@@ -165,7 +173,7 @@ function aggregate(rows: TsiRow[]) {
   const feedbacks: TsiRow[] = []
   const alerts: TsiRow[] = []
 
-  rows.forEach((row) => {
+  scoredRows.forEach((row) => {
     const t2b = score(row.t2b)
     const tsi = score(row.tsi)
     const loja = storeName(row.loja)
@@ -219,19 +227,19 @@ function aggregate(rows: TsiRow[]) {
   alerts.sort((a, b) => score(a.t2b) - score(b.t2b))
 
   return {
-    total: rows.length,
-    avgT2B: rows.length ? t2bSum / rows.length : 0,
-    avgTsi: rows.length ? tsiSum / rows.length : 0,
+    total: scoredRows.length,
+    avgT2B: scoredRows.length ? t2bSum / scoredRows.length : 0,
+    avgTsi: scoredRows.length ? tsiSum / scoredRows.length : 0,
     goalCount,
     attentionCount,
     criticalCount,
-    goalPercent: rows.length ? (goalCount / rows.length) * 100 : 0,
+    goalPercent: scoredRows.length ? (goalCount / scoredRows.length) * 100 : 0,
     stores: storeMetrics,
     matrix,
     feedbacks: feedbacks.slice().reverse(),
     alerts,
     bestCategory,
-    trend: buildTrend(rows),
+    trend: buildTrend(scoredRows),
   }
 }
 

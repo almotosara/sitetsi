@@ -33,7 +33,8 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
     if (text && !r.os.toLowerCase().includes(text) && !lojaNome.toLowerCase().includes(text) && !r.comentario?.toLowerCase().includes(text)) return false
     if (lojaFilter && lojaNome !== lojaFilter) return false
     if (faixa) {
-      const t2b = Number(r.t2b ?? 0)
+      if (r.t2b === null || r.t2b === undefined) return false
+      const t2b = Number(r.t2b)
       if (faixa === 'verde' && t2b < 93.5) return false
       if (faixa === 'amarelo' && (t2b >= 93.5 || t2b < 92)) return false
       if (faixa === 'vermelho' && t2b >= 92) return false
@@ -100,9 +101,10 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
               <tbody>
                 {filtered.map((r) => {
                   const lojaNome = TSI_STORE_MAP[r.loja || ''] || r.loja || 'Outros'
-                  const t2b = Number(r.t2b ?? 0)
-                  const tsi = Number(r.tsi ?? 0)
-                  const tc = tsiColor(t2b)
+                  const hasT2b = r.t2b !== null && r.t2b !== undefined && Number.isFinite(Number(r.t2b))
+                  const t2b = hasT2b ? Number(r.t2b) : null
+                  const tsi = r.tsi !== null && r.tsi !== undefined && Number.isFinite(Number(r.tsi)) ? Number(r.tsi) : null
+                  const tc = t2b === null ? null : tsiColor(t2b)
                   return (
                     <tr key={r.id} className="transition-colors last:border-0"
                       style={{ borderBottom: '1px solid var(--border-line-soft)' }}
@@ -111,9 +113,11 @@ export function TsiListView({ tsiData, onImport }: TsiListViewProps) {
                       <td className="px-3.5 py-2.5 font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{lojaNome}</td>
                       <td className="px-3.5 py-2.5 font-mono text-xs" style={{ color: 'var(--text-dim)' }}>{r.os}</td>
                       <td className="px-3.5 py-2.5">
-                        <StatusBadge variant={statusVariants[tc]} size="sm">{t2b.toFixed(1)}%</StatusBadge>
+                        {tc && t2b !== null
+                          ? <StatusBadge variant={statusVariants[tc]} size="sm">{t2b.toFixed(1)}%</StatusBadge>
+                          : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>
-                      <td className="px-3.5 py-2.5" style={{ color: 'var(--text-dim)' }}>{tsi.toFixed(2)}</td>
+                      <td className="px-3.5 py-2.5" style={{ color: 'var(--text-dim)' }}>{tsi === null ? '—' : tsi.toFixed(2)}</td>
                       <td className="px-3.5 py-2.5 whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>{r.data || '—'}</td>
                       <td className="px-3.5 py-2.5 max-w-[200px] truncate" style={{ color: 'var(--text-muted)' }}>{r.comentario || '—'}</td>
                     </tr>

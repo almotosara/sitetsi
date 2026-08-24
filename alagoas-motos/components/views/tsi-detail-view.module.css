@@ -469,6 +469,22 @@
   gap: .55rem;
 }
 
+.blockImportNotice {
+  margin-bottom: .65rem;
+  padding: .62rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--detail-amber) 32%, var(--detail-border));
+  border-radius: 11px;
+  color: color-mix(in srgb, var(--detail-amber) 78%, var(--detail-text));
+  background: color-mix(in srgb, var(--detail-amber) 8%, var(--detail-raised));
+  font-size: .6rem;
+  line-height: 1.45;
+}
+
+.blockImportNotice code {
+  color: inherit;
+  font: 700 .58rem ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .metricBlock,
 .databaseMetric {
   --tone: var(--detail-muted);
@@ -515,11 +531,14 @@
 }
 
 .metricBlock header small {
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   color: var(--detail-dim);
   font-size: .57rem;
   font-weight: 650;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metricBlock > strong {
@@ -538,6 +557,61 @@
   color: var(--detail-muted);
   font-size: .5rem;
   line-height: 1.35;
+}
+
+.distributionBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.distributionBars {
+  display: flex;
+  min-height: 0;
+  height: 67px;
+  align-items: end;
+  gap: .28rem;
+  margin: .5rem 0 .28rem;
+}
+
+.distributionBars > div {
+  display: grid;
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 0;
+  grid-template-rows: .85rem minmax(0, 1fr) .8rem;
+  text-align: center;
+}
+
+.distributionBars span,
+.distributionBars small {
+  overflow: hidden;
+  color: var(--detail-muted);
+  font-size: .43rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.distributionBars i {
+  display: flex;
+  width: min(100%, 16px);
+  height: 100%;
+  align-items: flex-end;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 4px 4px 2px 2px;
+  background: color-mix(in srgb, var(--detail-border) 60%, transparent);
+}
+
+.distributionBars b {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to top, color-mix(in srgb, var(--tone) 68%, #111), var(--tone));
+  box-shadow: 0 -5px 12px color-mix(in srgb, var(--tone) 23%, transparent);
+}
+
+.distributionBlock > p {
+  margin-top: auto;
 }
 
 .databaseGrid {

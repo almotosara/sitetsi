@@ -99,7 +99,8 @@ Execute os scripts necessários no **SQL Editor** do Supabase. Para uma instala�
 3. `supabase-agendamentos.sql` — agendamentos sincronizados;
 4. `supabase-lead-reminders.sql` — lembretes vinculados aos leads;
 5. `supabase-auth-usuarios.sql` — usuários internos e auditoria de autenticação;
-6. `supabase-rev-mao-de-obra-admin.sql` — escrita de mão de obra restrita ao backend administrativo.
+6. `supabase-rev-mao-de-obra-admin.sql` — escrita de mão de obra restrita ao backend administrativo;
+7. `supabase-tsi-detalhamento.sql` — notas por área usadas no detalhamento Top2Box.
 
 O passo a passo completo da autenticação está em [AUTENTICACAO-SUPABASE-LEIA-ME.md](AUTENTICACAO-SUPABASE-LEIA-ME.md). Para a TV e o userscript de sincronização, consulte [AGENDAMENTOS-TV-LEIA-ME.md](AGENDAMENTOS-TV-LEIA-ME.md).
 

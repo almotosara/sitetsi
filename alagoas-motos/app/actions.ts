@@ -118,8 +118,18 @@ export async function getTsiData() {
 
 export async function replaceTsiData(rows: Omit<TsiRow, 'id' | 'user_id' | 'importado_em'>[]) {
   const supabase = await createClient()
-  // Delete old data for this user
-  await supabase.from('tsi_data').delete().eq('user_id', USER_ID)
+  // Valida a migração antes de remover a base anterior. Assim uma importação
+  // feita antes do SQL de detalhamento não apaga dados que ainda estão válidos.
+  const { error: schemaError } = await supabase
+    .from('tsi_data')
+    .select('detalhamento')
+    .limit(1)
+  if (schemaError) {
+    throw new Error('Execute supabase-tsi-detalhamento.sql antes de reimportar a planilha TSI.')
+  }
+
+  const { error: deleteError } = await supabase.from('tsi_data').delete().eq('user_id', USER_ID)
+  if (deleteError) throw deleteError
   if (rows.length === 0) { revalidatePath('/'); return }
   const { error } = await supabase
     .from('tsi_data')

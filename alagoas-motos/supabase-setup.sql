@@ -41,8 +41,13 @@ CREATE TABLE IF NOT EXISTS tsi_data (
   tipo          TEXT,
   comentario    TEXT,
   data          TEXT,
+  detalhamento  JSONB NOT NULL DEFAULT '{}'::jsonb,
   importado_em  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Instalações existentes: armazena as notas 0–10 de cada área da pesquisa.
+ALTER TABLE tsi_data
+  ADD COLUMN IF NOT EXISTS detalhamento JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 -- 3. Tabela de clientes fiéis
 CREATE TABLE IF NOT EXISTS clientes_fieis (
