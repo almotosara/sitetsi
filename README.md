@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./alagoas-motos/public/alagoas-motos-logo.png" width="320" alt="Alagoas Motos" />
+  <img src="./alagoas-motos/public/alagoas-motos-logo.webp" width="320" alt="Alagoas Motos" />
 
   <h1>Painel Operacional · Alagoas Motos</h1>
 
